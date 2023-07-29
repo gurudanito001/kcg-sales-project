@@ -1,0 +1,377 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String     @id @default(uuid())
+  code      String?    @unique @db.VarChar(50)
+  name      String     @unique @db.VarChar(50)
+  logo      String?    @db.VarChar(255)
+  email     String     @unique @db.VarChar(50)
+  address   String?    @db.VarChar(255)
+  brands    Brand[]
+  extraData Json?
+  branches  Branch[]
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Branch {
+  id           String     @id @default(uuid())
+  company      Company    @relation(fields: [companyId], references: [id])
+  companyId    String
+  state        String     @db.VarChar(50)
+  lga          String     @db.VarChar(50)
+  name         String     @db.VarChar(50)
+  code         String?    @unique @db.VarChar(255)
+  address      String     @db.VarChar(255)
+  isHeadOffice Boolean    @default(false)
+  phoneNumber  String?    @db.VarChar(50)
+  email        String     @db.VarChar(50)
+  employees    Employee[]
+  extraData    Json?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Brand {
+  id                  String                   @id @default(uuid())
+  company             Company                  @relation(fields: [companyId], references: [id])
+  companyId           String
+  name                String                   @unique @db.VarChar(50)
+  code                String?                  @unique @db.VarChar(50)
+  description         String?                  @db.VarChar(255)
+  logo                String?                  @db.VarChar(255)
+  products            Product[]
+  employeesAssignedTo BrandEmployeesRelation[]
+  pfiRequestForms     PfiRequestForm[]
+  invoiceRequestForms InvoiceRequestForm[]
+  extraData           Json?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+}
+
+model Product {
+  id                  String                @id @default(uuid())
+  name                String                @db.VarChar(50)
+  code                String?               @unique @db.VarChar(50)
+  brand               Brand                 @relation(fields: [brandId], references: [id])
+  brandId             String
+  description         String?               @db.VarChar(255)
+  specifications      String?               @db.VarChar(255)
+  brochures           String[]
+  images              String[]              @db.VarChar(255)
+  price               PriceMaster?
+  productVisitReports ProductVisitReports[]
+  pfiRequestForms     PfiRequestForm[]
+  invoiceRequestForms InvoiceRequestForm[]
+  vatInclusive        Boolean?              @default(false)
+  vatRate             String?               @db.VarChar(255)
+  extraData           Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+}
+
+model PriceMaster {
+  id         String    @id @default(uuid())
+  unitPrice  String    @db.VarChar(50)
+  promoPrice String?   @db.VarChar(50)
+  anyPromo   String?   @db.VarChar(255)
+  validFrom  DateTime?
+  validTill  DateTime?
+  brandName  String //Did not store brand as a relation because price master is only related to the product
+  product    Product   @relation(fields: [productId], references: [id])
+  productId  String    @unique
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Employee {
+  id                    String                   @id @default(uuid())
+  company               Company                  @relation(fields: [companyId], references: [id])
+  companyId             String
+  staffCadre            String[]                 @default(["salesPerson"])
+  branch                Branch                   @relation(fields: [branchId], references: [id])
+  branchId              String
+  firstName             String                   @db.VarChar(50)
+  middleName            String?                  @db.VarChar(50)
+  lastName              String                   @db.VarChar(50)
+  email                 String                   @unique @db.VarChar(50)
+  password              String                   @db.VarChar(255)
+  supervisor            Employee?                @relation("Supervisor", fields: [supervisorId], references: [id])
+  supervisorId          String
+  subordinates          Employee[]               @relation("Supervisor")
+  employmentDate        String?                  @db.VarChar(255)
+  brandsAssigned        BrandEmployeesRelation[]
+  customers             Customer[]
+  contactPersons        ContactPerson[]
+  visitReports          VisitReport[]
+  pfiRequestForms       PfiRequestForm[]
+  invoiceRequestForms   InvoiceRequestForm[]
+  MarkettingActivities  MarkettingActivity[]
+  sentComments          Comment[]               @relation("Sender")
+  receivedComments      Comment[]               @relation("Receiver")
+  receivedNotifications Notification[]          @relation("ReceivedNotification")
+  extraData             Json?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+}
+
+model BrandEmployeesRelation {
+  id         String   @id @default(uuid())
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  employeeId String
+  brand      Brand    @relation(fields: [brandId], references: [id])
+  brandId    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Customer {
+  id                  String               @id @default(uuid())
+  employee            Employee             @relation(fields: [employeeId], references: [id])
+  employeeId          String
+  companyName         String               @db.VarChar(50)
+  state               String?              @db.VarChar(50)
+  lga                 String?              @db.VarChar(50)
+  city                String?              @db.VarChar(50)
+  address             String?              @db.VarChar(255)
+  companyWebsite      String?              @db.VarChar(50)
+  industry            String?              @db.VarChar(50)
+  customerType        String?              @db.VarChar(50)
+  enquirySource       String?              @db.VarChar(50)
+  status              String?              @default("cold") @db.VarChar(255)
+  approved            Boolean?             @default(false)
+  lastVisited         DateTime             @default(now())
+  contactPersons      ContactPerson[]
+  visitReports        VisitReport[]
+  pfiRequestForms     PfiRequestForm[]
+  invoiceRequestForms InvoiceRequestForm[]
+  extraData           Json?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model ContactPerson {
+  id                  String               @id @default(uuid())
+  employee            Employee             @relation(fields: [employeeId], references: [id])
+  employeeId          String
+  customer            Customer             @relation(fields: [customerId], references: [id])
+  customerId          String
+  firstName           String               @db.VarChar(50)
+  lastName            String?              @db.VarChar(50)
+  email               String?              @db.VarChar(50)
+  designation         String?              @db.VarChar(50)
+  department          String?              @db.VarChar(50)
+  phoneNumber         String               @db.VarChar(50)
+  visitReports        VisitReport[]
+  pfiRequestForms     PfiRequestForm[]
+  invoiceRequestForms InvoiceRequestForm[]
+  extraData           Json?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model VisitReport {
+  id                  String                @id @default(uuid())
+  employee            Employee              @relation(fields: [employeeId], references: [id])
+  employeeId          String
+  customer            Customer              @relation(fields: [customerId], references: [id])
+  customerId          String
+  contactPerson       ContactPerson         @relation(fields: [contactPersonId], references: [id])
+  contactPersonId     String
+  callType            String                @db.VarChar(50)
+  status              String                @db.VarChar(50)
+  productVisitReports ProductVisitReports[]
+  quantity            String?               @db.VarChar(50)
+  durationOfMeeting   String                @db.VarChar(50)
+  meetingOutcome      String?               @db.VarChar(255)
+  visitDate           DateTime?
+  nextVisitDate       DateTime?
+  pfiRequest          Boolean?              @default(false)
+  extraData           Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+}
+
+model ProductVisitReports {
+  id            String      @id @default(uuid())
+  product       Product     @relation(fields: [productId], references: [id])
+  productId     String
+  visitReport   VisitReport @relation(fields: [visitReportId], references: [id])
+  visitReportId String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model PfiRequestForm {
+  id                          String              @id @default(uuid())
+  employee                    Employee            @relation(fields: [employeeId], references: [id])
+  employeeId                  String
+  customer                    Customer?           @relation(fields: [customerId], references: [id])
+  customerId                  String?
+  contactPerson               ContactPerson?      @relation(fields: [contactPersonId], references: [id])
+  contactPersonId             String?
+  existingCustomer            Boolean             @default(false)
+  customerName                String?             @db.VarChar(50)
+  customerAddress             String?             @db.VarChar(255)
+  contactPersonName           String?             @db.VarChar(50)
+  phoneNumber                 String?             @db.VarChar(50)
+  emailAddress                String?             @db.VarChar(50)
+  brand                       Brand               @relation(fields: [brandId], references: [id])
+  brandId                     String
+  product                     Product             @relation(fields: [productId], references: [id])
+  productId                   String
+  quantity                    String?
+  pricePerVehicle             String?
+  bodyTypeDescription         String?             @db.VarChar(255)
+  vehicleServiceDetails       String?             @db.VarChar(255)
+  specialFitmentDetails       String?             @db.VarChar(255)
+  costForSpecialFitment       String?             @db.VarChar(50)
+  discount                    String?
+  vatDeduction                Boolean             @default(false)
+  whtDeduction                Boolean             @default(false)
+  registration                Boolean             @default(false)
+  refundRebateAmount          String?             @db.VarChar(50)
+  refundRebaseRecipient       String?             @db.VarChar(50)
+  designation                 String?             @db.VarChar(50)
+  relationshipWithTransaction String?             @db.VarChar(50)
+  estimatedOrderClosingTime   String?             @db.VarChar(50)
+  paymentType                 String?             @db.VarChar(50)
+  deliveryLocation            String?             @db.VarChar(255)
+  vehicleDetails              String?             @db.VarChar(255)
+  approved                    Boolean?            @default(false)
+  pfiReferenceNumber          String?
+  pfiDate                     DateTime?
+  additionalInformation       String?             @db.VarChar(255)
+  extraData                   Json?
+  invoiceRequestForm          InvoiceRequestForm?
+  createdAt                   DateTime            @default(now())
+  updatedAt                   DateTime            @updatedAt
+}
+
+model InvoiceRequestForm {
+  id                          String         @id @default(uuid())
+  pfiRequestForm              PfiRequestForm @relation(fields: [pfiRequestFormId], references: [id])
+  pfiRequestFormId            String         @unique
+  employee                    Employee       @relation(fields: [employeeId], references: [id])
+  employeeId                  String
+  customer                    Customer?      @relation(fields: [customerId], references: [id])
+  customerId                  String?
+  contactPerson               ContactPerson? @relation(fields: [contactPersonId], references: [id])
+  contactPersonId             String?
+  invoiceName                 String?        @db.VarChar(50)
+  address                     String?        @db.VarChar(255)
+  contactOfficeTelephone      String?        @db.VarChar(50)
+  emailAddress                String?        @db.VarChar(50)
+  salesThru                   String?        @db.VarChar(50)
+  industry                    String?        @db.VarChar(50)
+  vehicleBrand                Brand          @relation(fields: [vehicleBrandId], references: [id])
+  vehicleBrandId              String
+  product                     Product        @relation(fields: [productId], references: [id])
+  productId                   String
+  vehicleModelDetails         String?        @db.VarChar(255)
+  quantity                    String?        @db.VarChar(50)
+  color                       String?        @db.VarChar(50)
+  totalInvoiceValuePerVehicle String?        @db.VarChar(50)
+  typeOfBodyBuilding          String?        @db.VarChar(255)
+  bodyFabricatorName          String?        @db.VarChar(255)
+  registration                String?        @db.VarChar(50)
+  vatDeduction                Boolean        @default(false)
+  whtDeduction                Boolean        @default(false)
+  rebateAmount                String?        @db.VarChar(50)
+  refundToCustomer            String?        @db.VarChar(50)
+  servicePackageDetails       String?        @db.VarChar(255)
+  rebateReceiver              String?        @db.VarChar(50)
+  relationshipWithTransaction String?        @db.VarChar(50)
+  expectedDeliveryDate        String?        @db.VarChar(50)
+  deliveryLocation            String?        @db.VarChar(255)
+  deliveredBy                 String?        @db.VarChar(50)
+  paymentStatus               String?        @db.VarChar(50)
+  bankName                    String?        @db.VarChar(50)
+  bankAccountName             String?        @db.VarChar(50)
+  accountNumber               String?        @db.VarChar(50)
+  amountPaid                  String?        @db.VarChar(50)
+  dateOfPayment               DateTime?
+  lpoNumber                   String?        @db.VarChar(50)
+  paymentDueDate              DateTime?
+  otherPaymentDetails         String?        @db.VarChar(255)
+  invoiceNumber               String?        @db.VarChar(50)
+  invoiceDate                 DateTime?
+  deliveryNoteNumber          String?        @db.VarChar(50)
+  actualDeliveryDate          DateTime?
+  chasisNumber                String?        @db.VarChar(50)
+  delivery                    String         @default("pending")
+  payment                     String?
+  approved                    Boolean?       @default(false)
+  approvedByGM                Boolean?       @default(false)
+  approvedByProductHead       Boolean        @default(false)
+  additionalInformation       String?
+  extraData                   Json?
+  createdAt                   DateTime       @default(now())
+  updatedAt                   DateTime       @updatedAt
+}
+
+model MarkettingActivity {
+  id           String   @id @default(uuid())
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  employeeId   String
+  activityName String   @db.VarChar(50)
+  activityDate DateTime
+  participants String?  @db.VarChar(255)
+  location     String
+  objective    String
+  targetResult String
+  briefReport  String   @db.VarChar(1000)
+  pictures     String[]
+  costIncurred String   @db.VarChar(50)
+  pdfDetails   String?  @db.VarChar(255)
+  approved     Boolean? @default(false)
+  extraData    Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MonthlyTarget {
+  id            String   @id @default(uuid())
+  month         String   @db.VarChar(50)
+  monthlyTarget String
+  planForMonth  String?
+  extraData     Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Comment {
+  id          String   @id @default(uuid())
+  sender      Employee @relation("Sender", fields: [senderId], references: [id])
+  senderId    String
+  receiver    Employee @relation("Receiver", fields: [receiverId], references: [id])
+  receiverId  String
+  resourceId  String?
+  resourceUrl String?
+  message     String?
+  viewed      Boolean? @default(false)
+  extraData   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  receiver    Employee @relation("ReceivedNotification", fields: [receiverId], references: [id])
+  receiverId  String
+  resourceId  String?
+  resourceUrl String?
+  message     String?
+  viewed      Boolean? @default(false)
+  extraData   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
