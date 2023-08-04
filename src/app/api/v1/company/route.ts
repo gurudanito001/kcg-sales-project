@@ -17,7 +17,16 @@ export async function GET(request: Request) {
       cursor: {
         id: myCursor,
       }
-    })
+    }),
+    include: {
+      _count: {
+        select: {branches: true}
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+    
   })
   if(!data){
     return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -48,6 +57,6 @@ export async function POST(request: Request) {
      headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new NextResponse(error.message, { status: 500 });
+    return new NextResponse(JSON.stringify({message: error.message}), { status: 500 });
   }
 } 

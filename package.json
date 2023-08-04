@@ -9,18 +9,35 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.3",
     "@prisma/client": "^5.0.0",
+    "@reduxjs/toolkit": "^1.9.5",
+    "@tanstack/react-query": "^4.32.1",
+    "@types/axios": "^0.14.0",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/bootstrap": "^5.2.6",
+    "@types/jsonwebtoken": "^9.0.2",
     "@types/node": "20.4.5",
+    "@types/nodemailer": "^6.4.9",
     "@types/react": "18.2.17",
     "@types/react-dom": "18.2.7",
+    "axios": "^1.4.0",
+    "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.1",
     "eslint": "8.45.0",
     "eslint-config-next": "13.4.12",
+    "jsonwebtoken": "^9.0.1",
     "next": "13.4.12",
+    "nodemailer": "^6.9.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-redux": "^8.1.2",
     "typescript": "5.1.6"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^4.32.1",
     "prisma": "^5.0.0"
   }
 }

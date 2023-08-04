@@ -11,6 +11,9 @@ export async function GET(
     where: {
       id,
     },
+    include: {
+      branches: true
+    }
   });
 
   if (!data) {

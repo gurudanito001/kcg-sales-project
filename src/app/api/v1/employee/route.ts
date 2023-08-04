@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import sendEmail from "@/services/sendEmail";
 
 
 let routeName = "Employee"
@@ -37,6 +40,52 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+
+
+  try {
+    const data = await request.json();
+    // encrypt password
+    let encryptedPassword;
+    if(typeof data.password === "string") encryptedPassword = await bcrypt.hash(data.password, 10);
+    if(typeof encryptedPassword === "string") data.password = encryptedPassword;
+    
+    // create user in database
+    const user = await prisma.employee.create({
+      data,
+    }) ;
+    // create user token
+    const token = jwt.sign(
+      { user_id: user.id, email: user.email },
+      process.env.TOKEN_KEY as string,
+      {
+        expiresIn: "2h",
+      }
+    );
+    let payload = {...user, token}
+    //send email
+    /* await sendEmail({email: user.email, url}) */
+    // return new user
+    return new NextResponse(JSON.stringify({message: `Account Created Successfully`, data: payload}), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    }); 
+  } catch (error: any) {
+    // error response if user with email already exists
+    if (error.code === "P2002") {
+      return new NextResponse(JSON.stringify({message: `${routeName} with email already exists`}), {
+        status: 409,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+    return new NextResponse(JSON.stringify(error), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    }); 
+  }
+
+
+
+
   try {
     const json = await request.json();
     // validate data here

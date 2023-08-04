@@ -96,16 +96,16 @@ model Employee {
   id                    String                   @id @default(uuid())
   company               Company                  @relation(fields: [companyId], references: [id])
   companyId             String
-  staffCadre            String[]                 @default(["salesPerson"])
   branch                Branch                   @relation(fields: [branchId], references: [id])
   branchId              String
+  supervisor            Employee?                @relation("Supervisor", fields: [supervisorId], references: [id])
+  supervisorId          String?
+  staffCadre            String[]                 @default(["salesPerson"])
   firstName             String                   @db.VarChar(50)
   middleName            String?                  @db.VarChar(50)
   lastName              String                   @db.VarChar(50)
   email                 String                   @unique @db.VarChar(50)
   password              String                   @db.VarChar(255)
-  supervisor            Employee?                @relation("Supervisor", fields: [supervisorId], references: [id])
-  supervisorId          String
   subordinates          Employee[]               @relation("Supervisor")
   employmentDate        String?                  @db.VarChar(255)
   brandsAssigned        BrandEmployeesRelation[]
