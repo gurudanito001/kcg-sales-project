@@ -17,7 +17,14 @@ export async function GET(request: Request) {
       cursor: {
         id: myCursor,
       }
-    })
+    }),
+    include: {
+      company: {
+        select: {
+          name: true
+        }
+      }
+    }
   })
   if(!data){
     return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {

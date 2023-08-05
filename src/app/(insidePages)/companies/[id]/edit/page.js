@@ -1,12 +1,43 @@
 "use client"
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiPost } from "@/services/apiService";
+import { useState, useEffect } from "react"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
+import Skeleton from '@mui/material/Skeleton';
 
-const AddCompany = () =>{
+const EditCompany = () =>{
+  const params = useParams();
+  const {id} = params;
+  console.log(id);
   const dispatchMessage = useDispatchMessage();
+
+  const {data, isFetching} = useQuery({
+    queryKey: ["allCompanies", id],
+    queryFn: () => apiGet({ url: `/company/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: res.message})
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+  
+  useEffect(()=>{
+    if(data){
+      let {name, code, email, address} = data;
+      setFormData( prevState =>({
+        ...prevState,
+        name, code, email, address
+      }))
+    }
+  }, [data])
+
+
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -23,11 +54,11 @@ const AddCompany = () =>{
   }
   const queryClient = useQueryClient();
   const {isLoading, mutate} = useMutation({
-    mutationFn: ()=>apiPost({ url: "/company", data: formData})
+    mutationFn: ()=>apiPatch({ url: `/company/${id}`, data: formData})
     .then( res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
-      queryClient.invalidateQueries(["allCompanies"])
+      queryClient.invalidateQueries(["allCompanies", id])
     })
     .catch(error =>{
       console.log(error)
@@ -40,6 +71,9 @@ const AddCompany = () =>{
     //return console.log(formData)
     mutate()
   }
+
+  
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -52,7 +86,7 @@ const AddCompany = () =>{
           <div className="col-12 d-flex align-items-stretch">
             <div className="card w-100">
               <div className="card-body p-4" style={{maxWidth: "700px"}}>
-                <h5 className="card-title fw-semibold mb-4">Add Company</h5>
+                <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Company Details</h5>
                 <form>
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Company Name</label>
@@ -84,7 +118,7 @@ const AddCompany = () =>{
                     <input type="file" className="form-control" id="brands" value={formData.brands} onChange={handleChange("brands")} />
                   </div>
 
-                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
                 </form>
               </div>
             </div>
@@ -94,4 +128,4 @@ const AddCompany = () =>{
   )
 }
 
-export default AddCompany
+export default EditCompany

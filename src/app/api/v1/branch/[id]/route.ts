@@ -11,6 +11,13 @@ export async function GET(
     where: {
       id,
     },
+    include: {
+      company: {
+        select: {
+          name: true
+        }
+      }
+    }
   });
 
   if (!data) {

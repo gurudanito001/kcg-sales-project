@@ -15,15 +15,18 @@ const LoadingFallBack = () =>{
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-      </tr>
-      <tr sx={{ width: "100%" }}>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -35,15 +38,13 @@ const LoadingFallBack = () =>{
   );
 }
 
-const Companies = () =>{  
+const Branches = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
-
-
   const {data, isFetching} = useQuery({
-    queryKey: ["allCompanies" ],
-    queryFn:  ()=>apiGet({ url: "/company"})
+    queryKey: ["allBranches" ],
+    queryFn:  ()=>apiGet({ url: "/branch"})
     .then(res => {
       console.log(res)
       dispatchMessage({message: res.message})
@@ -55,15 +56,17 @@ const Companies = () =>{
     })
   })
 
-  const listCompanies = () =>{
+  const listBranches = () =>{
     return data.map( (item, index) => {
-      const {id, name, code, address, logo, email, _count} = item;
+      const {id, name, code, address, logo, email, company} = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/companies/${id}`)}>
+        <tr key={id} className="hover" onClick={()=>router.push(`/branches/${id}`)}>
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1">{name}</h6>
-            <span className="fw-normal">{_count.branches} Branch(es)</span>
+          </td>
+          <td className="border-bottom-0">
+            <h6 className="fw-semibold mb-1">{company.name}</h6>
           </td>
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{code}</p>
@@ -86,9 +89,9 @@ const Companies = () =>{
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
-        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href="/companies/add">Add</a>
+        <h4 className="m-0">Branch</h4>
+        <span className="breadcrumb-item ms-3"><a href="/branches"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <a className="btn btn-link text-primary ms-auto" href="/branches/add">Add</a>
       </header>
       
 
@@ -96,7 +99,7 @@ const Companies = () =>{
           <div className="col-12 d-flex align-items-stretch">
             <div className="card w-100">
               <div className="card-body p-4">
-                <h5 className="card-title fw-semibold mb-4 opacity-75">All Companies</h5>
+                <h5 className="card-title fw-semibold mb-4 opacity-75">All Branches</h5>
                 <div className="table-responsive">
                   <table className="table text-nowrap mb-0 align-middle">
                     <thead className="text-dark fs-4">
@@ -105,7 +108,10 @@ const Companies = () =>{
                           <h6 className="fw-semibold mb-0">#</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Name</h6>
+                          <h6 className="fw-semibold mb-0">Branch Name</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Company Name</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Code</h6>
@@ -119,7 +125,7 @@ const Companies = () =>{
                       </tr>
                     </thead>
                     <tbody>
-                        {data ? listCompanies() : <LoadingFallBack />}                 
+                        {data ? listBranches() : <LoadingFallBack />}                 
                     </tbody>
                   </table>
                 </div>
@@ -131,4 +137,4 @@ const Companies = () =>{
   )
 }
 
-export default Companies
+export default Branches
