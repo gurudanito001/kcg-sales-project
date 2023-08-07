@@ -5,13 +5,15 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
-import Skeleton from '@mui/material/Skeleton';
+import { useRouter } from "next/navigation";
+import Compress from "react-image-file-resizer";
 
 const EditCompany = () =>{
   const params = useParams();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter();
 
   const {data, isFetching} = useQuery({
     queryKey: ["allCompanies", id],
@@ -29,10 +31,10 @@ const EditCompany = () =>{
   
   useEffect(()=>{
     if(data){
-      let {name, code, email, address} = data;
+      let {name, code, email, address, logo, brands} = data;
       setFormData( prevState =>({
         ...prevState,
-        name, code, email, address
+        name, code, email, address, logo, brands
       }))
     }
   }, [data])
@@ -43,8 +45,104 @@ const EditCompany = () =>{
     code: "",
     email: "",
     address: "",
-    logo: "logourl"
+    logo: "",
+    brands: []
   })
+
+  const brandsQuery = useQuery({
+    queryKey: ["allBrands" ],
+    queryFn:  ()=> apiGet({ url: "/brand"})
+    .then(res => {
+      console.log(res)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+    })
+  })
+
+  const handleCheck = (brand) =>(event) =>{
+    if(event.target.checked){
+      let brandData;
+      brandsQuery.data.forEach( item =>{
+        if(item.name === brand){
+          brandData = item.name;
+        }
+      })
+      let state = formData;
+      state.brands.push(brandData);
+      setFormData(prevState =>({
+        ...prevState,
+        ...state
+      }))
+    }else{
+      let state = formData;
+      state.brands = state.brands.filter( function(item){ return item !== brand })
+      setFormData(prevState =>({
+        ...prevState,
+        ...state
+      }))
+    }
+  }
+
+  const isChecked = (prop) =>{
+    let checked = false;
+    formData.brands.forEach( item =>{
+      if(item === prop){
+        checked = true
+      }
+    })
+    return checked;
+  }
+
+  const listBrands = () =>{
+    return brandsQuery.data.map(brand =>
+      <div className="form-check ms-3" key={brand.id}>
+        <input className="form-check-input" type="checkbox" checked={isChecked(brand.name)} onChange={handleCheck(brand.name)} value={brand.name} id={brand.id} />
+        <label className="form-check-label fw-bold" htmlFor={brand.id}>
+          {brand.name}
+        </label>
+      </div>
+    )
+  }
+
+
+  const [ selectedFile, setSelectedFile] = useState("");
+  const [ imageUrl, setImageUrl] = useState("");
+  const [ base64Image, setBase64Image ] = useState("");
+
+  useEffect(()=>{
+    if(base64Image){
+      setFormData( prevState => ({
+        ...prevState,
+        logo: base64Image
+      }))
+    }
+  }, [base64Image])
+
+  
+
+  const uploadImage = (event) => {
+    const file = event.target.files[0];
+    if(file){
+      Compress.imageFileResizer(
+        file, // the file from input
+        120, // width
+        120, // height
+        "PNG", // compress format WEBP, JPEG, PNG
+        80, // quality
+        0, // rotation
+        (uri) => {
+          setBase64Image(uri)
+        },
+        "base64" // blob or base64 default base64
+      );
+      setSelectedFile(file);
+      setImageUrl(URL.createObjectURL(file));
+    }
+  }
+
 
   const handleChange = (prop) => (event) => {
     setFormData(prevState => ({
@@ -52,6 +150,7 @@ const EditCompany = () =>{
       [prop]: event.target.value
     }))
   }
+
   const queryClient = useQueryClient();
   const {isLoading, mutate} = useMutation({
     mutationFn: ()=>apiPatch({ url: `/company/${id}`, data: formData})
@@ -109,16 +208,27 @@ const EditCompany = () =>{
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="logo" className="form-label">Logo</label>
-                    <input type="file" className="form-control"  id="logo"  /* onChange={handleChange("logo")} */ />
+                    <label htmlFor="companyLogo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
+                    <input className="form-control" id="companyLogo" accept="image/*" type="file" onChange={uploadImage} />
+                    {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
+                    {(imageUrl || formData.logo) &&
+                      <div>
+                        <h6 className='small fw-bold mt-3'>Logo Preview</h6>
+                        <img src={imageUrl || formData.logo} alt="Logo Preview" className='border rounded' width="100px" />
+                      </div>}
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="brands" className="form-label">Brands</label>
-                    <input type="file" className="form-control" id="brands" value={formData.brands} onChange={handleChange("brands")} />
+                    <label htmlFor="brands" className="form-label">Brands (<span className='fst-italic text-warning'>required</span>)</label>
+                    {!brandsQuery.isLoading && !brandsQuery.isError &&
+                      <div className='d-flex'> {listBrands()} </div>}
+                      {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
                   </div>
 
-                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                  <div className="mt-5">
+                    <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                    <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/companies">Cancel</a>
+                  </div>
                 </form>
               </div>
             </div>

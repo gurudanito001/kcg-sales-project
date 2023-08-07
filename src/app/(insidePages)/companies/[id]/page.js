@@ -63,6 +63,18 @@ const CompanyDetails = () => {
     })
   }) 
 
+  const listCompanyBrands = () =>{
+    let brands = ""
+    data.brands.forEach( brand => {
+      if(brands === ""){
+        brands += `${brand}`
+      }else{
+        brands += ` | ${brand}`
+      }
+    })
+    return brands;
+  }
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -80,11 +92,15 @@ const CompanyDetails = () => {
 
               {data ?
                 <>
+                  <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
+                    <h6 className="m-0 me-3">Company Logo</h6>
+                    <img src={data.logo} height={40} alt="Company Logo" />
+                  </div>
                   <DataListItem title="Company Name" value={data.name} />
                   <DataListItem title="Company Code" value={data.code} />
-                  <DataListItem title="Company Logo" value={data.logo} />
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
+                  <DataListItem title="Brands" value={listCompanyBrands(data.brands)} />
                 </> :
                 <LoadingFallBack />
 

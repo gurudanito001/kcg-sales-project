@@ -5,6 +5,7 @@ import { apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
+import clipLongText from "@/services/clipLongText";
 
 const LoadingFallBack = () =>{
   return (
@@ -77,7 +78,7 @@ const Branches = () =>{
             </div>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0">{address}</p>
+            <p className="small mb-0">{clipLongText(address)}</p>
           </td>
         </tr>
     )

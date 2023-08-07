@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { uploadImage } from "@/services/imageService";
 
 
 let routeName = "Company"
@@ -47,8 +48,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    let result;
     const json = await request.json();
     // validate data here
+    if(json.logo.startsWith("data:image")){
+      console.log(json.logo)
+      result = await uploadImage({ data: json.logo });
+      console.log(result)
+      json.logo = result.secure_url
+    }
+    
     const data = await prisma.company.create({
       data: json,
     });

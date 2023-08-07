@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { uploadImage } from "@/services/imageService";
 
 let modelName = "Brand"
 export async function GET(
@@ -30,8 +31,16 @@ export async function PATCH(
   request: Request,
   { params }: { params: { id: string }}
 ) {
+  let result;
   const id = params.id;
   let json = await request.json();
+
+  if(json.logo.startsWith("data:image")){
+    console.log(json.logo)
+    result = await uploadImage({ data: json.logo });
+    console.log(result)
+    json.logo = result.secure_url
+  }
 
   const updatedData = await prisma.brand.update({
     where: { id },

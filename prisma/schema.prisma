@@ -14,7 +14,7 @@ model Company {
   logo      String?    @db.VarChar(255)
   email     String     @unique @db.VarChar(50)
   address   String?    @db.VarChar(255)
-  brands    Brand[]
+  brands    String[]
   extraData Json?
   branches  Branch[]
   employees Employee[]
@@ -42,8 +42,6 @@ model Branch {
 
 model Brand {
   id                  String                   @id @default(uuid())
-  company             Company                  @relation(fields: [companyId], references: [id])
-  companyId           String
   name                String                   @unique @db.VarChar(50)
   code                String?                  @unique @db.VarChar(50)
   description         String?                  @db.VarChar(255)

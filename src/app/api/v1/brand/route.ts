@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { uploadImage } from "@/services/imageService";
 
 
 let routeName = "Brand"
@@ -17,7 +18,12 @@ export async function GET(request: Request) {
       cursor: {
         id: myCursor,
       }
-    })
+    }),
+    include: {
+      _count: {
+        select: {products: true}
+      }
+    },
   })
   if(!data){
     return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -38,8 +44,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    let result;
     const json = await request.json();
     // validate data here
+    if(json.logo.startsWith("data:image")){
+      console.log(json.logo)
+      result = await uploadImage({ data: json.logo });
+      console.log(result)
+      json.logo = result.secure_url
+    }
+
     const data = await prisma.brand.create({
       data: json,
     });
@@ -48,6 +62,6 @@ export async function POST(request: Request) {
      headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new NextResponse(error.message, { status: 500 });
+    return new NextResponse(JSON.stringify({message: error.message }), { status: 500 });
   }
 } 
