@@ -37,7 +37,7 @@ const AsideContent = () => {
         <SidebarListItem route="/products" title="Products" active={pathname.includes("/products")} iconClass="fa-solid fa-car-rear" />
         <SidebarListItem route="/employees" title="Employees" active={pathname.includes("/employees")} iconClass="fa-solid fa-user" />
         <SidebarListItem route="/customers" title="Customers" active={pathname.includes("/customers")} iconClass="fa-solid fa-city" />
-        <SidebarListItem route="/visits" title="Customer Visits" active={pathname.includes("/visits")} iconClass="fa-solid fa-calendar-days" />
+        <SidebarListItem route="/visits" title="Visit Reports" active={pathname.includes("/visits")} iconClass="fa-solid fa-calendar-days" />
         <SidebarListItem route="/pfiRequestForms" title="Pfi Request Form" active={pathname.includes("/pfiRequestForms")} iconClass="fa-solid fa-file-lines" />
         <SidebarListItem route="/invoiceRequestForms" title="Invoice Request Form" active={pathname.includes("/invoiceRequestForms")} iconClass="fa-solid fa-receipt" />
         <SidebarListItem route="/marketingActivities" title="Marketing Activities" active={pathname.includes("/marketingActivities")} iconClass="fa-solid fa-rocket" />

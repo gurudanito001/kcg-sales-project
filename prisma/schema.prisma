@@ -66,7 +66,6 @@ model Product {
   brochures           String[]
   images              String[]              @db.VarChar(255)
   price               PriceMaster?
-  productVisitReports ProductVisitReports[]
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   vatInclusive        Boolean?              @default(false)
@@ -162,12 +161,10 @@ model ContactPerson {
   employeeId          String
   customer            Customer             @relation(fields: [customerId], references: [id])
   customerId          String
-  firstName           String               @db.VarChar(50)
-  lastName            String?              @db.VarChar(50)
-  email               String?              @db.VarChar(50)
+  name                String               @db.VarChar(50)
   designation         String?              @db.VarChar(50)
-  department          String?              @db.VarChar(50)
   phoneNumber         String               @db.VarChar(50)
+  email               String?              @db.VarChar(50)
   visitReports        VisitReport[]
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
@@ -186,27 +183,19 @@ model VisitReport {
   contactPersonId     String
   callType            String                @db.VarChar(50)
   status              String                @db.VarChar(50)
-  productVisitReports ProductVisitReports[]
+  productsDiscussed   String[]
   quantity            String?               @db.VarChar(50)
   durationOfMeeting   String                @db.VarChar(50)
   meetingOutcome      String?               @db.VarChar(255)
-  visitDate           DateTime?
-  nextVisitDate       DateTime?
+  visitDate           String?
+  followUpVisits      Json[]
   pfiRequest          Boolean?              @default(false)
   extraData           Json?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 }
 
-model ProductVisitReports {
-  id            String      @id @default(uuid())
-  product       Product     @relation(fields: [productId], references: [id])
-  productId     String
-  visitReport   VisitReport @relation(fields: [visitReportId], references: [id])
-  visitReportId String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-}
+
 
 model PfiRequestForm {
   id                          String              @id @default(uuid())

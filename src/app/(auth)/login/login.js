@@ -26,7 +26,7 @@ const LoginTemplate = ({handleChange, handleSubmit, formData, isLoading}) =>{
                     <div className="form-check">
                       <input className="form-check-input primary" type="checkbox" value="" id="flexCheckChecked" />
                       <label className="form-check-label text-dark" htmlFor="flexCheckChecked">
-                        Remeber this Device
+                        Remeber Me
                       </label>
                     </div>
                     <a className="text-primary fw-bold" href="./index.html">Forgot Password ?</a>

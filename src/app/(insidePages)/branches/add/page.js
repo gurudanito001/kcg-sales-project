@@ -15,7 +15,7 @@ const AddBranch = () =>{
     state: "",
     lga: "",
     email: "",
-    isHeadOffice: "",
+    isHeadOffice: false,
     phoneNumber: "",
     address: "",
   })
@@ -85,7 +85,7 @@ const AddBranch = () =>{
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    //return console.log(formData)
+    // return console.log(formData)
     mutate()
   }
   return (

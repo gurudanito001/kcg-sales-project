@@ -49,7 +49,10 @@ export async function POST(
       }); 
     }
     
-  } catch (error) {
-    return new NextResponse(JSON.stringify(error), { status: 500 });
+  } catch (error:any) {
+    return new NextResponse(JSON.stringify({message: error.message}), { 
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

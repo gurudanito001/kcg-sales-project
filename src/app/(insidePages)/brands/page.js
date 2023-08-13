@@ -16,15 +16,18 @@ const LoadingFallBack = () =>{
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-      </tr>
-      <tr sx={{ width: "100%" }}>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -73,6 +76,9 @@ const Brands = () =>{
           <td className="border-bottom-0">
             <p className="small mb-0">{clipLongText(description)}</p>
           </td>
+          <td className="border-bottom-0">
+            <a className="btn btn-link text-primary ms-auto" href={`/brands/${id}/edit`}>Edit</a>
+          </td>
         </tr>
     )
     })
@@ -108,6 +114,9 @@ const Brands = () =>{
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Description</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Actions</h6>
                         </th>
                       </tr>
                     </thead>

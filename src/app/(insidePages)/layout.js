@@ -1,13 +1,54 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
-import { ReactNode, FC } from "react";
+import { ReactNode, useEffect } from "react";
 import AsideContent from "./asideContent";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { clearUserData, setUserData } from "@/store/slices/userDataSlice";
+import { useRouter } from "next/navigation";
+import { apiPost } from "@/services/apiService";
 
-type LayoutProps = {
-  children: ReactNode
-}
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children }) => {
+  const {userData} = useSelector((state) => state.userData);
+  const dispatch = useDispatch();
+  const router = useRouter();
+
+  useEffect(()=>{
+    let token = localStorage.getItem("token")
+    if(!token){
+      router.push("/login")
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  })
+
+  useEffect(() => {
+    if (!userData.token) {
+      let localStorageToken = localStorage.getItem("token");
+        refreshUserData(localStorageToken)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData])
+
+  const refreshUserData = (token) => {
+    apiPost({ url: `/auth/refreshUserData/${token}` })
+      .then(res => {
+        console.log(res.data)
+        localStorage.setItem("token", res.data.token);
+        dispatch(setUserData(res.data));
+      })
+      .catch(error => {
+        console.log(error)
+        logout()
+      })
+  }
+
+  const logout = () =>{
+    dispatch(clearUserData());
+    localStorage.removeItem("token");
+  }
+
+
   return (
     <div className="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
       data-sidebar-position="fixed" data-header-position="fixed">
@@ -59,7 +100,7 @@ const Layout = ({ children }: LayoutProps) => {
                         <i className="ti ti-list-check fs-6"></i>
                         <p className="mb-0 fs-3">My Task</p>
                       </a>
-                      <a href="./authentication-login.html" className="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                      <a onClick={logout} className="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                     </div>
                   </div>
                 </li>

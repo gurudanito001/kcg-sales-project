@@ -4,36 +4,42 @@ import { NextResponse } from "next/server";
 
 let routeName = "Notification"
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || "1");
-  const take = parseInt(searchParams.get('take') || "10");
-  //const offers = await prisma.offer.findMany()
-
-  let myCursor = "";
-  const data = await prisma.notification.findMany({
-    take: take,
-    skip: (page - 1) * take,
-    ...(myCursor !== "" && {
-      cursor: {
-        id: myCursor,
-      }
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || "1");
+    const take = parseInt(searchParams.get('take') || "10");
+    //const offers = await prisma.offer.findMany()
+  
+    let myCursor = "";
+    const data = await prisma.notification.findMany({
+      take: take,
+      skip: (page - 1) * take,
+      ...(myCursor !== "" && {
+        cursor: {
+          id: myCursor,
+        }
+      })
     })
-  })
-  if(!data){
-    return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
+    if(!data){
+      return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+    const totalCount = await prisma.notification.count()
+    const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
+    myCursor = lastItemInData?.id // Example: 29
+  
+    return new NextResponse(JSON.stringify({page, take, totalCount, message: `${routeName} list fetched successfully`, data }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }); 
+  } catch (error: any) {
+    return new NextResponse(JSON.stringify({ message: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    }); 
   }
-  const totalCount = await prisma.notification.count()
-  const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
-  myCursor = lastItemInData?.id // Example: 29
-
-  return new NextResponse(JSON.stringify({page, take, totalCount, message: `${routeName} list fetched successfully`, data }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  }); 
-    
 }
 
 export async function POST(request: Request) {
@@ -48,6 +54,9 @@ export async function POST(request: Request) {
      headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new NextResponse(error.message, { status: 500 });
+    return new NextResponse(JSON.stringify({ message: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    }); 
   }
 } 

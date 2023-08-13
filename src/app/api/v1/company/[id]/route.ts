@@ -7,27 +7,35 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
-  const data = await prisma.company.findUnique({
-    where: {
-      id,
-    },
-    include: {
-      branches: true
-    }
-  });
+  try {
+    const id = params.id;
+    const data = await prisma.company.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        branches: true
+      }
+    });
 
-  if (!data) {
-    return new NextResponse(JSON.stringify({ message: `${modelName} with ID Not Found!` }), {
-      status: 404,
+    if (!data) {
+      return new NextResponse(JSON.stringify({ message: `${modelName} with ID Not Found!` }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new NextResponse(JSON.stringify({ message: `${modelName} fetched successfully`, data }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error: any) {
+    return new NextResponse(JSON.stringify({ message: error.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
-
-  return new NextResponse(JSON.stringify({ message: `${modelName} fetched successfully`, data }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  
 }
 
 export async function PATCH(
@@ -39,7 +47,7 @@ export async function PATCH(
     let json = await request.json();
     let result;
 
-    if (json.logo.startsWith("data:image")) {
+    if (json?.logo?.startsWith("data:image")) {
       console.log(json.logo)
       result = await uploadImage({ data: json.logo });
       console.log(result)
@@ -56,7 +64,10 @@ export async function PATCH(
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: any) {
-    return new NextResponse(JSON.stringify({ message: error.message }), { status: 500 });
+    return new NextResponse(JSON.stringify({ message: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
 }
@@ -65,13 +76,20 @@ export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  const id = params.id;
-  await prisma.company.delete({
-    where: { id },
-  });
-  return new NextResponse(JSON.stringify({ message: `${modelName} deleted with Id: ${id}` }), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+  try {
+    const id = params.id;
+    await prisma.company.delete({
+      where: { id },
+    });
+    return new NextResponse(JSON.stringify({ message: `${modelName} deleted with Id: ${id}` }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error: any) {
+    return new NextResponse(JSON.stringify({ message: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
