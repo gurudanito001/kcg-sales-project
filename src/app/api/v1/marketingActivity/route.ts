@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { uploadImage } from "@/services/imageService";
 
 
 let routeName = "Marketing Activity"
@@ -18,7 +19,10 @@ export async function GET(request: Request) {
         cursor: {
           id: myCursor,
         }
-      })
+      }),
+      include: {
+        employee: true
+      }
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -48,6 +52,15 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     // validate data here
+    if(json.images.length > 0){
+      let imagesUrls = await Promise.all(
+        json.images.map(async (base64Img: any) => {
+          let image = await uploadImage({data: base64Img.uri});
+          return image.secure_url;
+        })
+      )
+      json.images = imagesUrls;
+    }
     const data = await prisma.markettingActivity.create({
       data: json,
     });

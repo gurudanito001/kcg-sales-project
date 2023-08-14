@@ -14,13 +14,13 @@ const Layout = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  useEffect(()=>{
+  /* useEffect(()=>{
     let token = localStorage.getItem("token")
     if(!token){
       router.push("/login")
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  })
+  }) */
 
   useEffect(() => {
     if (!userData.token) {

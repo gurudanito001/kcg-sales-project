@@ -73,7 +73,7 @@ const AddProduct = () =>{
         },
         "base64" // blob or base64 default base64
       );
-      //setSelectedFile(file);
+      setSelectedFile(file);
       let urls = imageUrls;
       urls.push({id, url: URL.createObjectURL(file)})
       setImageUrls(urls);

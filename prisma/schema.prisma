@@ -285,14 +285,14 @@ model InvoiceRequestForm {
   bankAccountName             String?        @db.VarChar(50)
   accountNumber               String?        @db.VarChar(50)
   amountPaid                  String?        @db.VarChar(50)
-  dateOfPayment               DateTime?
+  dateOfPayment               String?
   lpoNumber                   String?        @db.VarChar(50)
-  paymentDueDate              DateTime?
+  paymentDueDate              String?
   otherPaymentDetails         String?        @db.VarChar(255)
   invoiceNumber               String?        @db.VarChar(50)
-  invoiceDate                 DateTime?
+  invoiceDate                 String?
   deliveryNoteNumber          String?        @db.VarChar(50)
-  actualDeliveryDate          DateTime?
+  actualDeliveryDate          String?
   chasisNumber                String?        @db.VarChar(50)
   delivery                    String         @default("pending")
   payment                     String?
@@ -310,13 +310,13 @@ model MarkettingActivity {
   employee     Employee @relation(fields: [employeeId], references: [id])
   employeeId   String
   activityName String   @db.VarChar(50)
-  activityDate DateTime
+  activityDate String
   participants String?  @db.VarChar(255)
   location     String
   objective    String
   targetResult String
   briefReport  String   @db.VarChar(1000)
-  pictures     String[]
+  images       String[]
   costIncurred String   @db.VarChar(50)
   pdfDetails   String?  @db.VarChar(255)
   approved     Boolean? @default(false)
@@ -328,8 +328,7 @@ model MarkettingActivity {
 model MonthlyTarget {
   id            String   @id @default(uuid())
   month         String   @db.VarChar(50)
-  monthlyTarget String
-  planForMonth  String?
+  target        String
   extraData     Json?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
