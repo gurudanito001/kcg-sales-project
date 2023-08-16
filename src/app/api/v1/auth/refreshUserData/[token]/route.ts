@@ -15,6 +15,7 @@ export async function POST(
     const token = params.token;
     if(process.env.TOKEN_KEY){
       let {user_id, email} = await jwt.verify(token, process.env.TOKEN_KEY) as TokenData;
+      
       const user: any = await prisma.employee.findUnique({
         where: {
           id: user_id,

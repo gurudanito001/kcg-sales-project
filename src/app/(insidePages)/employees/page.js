@@ -74,7 +74,7 @@ const Employees = () =>{
             <span className="fw-normal">{branch.name} </span>
           </td>
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal">{staffCadre[1] || staffCadre[0]}</p>
+            <p className="mb-0 fw-normal">{staffCadre[0]}</p>
           </td>
           <td className="border-bottom-0">
             <div className="d-flex align-items-center gap-2">

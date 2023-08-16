@@ -85,7 +85,7 @@ const EmployeeDetails = () => {
                   <DataListItem title="Company" value={data.company.name} />
                   <DataListItem title="Branch" value={data.branch.name} />
                   <DataListItem title="Supervisor" value={data.supervisor ? `${data?.supervisor?.firstName} ${data?.supervisor?.lastName}` : "---"} />
-                  <DataListItem title="Staff Cadre" value={data.staffCadre} />
+                  <DataListItem title="Staff Cadre" value={data.staffCadre[0]} />
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Employment Date" value={ new Date(data.employmentDate).toDateString()} />
                 </> :

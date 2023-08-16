@@ -104,7 +104,7 @@ const Products = () =>{
             </div>
           </td>
           <td className="border-bottom-0 py-2">
-            <p className="small mb-0 d-flex flex-wrap">{formatAsCurrency(deriveProductStatus(price).price)}</p>
+            <p className="small mb-0 d-flex flex-wrap">{price ? formatAsCurrency(deriveProductStatus(price).price) : ""}</p>
           </td>
           <td className="border-bottom-0 py-2">
             <a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>
