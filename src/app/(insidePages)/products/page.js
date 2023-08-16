@@ -6,6 +6,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const LoadingFallBack = () =>{
   return (
@@ -63,6 +64,25 @@ const Products = () =>{
     })
   })
 
+  const deriveProductStatus = (priceData)=>{
+    let {unitPrice, promoPrice, validTill, anyPromo} = priceData
+    let validTillString = new Date(validTill).getTime();
+    let currentDateString = new Date().getTime();
+    let result = {};
+    if(!anyPromo){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString >= validTillString){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString < validTillString){
+      result.price = promoPrice
+      result.promoActive = true;
+    }
+
+    return result
+  }
+
   const listProducts = () =>{
     return data.map( (item, index) => {
       const {id,images, name, code, brand, price} = item;
@@ -84,7 +104,7 @@ const Products = () =>{
             </div>
           </td>
           <td className="border-bottom-0 py-2">
-            <p className="small mb-0 d-flex flex-wrap">{price}</p>
+            <p className="small mb-0 d-flex flex-wrap">{formatAsCurrency(deriveProductStatus(price).price)}</p>
           </td>
           <td className="border-bottom-0 py-2">
             <a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>

@@ -8,16 +8,21 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 
-const EditCompany = () =>{
+const EditMonthlyTarget = () =>{
   const params = useParams();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
+  const [formData, setFormData] = useState({
+    month: "",
+    target: "",
+  })
+
   const {data, isFetching} = useQuery({
-    queryKey: ["allCompanies", id],
-    queryFn: () => apiGet({ url: `/company/${id}`})
+    queryKey: ["allMonthlyTargets", id],
+    queryFn: () => apiGet({ url: `/monthlyTarget/${id}`})
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
@@ -28,121 +33,17 @@ const EditCompany = () =>{
       dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
-  
+
   useEffect(()=>{
     if(data){
-      let {name, code, email, address, logo, brands} = data;
+      const {month, target} = data
       setFormData( prevState =>({
         ...prevState,
-        name, code, email, address, logo, brands
+        month, target
       }))
     }
   }, [data])
-
-
-  const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    email: "",
-    address: "",
-    logo: "",
-    brands: []
-  })
-
-  const brandsQuery = useQuery({
-    queryKey: ["allBrands" ],
-    queryFn:  ()=> apiGet({ url: "/brand"})
-    .then(res => {
-      console.log(res)
-      return res.data
-    })
-    .catch(error =>{
-      console.log(error)
-      dispatchMessage({severity: "error", message: error.message})
-    })
-  })
-
-  const handleCheck = (brand) =>(event) =>{
-    if(event.target.checked){
-      let brandData;
-      brandsQuery.data.forEach( item =>{
-        if(item.name === brand){
-          brandData = item.name;
-        }
-      })
-      let state = formData;
-      state.brands.push(brandData);
-      setFormData(prevState =>({
-        ...prevState,
-        ...state
-      }))
-    }else{
-      let state = formData;
-      state.brands = state.brands.filter( function(item){ return item !== brand })
-      setFormData(prevState =>({
-        ...prevState,
-        ...state
-      }))
-    }
-  }
-
-  const isChecked = (prop) =>{
-    let checked = false;
-    formData.brands.forEach( item =>{
-      if(item === prop){
-        checked = true
-      }
-    })
-    return checked;
-  }
-
-  const listBrands = () =>{
-    return brandsQuery.data.map(brand =>
-      <div className="form-check ms-3" key={brand.id}>
-        <input className="form-check-input" type="checkbox" checked={isChecked(brand.name)} onChange={handleCheck(brand.name)} value={brand.name} id={brand.id} />
-        <label className="form-check-label fw-bold" htmlFor={brand.id}>
-          {brand.name}
-        </label>
-      </div>
-    )
-  }
-
-
-  const [ selectedFile, setSelectedFile] = useState("");
-  const [ imageUrl, setImageUrl] = useState("");
-  const [ base64Image, setBase64Image ] = useState("");
-
-  useEffect(()=>{
-    if(base64Image){
-      setFormData( prevState => ({
-        ...prevState,
-        logo: base64Image
-      }))
-    }
-  }, [base64Image])
-
   
-
-  const uploadImage = (event) => {
-    const file = event.target.files[0];
-    if(file){
-      Compress.imageFileResizer(
-        file, // the file from input
-        120, // width
-        120, // height
-        "PNG", // compress format WEBP, JPEG, PNG
-        80, // quality
-        0, // rotation
-        (uri) => {
-          setBase64Image(uri)
-        },
-        "base64" // blob or base64 default base64
-      );
-      setSelectedFile(file);
-      setImageUrl(URL.createObjectURL(file));
-    }
-  }
-
 
   const handleChange = (prop) => (event) => {
     setFormData(prevState => ({
@@ -153,11 +54,11 @@ const EditCompany = () =>{
 
   const queryClient = useQueryClient();
   const {isLoading, mutate} = useMutation({
-    mutationFn: ()=>apiPatch({ url: `/company/${id}`, data: formData})
+    mutationFn: ()=>apiPatch({ url: `/monthlyTarget/${id}`, data: formData})
     .then( res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
-      queryClient.invalidateQueries(["allCompanies", id])
+      queryClient.invalidateQueries(["allMonthlyTargets", id])
     })
     .catch(error =>{
       console.log(error)
@@ -171,12 +72,10 @@ const EditCompany = () =>{
     mutate()
   }
 
-  
-
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
+        <h4 className="m-0">Monthly Target</h4>
         <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
       </header>
       
@@ -185,46 +84,17 @@ const EditCompany = () =>{
           <div className="col-12 d-flex align-items-stretch">
             <div className="card w-100">
               <div className="card-body p-4" style={{maxWidth: "700px"}}>
-                <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Company Details</h5>
+                <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Monthly Target Details</h5>
                 <form>
                   <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Company Name</label>
-                    <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange("name")}/>
+                    <label htmlFor="month" className="form-label">Month</label>
+                    <input type="month" className="form-control" id="month" value={formData.month} onChange={handleChange("month")} />
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="code" className="form-label">Company Code</label>
-                    <input type="text" className="form-control" id="code" value={formData.code} onChange={handleChange("code")}  />
+                    <label htmlFor="target" className="form-label">Monthly Target</label>
+                    <input type="text" className="form-control" id="target" value={formData.target} onChange={handleChange("target")} />
                   </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" className="form-control"  id="email" value={formData.email} onChange={handleChange("email")}  />
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="address" className="form-label">Address</label>
-                    <textarea className="form-control" id="address" rows={4} value={formData.address} onChange={handleChange("address")}></textarea>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="companyLogo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
-                    <input className="form-control" id="companyLogo" accept="image/*" type="file" onChange={uploadImage} />
-                    {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
-                    {(imageUrl || formData.logo) &&
-                      <div>
-                        <h6 className='small fw-bold mt-3'>Logo Preview</h6>
-                        <img src={imageUrl || formData.logo} alt="Logo Preview" className='border rounded' width="100px" />
-                      </div>}
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="brands" className="form-label">Brands (<span className='fst-italic text-warning'>required</span>)</label>
-                    {!brandsQuery.isLoading && !brandsQuery.isError &&
-                      <div className='d-flex'> {listBrands()} </div>}
-                      {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
-                  </div>
-
                   <div className="mt-5">
                     <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
                     <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/companies">Cancel</a>
@@ -238,4 +108,4 @@ const EditCompany = () =>{
   )
 }
 
-export default EditCompany
+export default EditMonthlyTarget

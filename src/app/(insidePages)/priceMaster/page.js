@@ -6,6 +6,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const LoadingFallBack = () =>{
   return (
@@ -43,15 +44,15 @@ const LoadingFallBack = () =>{
 }
 
 
-const PfiRequests = () =>{  
+const PriceMaster = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
 
 
   const {data, isFetching} = useQuery({
-    queryKey: ["allPfiRequests" ],
-    queryFn:  ()=>apiGet({ url: "/pfiRequestForm"})
+    queryKey: ["allProductPrices" ],
+    queryFn:  ()=>apiGet({ url: "/priceMaster"})
     .then(res => {
       console.log(res)
       dispatchMessage({message: res.message})
@@ -63,32 +64,51 @@ const PfiRequests = () =>{
     })
   })
 
-  const listPfiRequests = () =>{
+  const deriveProductStatus = (unitPrice, promoPrice, validTill, anyPromo)=>{
+    let validTillString = new Date(validTill).getTime();
+    let currentDateString = new Date().getTime();
+    let result = {};
+    if(!anyPromo){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString >= validTillString){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString < validTillString){
+      result.price = promoPrice
+      result.promoActive = true;
+    }
+
+    return result
+  }
+
+  const listProductPrices = () =>{
     return data.map( (item, index) => {
-      const {id, name, code, address, logo, email, _count} = item;
+      const {id, product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill} = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/pfiRequests/${id}`)}>
+        <tr key={id} className="hover" onClick={()=>router.push(`/priceMaster/${id}`)}>
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
-            <img src={logo} height={40} alt="Company Logo" />
+            <h6 className="fw-semibold mb-1">{product.name}</h6>
+            <p className="mb-0 fw-normal">{brand.name}</p>
           </td>
           <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{name}</h6>
-            <span className="fw-normal">{_count.branches} Branch(es)</span>
+            <h6 className="fw-semibold m-0">{formatAsCurrency(deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).price)}</h6>
           </td>
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal">{code}</p>
+            <h6 className="fw-semibold mb-1">{deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive ? "Yes" : "No"}</h6>
           </td>
           <td className="border-bottom-0">
-            <div className="d-flex align-items-center gap-2">
-              <p className="fw-semibold m-0">{email}</p>
-            </div>
+            <p className="small mb-0">{validFrom ? new Date(validFrom).toDateString() : "---"}</p>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0 d-flex flex-wrap" style={{maxWidth: "200px"}}>{clipLongText(address)}</p>
+            <p className="small mb-0">{validTill ? new Date(validTill).toDateString() : "---"}</p>
           </td>
           <td className="border-bottom-0">
-            <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>
+            <p className="fw-semibold mb-1" >{promoText ? clipLongText(promoText) : "---"}</p>
+          </td>
+          <td className="border-bottom-0">
+            <a className="btn btn-link text-primary ms-auto" href={`/priceMaster/${id}/edit`}>Edit</a>
           </td>
         </tr>
     )
@@ -98,16 +118,16 @@ const PfiRequests = () =>{
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Pfi Request</h4>
-        <span className="breadcrumb-item ms-3"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href="/pfiRequests/add">Add</a>
+        <h4 className="m-0">Price Master</h4>
+        <span className="breadcrumb-item ms-3"><a href="/priceMaster"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <a className="btn btn-link text-primary ms-auto" href="/priceMaster/add">Add</a>
       </header>
 
       <div className="row">
           <div className="col-12 d-flex align-items-stretch">
             <div className="card w-100">
               <div className="card-body p-4">
-                <h5 className="card-title fw-semibold mb-4 opacity-75">All Pfi Requests</h5>
+                <h5 className="card-title fw-semibold mb-4 opacity-75">All Product Prices</h5>
                 <div className="table-responsive">
                   <table className="table text-nowrap mb-0 align-middle">
                     <thead className="text-dark fs-4">
@@ -116,19 +136,22 @@ const PfiRequests = () =>{
                           <h6 className="fw-semibold mb-0">#</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Logo</h6>
+                          <h6 className="fw-semibold mb-0">Product</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Name</h6>
+                          <h6 className="fw-semibold mb-0">Unit Price</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Code</h6>
+                          <h6 className="fw-semibold mb-0">Any Promo?</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Email</h6>
+                          <h6 className="fw-semibold mb-0">Valid From</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Address</h6>
+                          <h6 className="fw-semibold mb-0">Valid Till</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Promo Text</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
@@ -136,7 +159,7 @@ const PfiRequests = () =>{
                       </tr>
                     </thead>
                     <tbody>
-                        {data ? listPfiRequests() : <LoadingFallBack />}                 
+                        {data ? listProductPrices() : <LoadingFallBack />}                 
                     </tbody>
                   </table>
                 </div>
@@ -148,4 +171,4 @@ const PfiRequests = () =>{
   )
 }
 
-export default PfiRequests
+export default PriceMaster

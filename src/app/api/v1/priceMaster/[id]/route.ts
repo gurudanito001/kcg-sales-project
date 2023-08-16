@@ -12,6 +12,10 @@ export async function GET(
       where: {
         id,
       },
+      include: {
+        brand: true,
+        product: true
+      }
     });
   
     if (!data) {

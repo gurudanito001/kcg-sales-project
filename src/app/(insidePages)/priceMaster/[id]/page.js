@@ -5,6 +5,7 @@ import { apiGet } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -43,15 +44,15 @@ const LoadingFallBack = () =>{
   );
 }
 
-const EmployeeDetails = () => {
+const PriceMasterDetails = () => {
   const params = useParams();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
   const {data, isFetching} = useQuery({
-    queryKey: ["allEmployees", id],
-    queryFn: () => apiGet({ url: `/employee/${id}`})
+    queryKey: ["allProductPrices", id],
+    queryFn: () => apiGet({ url: `/priceMaster/${id}`})
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
@@ -63,13 +64,31 @@ const EmployeeDetails = () => {
     })
   }) 
 
+  const deriveProductStatus = (unitPrice, promoPrice, validTill, anyPromo)=>{
+    let validTillString = new Date(validTill).getTime();
+    let currentDateString = new Date().getTime();
+    let result = {};
+    if(!anyPromo){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString >= validTillString){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString < validTillString){
+      result.price = promoPrice
+      result.promoActive = true;
+    }
+
+    return result
+  }
+
 
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Employee</h4>
-        <span className="breadcrumb-item ms-3"><a href="/employees"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/employees/${id}/edit`}>Edit</a>
+        <h4 className="m-0">Price Master</h4>
+        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <a className="btn btn-link text-primary ms-auto" href={`/companies/${id}/edit`}>Edit</a>
       </header>
 
 
@@ -77,19 +96,20 @@ const EmployeeDetails = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Employee Details</h5>
-
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Product Price Details</h5>
               {data ?
                 <>
-                  <DataListItem title="Employee Name" value={`${data.firstName} ${data.middleName} ${data.lastName}`} />
-                  <DataListItem title="Company" value={data.company.name} />
-                  <DataListItem title="Branch" value={data.branch.name} />
-                  <DataListItem title="Supervisor" value={data.supervisor ? `${data?.supervisor?.firstName} ${data?.supervisor?.lastName}` : "---"} />
-                  <DataListItem title="Staff Cadre" value={data.staffCadre} />
-                  <DataListItem title="Email" value={data.email} />
-                  <DataListItem title="Employment Date" value={ new Date(data.employmentDate).toDateString()} />
+                  <DataListItem title="Product" value={data.product.name} />
+                  <DataListItem title="Brand" value={data.brand.name} />
+                  <DataListItem title="Unit Price" value={formatAsCurrency(data.unitPrice)} />
+                  <DataListItem title="Promo Price" value={data.promoPrice ? formatAsCurrency(data.promoPrice) : "---"} />
+                  <DataListItem title="Any Promo" value={deriveProductStatus(data.unitPrice, data.promoPrice, data.validTill, data.anyPromo).promoActive ? "Yes" : "No"} />
+                  <DataListItem title="Promo Text" value={data.promoText || "---"} />
+                  <DataListItem title="Valid From" value={data.validFrom ? new Date(data.validFrom).toDateString() : "---"} />
+                  <DataListItem title="Valid Till" value={data.validTill ? new Date(data.validTill).toDateString() : "---"} />
                 </> :
                 <LoadingFallBack />
+
               }
             </div>
           </div>
@@ -99,4 +119,4 @@ const EmployeeDetails = () => {
   )
 }
 
-export default EmployeeDetails
+export default PriceMasterDetails

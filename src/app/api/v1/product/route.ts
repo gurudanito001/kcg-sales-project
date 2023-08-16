@@ -20,7 +20,8 @@ export async function GET(request: Request) {
         }
       }),
       include: {
-        brand: true
+        brand: true,
+        price: true
       }
     })
     if(!data){

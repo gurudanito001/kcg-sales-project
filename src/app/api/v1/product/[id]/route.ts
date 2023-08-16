@@ -14,7 +14,8 @@ export async function GET(
         id,
       },
       include: {
-        brand: true
+        brand: true,
+        price: true
       }
     });
   

@@ -1,6 +1,6 @@
 const clipLongText = (text) =>{
-  let result = text.substring(0, 40)
-  if(text.length > 40){
+  let result = text.substring(0, 30)
+  if(text.length > 30){
     return `${result} ...`
   }
   return text

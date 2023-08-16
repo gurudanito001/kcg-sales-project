@@ -47,6 +47,7 @@ model Brand {
   description         String?                  @db.VarChar(255)
   logo                String?                  @db.VarChar(255)
   products            Product[]
+  prices              PriceMaster[]
   employeesAssignedTo BrandEmployeesRelation[]
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
@@ -79,10 +80,12 @@ model PriceMaster {
   id         String    @id @default(uuid())
   unitPrice  String    @db.VarChar(50)
   promoPrice String?   @db.VarChar(50)
-  anyPromo   String?   @db.VarChar(255)
-  validFrom  DateTime?
-  validTill  DateTime?
-  brandName  String //Did not store brand as a relation because price master is only related to the product
+  anyPromo   Boolean   @default(false)
+  promoText  String?   @db.VarChar(255)
+  validFrom  String?
+  validTill  String?
+  brand      Brand     @relation(fields: [brandId], references: [id])
+  brandId    String    
   product    Product   @relation(fields: [productId], references: [id])
   productId  String    @unique
   createdAt  DateTime  @default(now())
@@ -95,15 +98,13 @@ model Employee {
   companyId             String
   branch                Branch                   @relation(fields: [branchId], references: [id])
   branchId              String
-  supervisor            Employee?                @relation("Supervisor", fields: [supervisorId], references: [id])
-  supervisorId          String?
   staffCadre            String[]                 @default(["salesPerson"])
   firstName             String                   @db.VarChar(50)
   middleName            String?                  @db.VarChar(50)
   lastName              String                   @db.VarChar(50)
   email                 String                   @unique @db.VarChar(50)
   password              String                   @db.VarChar(255)
-  subordinates          Employee[]               @relation("Supervisor")
+  supervisorId          String?
   employmentDate        String?                  @db.VarChar(255)
   brandsAssigned        BrandEmployeesRelation[]
   customers             Customer[]
@@ -228,12 +229,13 @@ model PfiRequestForm {
   refundRebateAmount          String?             @db.VarChar(50)
   refundRebaseRecipient       String?             @db.VarChar(50)
   designation                 String?             @db.VarChar(50)
-  relationshipWithTransaction String?             @db.VarChar(50)
+  relationshipWithTransaction String?             @db.VarChar(255)
   estimatedOrderClosingTime   String?             @db.VarChar(50)
   paymentType                 String?             @db.VarChar(50)
   deliveryLocation            String?             @db.VarChar(255)
   vehicleDetails              String?             @db.VarChar(255)
-  approved                    Boolean?            @default(false)
+  approved                    Boolean             @default(false)
+  locked                      Boolean             @default(false)
   pfiReferenceNumber          String?
   pfiDate                     DateTime?
   additionalInformation       String?             @db.VarChar(255)
