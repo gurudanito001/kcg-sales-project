@@ -87,7 +87,10 @@ const Products = () =>{
     return data.map( (item, index) => {
       const {id,images, name, code, brand, price} = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/products/${id}`)}>
+        <tr key={id} className="hover"  onClick={(e)=>{
+          e.stopPropagation()
+          router.push(`/products/${id}`)
+          }}>
           <td className="border-bottom-0 py-2"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0 py-2">
             <img src={images[0]} height={40} alt="Product Image" />

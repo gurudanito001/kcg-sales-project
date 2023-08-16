@@ -23,12 +23,30 @@ const AddCustomer = () => {
     industry: "",
     customerType: "",
     enquirySource: "",
-
     name: "",
     designation: "",
     email: "",
     phoneNumber: ""
   })
+
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      companyName: "",
+      state: "",
+      lga: "",
+      city: "",
+      address: "",
+      companyWebsite: "",
+      industry: "",
+      customerType: "",
+      enquirySource: "",
+      name: "",
+      designation: "",
+      email: "",
+      phoneNumber: ""
+    }))
+  }
 
   const [errors, setErrors] = useState({})
 
@@ -76,6 +94,7 @@ const AddCustomer = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allCustomers"])
+        clearState()
       })
       .catch(error => {
         console.log(error)

@@ -100,7 +100,7 @@ const CompanyDetails = () => {
                   <DataListItem title="Company Code" value={data.code} />
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
-                  <DataListItem title="Brands" value={listCompanyBrands(data.brands)} />
+                  <DataListItem title="Brands" value={listCompanyBrands()} />
                 </> :
                 <LoadingFallBack />
 

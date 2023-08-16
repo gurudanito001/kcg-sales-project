@@ -98,8 +98,8 @@ const Companies = () =>{
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
-        <a className="btn btn-link text-primary ms-auto" href="/companies/add">Add</a>
+        <h4 className="m-0">Invoice Requests</h4>
+        <a className="btn btn-link text-primary ms-auto" href="/invoiceRequests/add">Add</a>
       </header>
 
       <div className="row">

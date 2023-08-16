@@ -63,6 +63,18 @@ const EmployeeDetails = () => {
     })
   }) 
 
+  const listBrandsAssigned = () =>{
+    let brands = ""
+    data.brandsAssigned.forEach( brand => {
+      if(brands === ""){
+        brands += `${brand}`
+      }else{
+        brands += ` | ${brand}`
+      }
+    })
+    return brands;
+  }
+
 
   return (
     <div className="container-fluid">
@@ -88,6 +100,7 @@ const EmployeeDetails = () => {
                   <DataListItem title="Staff Cadre" value={data.staffCadre[0]} />
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Employment Date" value={ new Date(data.employmentDate).toDateString()} />
+                  <DataListItem title="Brands Assigned" value={listBrandsAssigned()} />
                 </> :
                 <LoadingFallBack />
               }

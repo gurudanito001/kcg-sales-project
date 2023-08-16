@@ -25,6 +25,22 @@ const AddMarketingActivity = () => {
     pdfDetails: ""
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      activityName: "",
+      activityDate: "",
+      participants: "",
+      location: "",
+      objective: "",
+      targetResult: "",
+      briefReport: "",
+      images: [],
+      costIncurred: "",
+      pdfDetails: ""
+    }))
+  }
+
   const [selectedFile, setSelectedFile] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
   const [base64Images, setBase64Images] = useState([]);
@@ -107,6 +123,7 @@ const AddMarketingActivity = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allMarketingActivities"])
+        clearState()
       })
       .catch(error => {
         console.log(error)

@@ -20,6 +20,20 @@ const AddProductPrice = () =>{
     validTill: ""
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      brandId: "",
+      productId: "",
+      unitPrice: "",
+      promoPrice: "",
+      anyPromo: false,
+      promoText: "",
+      validFrom: "",
+      validTill: ""
+    }))
+  }
+
   useEffect(()=>{
     if(!formData.anyPromo){
       setFormData(prevState =>({
@@ -93,6 +107,7 @@ const AddProductPrice = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allProductPrices"])
+      clearState()
     })
     .catch(error =>{
       console.log(error)

@@ -48,7 +48,6 @@ model Brand {
   logo                String?                  @db.VarChar(255)
   products            Product[]
   prices              PriceMaster[]
-  employeesAssignedTo BrandEmployeesRelation[]
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   extraData           Json?
@@ -106,7 +105,7 @@ model Employee {
   password              String                   @db.VarChar(255)
   supervisorId          String?
   employmentDate        String?                  @db.VarChar(255)
-  brandsAssigned        BrandEmployeesRelation[]
+  brandsAssigned        String[]
   customers             Customer[]
   contactPersons        ContactPerson[]
   visitReports          VisitReport[]
@@ -121,15 +120,7 @@ model Employee {
   updatedAt             DateTime                 @updatedAt
 }
 
-model BrandEmployeesRelation {
-  id         String   @id @default(uuid())
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  employeeId String
-  brand      Brand    @relation(fields: [brandId], references: [id])
-  brandId    String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
+
 
 model Customer {
   id                  String               @id @default(uuid())

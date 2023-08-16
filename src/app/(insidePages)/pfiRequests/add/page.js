@@ -14,9 +14,21 @@ const AddCompany = () =>{
     code: "",
     email: "",
     address: "",
-    logo: "logourl",
+    logo: "",
     brands: []
   })
+
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      name: "",
+      code: "",
+      email: "",
+      address: "",
+      logo: "",
+      brands: []
+    }))
+  }
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands" ],
@@ -125,6 +137,7 @@ const AddCompany = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allCompanies"])
+      clearState()
     })
     .catch(error =>{
       console.log(error)

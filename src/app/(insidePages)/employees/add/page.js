@@ -21,7 +21,25 @@ const AddEmployee = () => {
     email: "",
     password: "password1234",
     employmentDate: "",
+    brandsAssigned: []
   })
+
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      companyId: "",
+      branchId: "",
+      supervisorId: "",
+      staffCadre: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
+      email: "",
+      password: "password1234",
+      employmentDate: "",
+      brandsAssigned: []
+    }))
+  }
 
   useEffect(()=>{
     if(formData.staffCadre === "salesPerson"){
@@ -113,6 +131,64 @@ const AddEmployee = () => {
     }))
   }
 
+  const brandsQuery = useQuery({
+    queryKey: ["allBrands" ],
+    queryFn:  ()=> apiGet({ url: "/brand"})
+    .then(res => {
+      console.log(res)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+    })
+  })
+
+  const handleCheck = (brand) =>(event) =>{
+    if(event.target.checked){
+      let brandData;
+      brandsQuery.data.forEach( item =>{
+        if(item.name === brand){
+          brandData = item.name;
+        }
+      })
+      let state = formData;
+      state.brandsAssigned.push(brandData);
+      setFormData(prevState =>({
+        ...prevState,
+        ...state
+      }))
+    }else{
+      let state = formData;
+      state.brandsAssigned = state.brandsAssigned.filter( function(item){ return item !== brand })
+      setFormData(prevState =>({
+        ...prevState,
+        ...state
+      }))
+    }
+  }
+
+  const isChecked = (prop) =>{
+    let checked = false;
+    formData.brandsAssigned.forEach( item =>{
+      if(item === prop){
+        checked = true
+      }
+    })
+    return checked;
+  }
+
+  const listBrands = () =>{
+    return brandsQuery.data.map(brand =>
+      <div className="form-check ms-3" key={brand.id}>
+        <input className="form-check-input" type="checkbox" checked={isChecked(brand.name)} onChange={handleCheck(brand.name)} value={brand.name} id={brand.id} />
+        <label className="form-check-label fw-bold" htmlFor={brand.id}>
+          {brand.name}
+        </label>
+      </div>
+    )
+  }
+
 
   const queryClient = useQueryClient();
   const { isLoading, mutate } = useMutation({
@@ -121,6 +197,7 @@ const AddEmployee = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allEmployees"])
+        clearState()
       })
       .catch(error => {
         console.log(error)
@@ -130,9 +207,10 @@ const AddEmployee = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    // return console.log(formData)
     mutate()
   }
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -202,6 +280,13 @@ const AddEmployee = () => {
                 <div className="mb-3">
                   <label htmlFor="employmentDate" className="form-label">Employment Date</label>
                   <input type="date" className="form-control shadow-none" id="employmentDate" onChange={handleChange("employmentDate")} value={formData.employmentDate} placeholder="Enter Employee Employment Date" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="brands" className="form-label">Brands Assigned (<span className='fst-italic text-warning'>required</span>)</label>
+                  {!brandsQuery.isLoading && !brandsQuery.isError &&
+                    <div className='d-flex'> {listBrands()} </div>}
+                  {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
                 </div>
                 <div className="d-flex mt-5">
                   <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>

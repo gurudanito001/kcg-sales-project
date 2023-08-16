@@ -20,6 +20,21 @@ const AddBranch = () =>{
     address: "",
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      name: "",
+      companyId: "",
+      code: "",
+      state: "",
+      lga: "",
+      email: "",
+      isHeadOffice: false,
+      phoneNumber: "",
+      address: "",
+    }))
+  }
+
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
     queryFn: () => apiGet({url: "/company"})
@@ -76,6 +91,7 @@ const AddBranch = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBranches"])
+      clearState()
     })
     .catch(error =>{
       console.log(error)

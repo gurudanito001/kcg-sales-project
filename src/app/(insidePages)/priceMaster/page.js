@@ -86,7 +86,10 @@ const PriceMaster = () =>{
     return data.map( (item, index) => {
       const {id, product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill} = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/priceMaster/${id}`)}>
+        <tr key={id} className="hover"  onClick={(e)=>{
+          e.stopPropagation()
+          router.push(`/priceMaster/${id}`)
+          }}>
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1">{product.name}</h6>

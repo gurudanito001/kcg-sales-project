@@ -20,6 +20,20 @@ const AddProduct = () =>{
     vatRate: ""
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      name: "",
+      code: "",
+      brandId: "",
+      description: "",
+      specifications: "",
+      images: [],
+      vatInclusive: false,
+      vatRate: ""
+    }))
+  }
+
   const brandsQuery = useQuery({
     queryKey: ["allBrands" ],
     queryFn:  ()=> apiGet({ url: "/brand"})
@@ -116,6 +130,7 @@ const AddProduct = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allProducts"])
+      clearState()
     })
     .catch(error =>{
       console.log(error)

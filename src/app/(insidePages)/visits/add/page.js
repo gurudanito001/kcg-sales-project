@@ -34,6 +34,23 @@ const AddCustomerVisit = () => {
     pfiRequest: false
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      customerId: "",
+      contactPersonId: "",
+      callType: "",
+      status: "",
+      productsDiscussed: [],
+      quantity: "",
+      durationOfMeeting: "",
+      meetingOutcome: "",
+      visitDate: "",
+      followUpVisits: [],
+      pfiRequest: false
+    }))
+  }
+
   const [followUpData, setFollowUpData] = useState({
     visitDate: "",
     meetingOutcome: ""
@@ -173,6 +190,7 @@ const AddCustomerVisit = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allVisitReports"])
+        clearState()
       })
       .catch(error => {
         console.log(error)

@@ -16,6 +16,16 @@ const AddBrand = () =>{
     logo: ""
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      name: "",
+      code: "",
+      description: "",
+      logo: ""
+    }))
+  }
+
   const [ selectedFile, setSelectedFile] = useState("");
   const [ imageUrl, setImageUrl] = useState("");
   const [ base64Image, setBase64Image ] = useState("");
@@ -75,6 +85,7 @@ const AddBrand = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBrands"])
+      clearState()
     })
     .catch(error =>{
       console.log(error)

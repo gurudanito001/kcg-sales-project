@@ -67,7 +67,10 @@ const Customers = () =>{
     return data.map( (item, index) => {
       const {id, companyName, state, lga, city, address, industry, customerType, status, approved } = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/customers/${id}`)}>
+        <tr key={id} className="hover"  onClick={(e)=>{
+          e.stopPropagation()
+          router.push(`/customers/${id}`)
+          }}>
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1 text-capitalize">{companyName}</h6>

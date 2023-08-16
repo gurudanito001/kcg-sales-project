@@ -61,7 +61,10 @@ const Brands = () =>{
     return data.map( (item, index) => {
       const {id, name, code, description, logo, _count } = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/brands/${id}`)}>
+        <tr key={id} className="hover"  onClick={(e)=>{
+          e.stopPropagation()
+          router.push(`/brands/${id}`)
+          }}>
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <img src={logo} height={40} alt="Brand Logo" />

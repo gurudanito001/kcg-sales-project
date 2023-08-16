@@ -14,6 +14,15 @@ const AddMonthlyTarget = () => {
     target: "",
   })
 
+  const clearState = () =>{
+    setFormData( prevState => ({
+      ...prevState,
+      name: "",
+      month: "",
+      target: "",
+    }))
+  }
+
   const handleChange = (prop) => (event) => {
     setFormData(prevState => ({
       ...prevState,
@@ -28,6 +37,7 @@ const AddMonthlyTarget = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allMonthlyTargets"])
+        clearState()
       })
       .catch(error => {
         console.log(error)
@@ -37,7 +47,7 @@ const AddMonthlyTarget = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData, base64Image)
+    console.log(formData)
     mutate()
   }
   return (

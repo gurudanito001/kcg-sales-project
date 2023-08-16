@@ -63,6 +63,12 @@ const MarketingActivityDetails = () => {
     })
   }) 
 
+  const listImages = () => {
+    return data.images.map(image => {
+      return <img key={image} src={image} height="150px" className="p-3 rounded-3" alt="Product Image" />
+    })
+  }
+
 
   return (
     <div className="container-fluid">
@@ -89,9 +95,14 @@ const MarketingActivityDetails = () => {
                   <DataListItem title="Objective" value={data.objective} />
                   <DataListItem title="Target Result" value={data.targetResult} />
                   <DataListItem title="Brief Report" value={data.briefReport} />
-                  <DataListItem title="Images" value={data.images} />
                   <DataListItem title="Cost Incurred" value={data.costIncurred} />
                   <DataListItem title="Approved" value={data.approved ? "Yes" : "No"} />
+                  <div className="mb-3 d-flex flex-column">
+                    <h6 className="m-0 me-3">Pictures</h6>
+                    <figure>
+                      {listImages()}
+                    </figure>
+                  </div>
                 </> :
                 <LoadingFallBack />
 
