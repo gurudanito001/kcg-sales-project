@@ -37,7 +37,7 @@ const AddMonthlyTarget = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData, base64Image)
+    console.log(formData, base64Image)
     mutate()
   }
   return (

@@ -181,7 +181,7 @@ const EditProduct = () =>{
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData)
+    console.log(formData)
     mutate()
   }
 
