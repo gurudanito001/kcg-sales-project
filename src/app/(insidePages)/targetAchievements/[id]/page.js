@@ -43,7 +43,7 @@ const LoadingFallBack = () =>{
   );
 }
 
-const CompanyDetails = () => {
+const MonthlyTargetDetails = () => {
   const params = useParams();
   const {id} = params;
   console.log(id);
@@ -78,13 +78,13 @@ const CompanyDetails = () => {
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
-        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/companies/${id}/edit`}>Edit</a>
+        <h4 className="m-0">Monthly Targets</h4>
+        <span className="breadcrumb-item ms-3"><a href="/targetAchievements"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>
       </header>
 
 
-      <div className="row">
+      {/* <div className="row">
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
@@ -108,9 +108,9 @@ const CompanyDetails = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }
 
-export default CompanyDetails
+export default MonthlyTargetDetails

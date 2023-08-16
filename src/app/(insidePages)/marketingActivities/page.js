@@ -96,7 +96,6 @@ const MarketingActivity = () =>{
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Marketing Activity</h4>
-        <span className="breadcrumb-item ms-3"><a href="/marketingActivities"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href="/marketingActivities/add">Add</a>
       </header>
 

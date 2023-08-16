@@ -76,7 +76,7 @@ const EditMonthlyTarget = () =>{
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Monthly Target</h4>
-        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <span className="breadcrumb-item ms-3"><a href="/targetAchievements"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
       </header>
       
 
@@ -97,7 +97,7 @@ const EditMonthlyTarget = () =>{
                   </div>
                   <div className="mt-5">
                     <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
-                    <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/companies">Cancel</a>
+                    <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/targetAchievements">Cancel</a>
                   </div>
                 </form>
               </div>

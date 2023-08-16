@@ -79,7 +79,6 @@ const MonthlyTargets = () =>{
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Monthly Target</h4>
-        <span className="breadcrumb-item ms-3"><a href="/targetAchievements"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href="/targetAchievements/add">Add</a>
       </header>
 

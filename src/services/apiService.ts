@@ -4,10 +4,10 @@ import axios from "axios";
 /* import { handleError } from './../error/errorFunctions'; */
 import { getToken, deleteToken, getFingerprint } from "./localStorageService";
 //local base Url
-// const baseUrl = `http://localhost:3000/api/v1`;
+const baseUrl = `http://localhost:3000/api/v1`;
 
 // production baseUrl
-const baseUrl = `https://kcg-sales-project.vercel.app/api/v1`
+// const baseUrl = `https://kcg-sales-project.vercel.app/api/v1`
 
 function setHeaders(extraHeaders: any) {
   let token = getToken();

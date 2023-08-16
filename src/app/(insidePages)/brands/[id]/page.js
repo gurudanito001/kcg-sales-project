@@ -82,7 +82,7 @@ const BrandDetails = () => {
                 <>
                   <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
                     <h6 className="m-0 me-3">Brand Logo</h6>
-                    <img src={data.logo} height={40} alt="Company Logo" />
+                    <img src={data.logo} height={40} alt="Brand Logo" />
                   </div>
                   <DataListItem title="Brand Name" value={data.name} />
                   <DataListItem title="Brand Code" value={data.code} />

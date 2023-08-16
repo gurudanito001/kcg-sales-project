@@ -120,7 +120,7 @@ const EditBranch = () => {
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
+        <h4 className="m-0">Branch</h4>
         <span className="breadcrumb-item ms-3"><a href="/branches"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
       </header>
 
