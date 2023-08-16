@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { UUID } from "crypto";
 import { NextResponse } from "next/server";
 
 let modelName = "Employee"
@@ -15,8 +16,17 @@ export async function GET(
       include: {
         company: true,
         branch: true,
-        supervisor: true
       }
+    });
+    const supervisor =  await prisma.employee.findUnique({
+      where: {
+        id: data?.supervisorId as UUID 
+      },
+    });
+    const subordinates = await prisma.employee.findMany({
+      where: {
+        supervisorId: data?.id 
+      },
     });
   
     if (!data) {
@@ -26,7 +36,7 @@ export async function GET(
       }); 
     }
   
-    return new NextResponse(JSON.stringify({message: `${modelName} fetched successfully`, data }), {
+    return new NextResponse(JSON.stringify({message: `${modelName} fetched successfully`, data: {...data, supervisor, subordinates} }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }); 
