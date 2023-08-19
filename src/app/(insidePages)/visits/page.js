@@ -53,7 +53,6 @@ const VisitReports = () =>{
     queryFn:  ()=>apiGet({ url: "/visitReport"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -66,13 +65,12 @@ const VisitReports = () =>{
     return data.map( (item, index) => {
       const {id, customer, contactPerson} = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/visits/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{customer.companyName}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/visits/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{customer.companyName}</h6>
             <span>{contactPerson.name}</span>
           </td>
           <td className="border-bottom-0">
@@ -100,6 +98,8 @@ const VisitReports = () =>{
         <h4 className="m-0">Visit Reports</h4>
         <a className="btn btn-link text-primary ms-auto" href="/visits/add">Add</a>
       </header>
+
+      
 
       <div className="row">
           <div className="col-12 d-flex align-items-stretch">

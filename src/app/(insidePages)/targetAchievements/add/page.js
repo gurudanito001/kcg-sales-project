@@ -6,9 +6,11 @@ import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
+import { useRouter } from "next/navigation";
 
 const AddMonthlyTarget = () => {
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     month: "",
     target: "",
@@ -37,7 +39,7 @@ const AddMonthlyTarget = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allMonthlyTargets"])
-        clearState()
+        router.push("/targetAchievements")
       })
       .catch(error => {
         console.log(error)

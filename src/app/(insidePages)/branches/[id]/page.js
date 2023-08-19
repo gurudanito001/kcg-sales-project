@@ -8,9 +8,13 @@ import Skeleton from '@mui/material/Skeleton';
 
 const DataListItem = ({title, value}) => {
   return (
-    <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-      <h6 className="m-0 me-3">{title}</h6>
-      <span>{value}</span>
+    <div className="row mb-3 d-flex align-items-center">
+      <div className="col-12 col-md-4">
+        <h6 className="m-0">{title}</h6>
+      </div>
+      <div className="col-12 col-md-8">
+        <span>{value}</span>
+      </div>
     </div>
   )
 }
@@ -54,7 +58,6 @@ const BranchDetails = () => {
     queryFn: () => apiGet({ url: `/branch/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -81,7 +84,7 @@ const BranchDetails = () => {
               <h5 className="card-title fw-semibold mb-4 opacity-75">Branch Details</h5>
 
               {data ?
-                <>
+                <div className="container-fluid">
                   <DataListItem title="Branch Name" value={data.name} />
                   <DataListItem title="Company Name" value={data.company.name} />
                   <DataListItem title="Branch Code" value={data.code} />
@@ -91,7 +94,7 @@ const BranchDetails = () => {
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
                   <DataListItem title="Head Office" value={data.isHeadOffice ? "Yes" : "No"} />
-                </> :
+                </div> :
                 <LoadingFallBack />
 
               }

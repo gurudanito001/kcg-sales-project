@@ -6,9 +6,11 @@ import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
+import { useRouter } from "next/navigation";
 
 const AddProductPrice = () =>{
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     brandId: "",
     productId: "",
@@ -107,7 +109,7 @@ const AddProductPrice = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allProductPrices"])
-      clearState()
+      router.push(`/priceMaster`)
     })
     .catch(error =>{
       console.log(error)

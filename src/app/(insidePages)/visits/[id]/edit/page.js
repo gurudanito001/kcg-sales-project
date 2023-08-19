@@ -26,7 +26,8 @@ const EditVisitReport = () => {
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity
   })
 
   useEffect(() => {
@@ -193,6 +194,7 @@ const EditVisitReport = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allVisitReport", id])
+        router.push(`/visits/${id}`)
       })
       .catch(error => {
         console.log(error)

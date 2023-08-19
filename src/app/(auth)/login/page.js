@@ -51,7 +51,7 @@ export default function Login() {
     }))
   }
 
-  const {mutate, isPending} = useMutation({
+  const {mutate, isLoading} = useMutation({
     mutationFn: ()=>{
       apiPost({ url: `/auth/login`, data: formData })
       .then(res => {
@@ -76,6 +76,6 @@ export default function Login() {
 
 
   return (
-    <LoginTemplate formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} isLoading={isPending} />
+    <LoginTemplate formData={formData} handleChange={handleChange} handleSubmit={handleSubmit} isLoading={isLoading} />
   );
 }

@@ -12,6 +12,13 @@ export async function GET(
       where: {
         id,
       },
+      include: {
+        employee: true,
+        customer: true,
+        contactPerson: true,
+        brand: true,
+        product: true
+      }
     });
   
     if (!data) {

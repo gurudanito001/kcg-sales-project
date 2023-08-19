@@ -8,9 +8,13 @@ import Skeleton from '@mui/material/Skeleton';
 
 const DataListItem = ({title, value}) => {
   return (
-    <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-      <h6 className="m-0 me-3">{title}</h6>
-      <span>{value}</span>
+    <div className="row mb-3 d-flex align-items-center">
+      <div className="col-12 col-md-4">
+        <h6 className="m-0">{title}</h6>
+      </div>
+      <div className="col-12 col-md-8">
+        <span>{value}</span>
+      </div>
     </div>
   )
 }
@@ -54,7 +58,6 @@ const BrandDetails = () => {
     queryFn: () => apiGet({ url: `/brand/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -80,9 +83,13 @@ const BrandDetails = () => {
 
               {data ?
                 <>
-                  <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-                    <h6 className="m-0 me-3">Brand Logo</h6>
-                    <img src={data.logo} height={40} alt="Brand Logo" />
+                  <div className="row mb-3 d-flex align-items-center">
+                    <div className="col-12 col-md-4">
+                      <h6 className="m-0">Brand Logo</h6>
+                    </div>
+                    <div className="col-12 col-md-8">
+                      <img src={data.logo} height={40} alt="Brand Logo" />
+                    </div>
                   </div>
                   <DataListItem title="Brand Name" value={data.name} />
                   <DataListItem title="Brand Code" value={data.code} />

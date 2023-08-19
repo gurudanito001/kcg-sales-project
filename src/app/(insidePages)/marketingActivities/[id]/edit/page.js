@@ -26,7 +26,8 @@ const EditMarketingActivity = () => {
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity
   })
 
   useEffect(() => {
@@ -154,6 +155,7 @@ const EditMarketingActivity = () => {
         queryClient.invalidateQueries(["allMarketingActivities", id])
         setImageUrls([])
         setBase64Images([])
+        router.push(`/marketingActivities/${id}`)
       })
       .catch(error => {
         console.log(error)
@@ -173,7 +175,7 @@ const EditMarketingActivity = () => {
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Marketing Activity</h4>
-        <span className="breadcrumb-item ms-3"><a href="/marketingActivitys"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <span className="breadcrumb-item ms-3"><a href="/marketingActivities"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
       </header>
 
 

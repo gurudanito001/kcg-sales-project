@@ -5,10 +5,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiPost } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
+import { useRouter } from "next/navigation";
 //import formValidator from '../../../services/validation';
 
 const AddBrand = () =>{
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -85,7 +87,7 @@ const AddBrand = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBrands"])
-      clearState()
+      router.push("/brands")
     })
     .catch(error =>{
       console.log(error)

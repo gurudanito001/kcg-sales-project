@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiPost, apiGet } from "@/services/apiService";
+import { apiPatch } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 
-const AddContactPerson = ({ employeeId, customerId, onClose }) => {
+const EditContactPerson = ({ data, onClose }) => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
   const [formData, setFormData] = useState({
@@ -23,7 +23,7 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
   useEffect(() => {
     setFormData(prevState => ({
       ...prevState,
-      employeeId, customerId
+      ...data
     }))
   }, [])
 
@@ -40,11 +40,11 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
 
   const queryClient = useQueryClient();
   const { isLoading, mutate } = useMutation({
-    mutationFn: () => apiPost({ url: "/contactPerson", data: formData })
+    mutationFn: () => apiPatch({ url: `/contactPerson/${data.id}`, data: formData })
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
-        queryClient.invalidateQueries(["allCustomers", customerId])
+        queryClient.invalidateQueries(["allCustomers", data.customerId])
         onClose()
       })
       .catch(error => {
@@ -55,7 +55,7 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData)
+    //return console.log(formData)
     mutate()
   }
   return (
@@ -66,7 +66,7 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <header className="d-flex align-items-center mb-4">
-                <h5 className="card-title fw-semibold opacity-75 m-0">Add Contact Person</h5>
+                <h5 className="card-title fw-semibold opacity-75 m-0">Edit Contact Person</h5>
                 <i className="fa-solid fa-xmark btn ms-auto" onClick={onClose}></i>
               </header>
               
@@ -105,4 +105,4 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
   )
 }
 
-export default AddContactPerson
+export default EditContactPerson

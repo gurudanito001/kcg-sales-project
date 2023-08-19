@@ -6,25 +6,27 @@ import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import NaijaStates from 'naija-state-local-government';
+import { useRouter } from "next/navigation";
 
 const EditBranch = () => {
   const params = useParams();
   const { id } = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
 
   const { data, isFetching } = useQuery({
     queryKey: ["allBranches", id],
     queryFn: () => apiGet({ url: `/branch/${id}` })
       .then(res => {
         console.log(res.data)
-        dispatchMessage({ message: res.message })
         return res.data
       })
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity
   })
 
   const companyQuery = useQuery({
@@ -102,6 +104,7 @@ const EditBranch = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allBranches", id])
+        router.push(`/branches/${id}`)
       })
       .catch(error => {
         console.log(error)

@@ -7,9 +7,11 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 import { useSelector } from "react-redux";
 //import formValidator from '../../../services/validation';
+import { useRouter } from "next/navigation";
 
 const AddMarketingActivity = () => {
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const {userData} = useSelector( state => state.userData);
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -123,7 +125,7 @@ const AddMarketingActivity = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allMarketingActivities"])
-        clearState()
+        router.push("/marketingActivities")
       })
       .catch(error => {
         console.log(error)

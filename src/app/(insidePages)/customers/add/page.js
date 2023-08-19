@@ -8,9 +8,11 @@ import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
 import NaijaStates from 'naija-state-local-government';
 import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 
 const AddCustomer = () => {
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const {userData} = useSelector( state => state.userData);
   const [formData, setFormData] = useState({
     employeeId: "",
@@ -94,7 +96,7 @@ const AddCustomer = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allCustomers"])
-        clearState()
+        router.push("/customers")
       })
       .catch(error => {
         console.log(error)

@@ -136,7 +136,7 @@ model Customer {
   customerType        String?              @db.VarChar(50)
   enquirySource       String?              @db.VarChar(50)
   status              String?              @default("cold") @db.VarChar(255)
-  approved            Boolean?             @default(false)
+  approved            Boolean              @default(false)
   lastVisited         DateTime             @default(now())
   contactPersons      ContactPerson[]
   visitReports        VisitReport[]
@@ -197,9 +197,9 @@ model PfiRequestForm {
   customerId                  String?
   contactPerson               ContactPerson?      @relation(fields: [contactPersonId], references: [id])
   contactPersonId             String?
-  existingCustomer            Boolean             @default(false)
-  customerName                String?             @db.VarChar(50)
-  customerAddress             String?             @db.VarChar(255)
+  customerType                String              
+  companyName                 String?             @db.VarChar(50)
+  companyAddress              String?             @db.VarChar(255)
   contactPersonName           String?             @db.VarChar(50)
   phoneNumber                 String?             @db.VarChar(50)
   emailAddress                String?             @db.VarChar(50)
@@ -207,6 +207,7 @@ model PfiRequestForm {
   brandId                     String
   product                     Product             @relation(fields: [productId], references: [id])
   productId                   String
+  vehicleDetails              String?             @db.VarChar(255)
   quantity                    String?
   pricePerVehicle             String?
   bodyTypeDescription         String?             @db.VarChar(255)
@@ -218,17 +219,16 @@ model PfiRequestForm {
   whtDeduction                Boolean             @default(false)
   registration                Boolean             @default(false)
   refundRebateAmount          String?             @db.VarChar(50)
-  refundRebaseRecipient       String?             @db.VarChar(50)
+  refundRebateRecipient       String?             @db.VarChar(50)
   designation                 String?             @db.VarChar(50)
   relationshipWithTransaction String?             @db.VarChar(255)
   estimatedOrderClosingTime   String?             @db.VarChar(50)
   paymentType                 String?             @db.VarChar(50)
   deliveryLocation            String?             @db.VarChar(255)
-  vehicleDetails              String?             @db.VarChar(255)
   approved                    Boolean             @default(false)
   locked                      Boolean             @default(false)
   pfiReferenceNumber          String?
-  pfiDate                     DateTime?
+  pfiDate                     String?
   additionalInformation       String?             @db.VarChar(255)
   extraData                   Json?
   invoiceRequestForm          InvoiceRequestForm?
@@ -246,14 +246,15 @@ model InvoiceRequestForm {
   customerId                  String?
   contactPerson               ContactPerson? @relation(fields: [contactPersonId], references: [id])
   contactPersonId             String?
+  customerType                String?
   invoiceName                 String?        @db.VarChar(50)
   address                     String?        @db.VarChar(255)
   contactOfficeTelephone      String?        @db.VarChar(50)
   emailAddress                String?        @db.VarChar(50)
   salesThru                   String?        @db.VarChar(50)
   industry                    String?        @db.VarChar(50)
-  vehicleBrand                Brand          @relation(fields: [vehicleBrandId], references: [id])
-  vehicleBrandId              String
+  brand                       Brand          @relation(fields: [brandId], references: [id])
+  brandId                     String
   product                     Product        @relation(fields: [productId], references: [id])
   productId                   String
   vehicleModelDetails         String?        @db.VarChar(255)
@@ -286,11 +287,11 @@ model InvoiceRequestForm {
   invoiceDate                 String?
   deliveryNoteNumber          String?        @db.VarChar(50)
   actualDeliveryDate          String?
-  chasisNumber                String?        @db.VarChar(50)
+  chasisNumber                String?        @db.VarChar(255)
   delivery                    String         @default("pending")
-  payment                     String?
-  approved                    Boolean?       @default(false)
-  approvedByGM                Boolean?       @default(false)
+  payment                     String?        @default("pending")
+  approved                    Boolean        @default(false)
+  approvedByGM                Boolean        @default(false)
   approvedByProductHead       Boolean        @default(false)
   additionalInformation       String?
   extraData                   Json?

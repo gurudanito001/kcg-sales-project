@@ -5,10 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
+import { useRouter } from "next/navigation";
 //import formValidator from '../../../services/validation';
 
 const AddCompany = () =>{
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -44,25 +46,19 @@ const AddCompany = () =>{
   })
 
   const handleCheck = (brand) =>(event) =>{
-    if(event.target.checked){
-      let brandData;
-      brandsQuery.data.forEach( item =>{
-        if(item.name === brand){
-          brandData = item.name;
-        }
-      })
-      let state = formData;
-      state.brands.push(brandData);
-      setFormData(prevState =>({
+    let brands = formData.brands
+    let brandExists = brands.includes(brand);
+    if(brandExists){
+      brands = brands.filter( item => item !== brand)
+      setFormData( prevState => ({
         ...prevState,
-        ...state
+        brands 
       }))
     }else{
-      let state = formData;
-      state.brands = state.brands.filter( function(item){ return item !== brand })
-      setFormData(prevState =>({
+      brands.push(brand);
+      setFormData( prevState => ({
         ...prevState,
-        ...state
+        brands 
       }))
     }
   }
@@ -137,7 +133,7 @@ const AddCompany = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allCompanies"])
-      clearState()
+      router.push(`/companies`)
     })
     .catch(error =>{
       console.log(error)

@@ -17,7 +17,14 @@ export async function GET(request: Request) {
         cursor: {
           id: myCursor,
         }
-      })
+      }),
+      include: {
+        employee: true,
+        brand: true,
+        product: true,
+        customer: true,
+        contactPerson: true
+      }
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -47,6 +54,20 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     // validate data here
+    let customerId, contactPersonId;
+    if(json.customerType === "new customer"){
+      let {employeeId, companyName, companyAddress, contactPersonName, phoneNumber, emailAddress} = json;
+      let newCustomer = await prisma.customer.create({ data: {employeeId, companyName, address: companyAddress}});
+      customerId = newCustomer.id;
+      if(newCustomer){
+        let newContactPerson = await prisma.contactPerson.create({ data: {employeeId, customerId: newCustomer.id, name: contactPersonName, phoneNumber, email: emailAddress}})
+        contactPersonId = newContactPerson.id
+      }
+    }
+    if(customerId && contactPersonId){
+      json.customerId = customerId
+      json.contactPersonId = contactPersonId
+    }
     const data = await prisma.pfiRequestForm.create({
       data: json,
     });

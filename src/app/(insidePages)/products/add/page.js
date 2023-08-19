@@ -6,9 +6,11 @@ import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
+import { useRouter } from "next/navigation";
 
 const AddProduct = () =>{
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     name: "",
     code: "",
@@ -130,7 +132,7 @@ const AddProduct = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allProducts"])
-      clearState()
+      router.push("/products")
     })
     .catch(error =>{
       console.log(error)

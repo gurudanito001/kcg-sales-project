@@ -31,7 +31,8 @@ const EditMonthlyTarget = () =>{
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
-    })
+    }),
+    staleTime: Infinity
   }) 
 
   useEffect(()=>{
@@ -59,6 +60,7 @@ const EditMonthlyTarget = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allMonthlyTargets", id])
+      router.push(`/targetAchievements/${id}`)
     })
     .catch(error =>{
       console.log(error)

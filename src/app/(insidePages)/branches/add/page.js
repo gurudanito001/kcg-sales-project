@@ -1,13 +1,18 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import NaijaStates from 'naija-state-local-government';
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 const AddBranch = () =>{
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get("companyId")
   const [formData, setFormData] = useState({
     name: "",
     companyId: "",
@@ -20,20 +25,12 @@ const AddBranch = () =>{
     address: "",
   })
 
-  const clearState = () =>{
-    setFormData( prevState => ({
+  useEffect(()=>{
+    setFormData( prevState =>({
       ...prevState,
-      name: "",
-      companyId: "",
-      code: "",
-      state: "",
-      lga: "",
-      email: "",
-      isHeadOffice: false,
-      phoneNumber: "",
-      address: "",
+      companyId: companyId
     }))
-  }
+  }, [])
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
@@ -91,7 +88,11 @@ const AddBranch = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBranches"])
-      clearState()
+      if(companyId){
+        router.push(`/company/${id}`)
+      }else{
+        router.push("/branches")
+      }
     })
     .catch(error =>{
       console.log(error)

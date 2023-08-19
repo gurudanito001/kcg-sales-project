@@ -51,7 +51,6 @@ const Employees = () =>{
     queryFn:  ()=>apiGet({ url: "/employee"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -64,13 +63,12 @@ const Employees = () =>{
     return data.map( (item, index) => {
       const {id, company, branch, firstName, lastName, email, staffCadre} = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/employees/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{firstName} {lastName}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/employees/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{firstName} {lastName}</h6>
           </td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1">{company.name}</h6>

@@ -11,7 +11,6 @@ import NaijaStates from 'naija-state-local-government';
 const EditCustomer = () => {
   const params = useParams();
   const { id } = params;
-  console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
@@ -20,13 +19,12 @@ const EditCustomer = () => {
     queryFn: () => apiGet({ url: `/customer/${id}` })
       .then(res => {
         console.log(res.data)
-        dispatchMessage({ message: res.message })
         return res.data
       })
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
   })
 
   useEffect(() => {
@@ -61,6 +59,7 @@ const EditCustomer = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allCustomers", id])
+        router.push(`/customers/${id}`)
       })
       .catch(error => {
         console.log(error)

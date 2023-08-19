@@ -6,13 +6,18 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import AddContactPerson from '../add/addContactPerson';
+import EditContactPerson from "./edit/editContactPerson";
 import { useState } from "react";
 
-const DataListItem = ({ title, value }) => {
+const DataListItem = ({title, value}) => {
   return (
-    <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-      <h6 className="m-0 me-3">{title}</h6>
-      <span>{value}</span>
+    <div className="row mb-3 d-flex align-items-center">
+      <div className="col-12 col-md-4">
+        <h6 className="m-0">{title}</h6>
+      </div>
+      <div className="col-12 col-md-8">
+        <span>{value}</span>
+      </div>
     </div>
   )
 }
@@ -82,14 +87,14 @@ const CustomerDetails = () => {
   const { id } = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
-  const [showAddContactPerson, setShowAddContactPerson] = useState(false)
+  const [currentForm, setCurrentForm] = useState("")
+  const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
 
   const { data, isFetching } = useQuery({
     queryKey: ["allCustomers", id],
     queryFn: () => apiGet({ url: `/customer/${id}` })
       .then(res => {
         console.log(res.data)
-        dispatchMessage({ message: res.message })
         return res.data
       })
       .catch(error => {
@@ -102,13 +107,13 @@ const CustomerDetails = () => {
     return data.contactPersons.map( (item, index) => {
       const {id, name, email, designation, phoneNumber } = item;
       return( 
-        <tr key={id} className="hover" onClick={()=>router.push(`/customers/${id}`)}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1 text-capitalize">{name}</h6>
           </td>
           <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1 text-capitalize">{email}</h6>
+            <h6 className="fw-semibold mb-1">{email}</h6>
           </td>
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{designation}</p>
@@ -117,7 +122,10 @@ const CustomerDetails = () => {
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
           <td className="border-bottom-0">
-            <a className="btn btn-link text-danger ms-auto">Delete</a>
+            <button className="btn btn-link text-primary ms-auto" onClick={()=>{
+              setCurrentlyEditedContactPerson(item);
+              setCurrentForm("editContactPerson")
+            }}>Edit</button>
           </td>
         </tr>
     )
@@ -130,7 +138,7 @@ const CustomerDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Customer</h4>
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" onClick={()=>setShowAddContactPerson(true)}>Add Contact Person</a>
+        <a className="btn btn-link text-primary ms-auto" onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>
         <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>
       </header>
 
@@ -139,9 +147,14 @@ const CustomerDetails = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
 
-            {showAddContactPerson &&
+            {currentForm === "addContactPerson" &&
               <div className="card-body p-4"> 
-              <AddContactPerson employeeId={data?.employee?.id} customerId={data?.id} onClose = {()=>setShowAddContactPerson(false)} />
+              <AddContactPerson employeeId={data?.employee?.id} customerId={data?.id} onClose = {()=>setCurrentForm("")} />
+            </div>}
+
+            {currentForm === "editContactPerson" &&
+              <div className="card-body p-4"> 
+              <EditContactPerson data={currentlyEditedContactPerson} onClose = {()=>setCurrentForm("")} />
             </div>}
 
 
@@ -158,54 +171,53 @@ const CustomerDetails = () => {
                   <DataListItem title="Status" value={data.status} />
                   <DataListItem title="Approved" value={data.approved ? "Yes" : "No"} />
                   <DataListItem title="Last Visited" value={new Date(data.lastVisited).toDateString()} />
-                  <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-                    <h6 className="m-0 me-3">Address</h6>
-                    <div>
+
+                  <div className="row mb-3 d-flex align-items-center">
+                    <div className="col-12 col-md-4">
+                      <h6 className="m-0">Address</h6>
+                    </div>
+                    <div className="col-12 col-md-8">
                       <p className="m-0">{data.address}</p>
                       <p className="m-0">{data.city} {data.lga} {data.state}</p>
                     </div>
                   </div>
                 </> :
                 <LoadingFallBack />
-
               }
-
-              
-              
             </div>
 
             <div className="card-body p-4">
-                <h5 className="card-title fw-semibold mb-4 opacity-75">Contact Persons</h5>
-                <div className="table-responsive">
-                  <table className="table text-nowrap mb-0 align-middle">
-                    <thead className="text-dark fs-4">
-                      <tr>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">#</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Contact Person Name</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Email</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Designation</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Phone Number</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data ? listContactPersons() : <ContactPersonLoadingFallBack />}
-                    </tbody>
-                  </table>
-                </div>
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Contact Persons</h5>
+              <div className="table-responsive">
+                <table className="table text-nowrap mb-0 align-middle">
+                  <thead className="text-dark fs-4">
+                    <tr>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">#</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Contact Person Name</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Email</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Designation</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Phone Number</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Actions</h6>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data ? listContactPersons() : <ContactPersonLoadingFallBack />}
+                  </tbody>
+                </table>
               </div>
+            </div>
           </div>
         </div>
       </div>

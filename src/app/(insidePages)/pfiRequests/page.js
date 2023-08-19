@@ -6,6 +6,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const LoadingFallBack = () =>{
   return (
@@ -18,17 +19,23 @@ const LoadingFallBack = () =>{
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-      </tr>
-      <tr sx={{ width: "100%" }}>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -54,7 +61,6 @@ const PfiRequests = () =>{
     queryFn:  ()=>apiGet({ url: "/pfiRequestForm"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -65,30 +71,37 @@ const PfiRequests = () =>{
 
   const listPfiRequests = () =>{
     return data.map( (item, index) => {
-      const {id, name, code, address, logo, email, _count} = item;
+      const {id, pfiReferenceNumber, pfiDate, customer, contactPerson, brand, product, quantity, pricePerVehicle, employee} = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/pfiRequests/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <img src={logo} height={40} alt="Company Logo" />
+          <td className="border-bottom-0 link-style"  onClick={()=>{
+            router.push(`/pfiRequests/${id}`)
+          }}>
+            <h6 className="fw-semibold m-0 text-primary">{pfiReferenceNumber}</h6>
           </td>
           <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{name}</h6>
-            <span className="fw-normal">{_count.branches} Branch(es)</span>
+            <h6 className="fw-semibold m-0">{pfiDate ? new Date(pfiDate).toDateString() : ""}</h6>
+          </td>
+          <td className="border-bottom-0 link-style"  onClick={()=>{
+            router.push(`/pfiRequests/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{customer.companyName}</h6>
+            <span className="fw-normal">{contactPerson.name}</span>
           </td>
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal">{code}</p>
+            <h6 className="fw-semibold mb-1">{brand.name}</h6>
+            <span className="fw-normal">{product.name}</span>
           </td>
           <td className="border-bottom-0">
-            <div className="d-flex align-items-center gap-2">
-              <p className="fw-semibold m-0">{email}</p>
-            </div>
+            <p className="mb-0 fw-normal">{quantity}</p>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0 d-flex flex-wrap" style={{maxWidth: "200px"}}>{clipLongText(address)}</p>
+            <p className="fw-semibold m-0">{formatAsCurrency(pricePerVehicle)}</p>
+          </td>
+          <td className="border-bottom-0">
+            <h6 className="fw-semibold m-0">{employee.firstName} {employee.lastName}</h6>
+            <p className="fw-semibold m-0">{employee.email}</p>
           </td>
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>
@@ -118,19 +131,25 @@ const PfiRequests = () =>{
                           <h6 className="fw-semibold mb-0">#</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Logo</h6>
+                          <h6 className="fw-semibold mb-0">Pfi Number</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Name</h6>
+                          <h6 className="fw-semibold mb-0">Pfi Date</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Code</h6>
+                          <h6 className="fw-semibold mb-0">Customer</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Email</h6>
+                          <h6 className="fw-semibold mb-0">Product</h6>
                         </th>
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Address</h6>
+                          <h6 className="fw-semibold mb-0">Quantity</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Price</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Employee</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>

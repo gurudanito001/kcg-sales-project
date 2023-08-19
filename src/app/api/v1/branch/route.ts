@@ -8,10 +8,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
+    const companyId = searchParams.get("companyId");
     //const offers = await prisma.offer.findMany()
 
     let myCursor = "";
     const data = await prisma.branch.findMany({
+      where: {
+        ...(companyId && {companyId})
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {

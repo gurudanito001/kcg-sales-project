@@ -33,7 +33,8 @@ const EditBrand = () =>{
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
-    })
+    }),
+    staleTime: Infinity
   })
 
   useEffect(()=>{
@@ -105,6 +106,7 @@ const EditBrand = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBrands"])
+      router.push(`/brands/${id}`)
     })
     .catch(error =>{
       console.log(error)

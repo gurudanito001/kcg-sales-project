@@ -7,9 +7,11 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
 import PasswordInput from "@/components/passwordInput";
+import { useRouter } from "next/navigation";
 
 const AddEmployee = () => {
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const [formData, setFormData] = useState({
     companyId: "",
     branchId: "",
@@ -197,7 +199,7 @@ const AddEmployee = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allEmployees"])
-        clearState()
+        router.push("/employees")
       })
       .catch(error => {
         console.log(error)

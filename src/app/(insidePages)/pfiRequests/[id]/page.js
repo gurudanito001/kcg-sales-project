@@ -8,9 +8,13 @@ import Skeleton from '@mui/material/Skeleton';
 
 const DataListItem = ({title, value}) => {
   return (
-    <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-      <h6 className="m-0 me-3">{title}</h6>
-      <span>{value}</span>
+    <div className="row mb-3 d-flex align-items-center">
+      <div className="col-12 col-md-4">
+        <h6 className="m-0">{title}</h6>
+      </div>
+      <div className="col-12 col-md-8">
+        <span>{value}</span>
+      </div>
     </div>
   )
 }
@@ -43,15 +47,15 @@ const LoadingFallBack = () =>{
   );
 }
 
-const CompanyDetails = () => {
+const PfiRequestDetails = () => {
   const params = useParams();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
   const {data, isFetching} = useQuery({
-    queryKey: ["allCompanies", id],
-    queryFn: () => apiGet({ url: `/company/${id}`})
+    queryKey: ["allPfiRequests", id],
+    queryFn: () => apiGet({ url: `/pfiRequestForm/${id}`})
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
@@ -63,24 +67,12 @@ const CompanyDetails = () => {
     })
   }) 
 
-  const listCompanyBrands = () =>{
-    let brands = ""
-    data.brands.forEach( brand => {
-      if(brands === ""){
-        brands += `${brand}`
-      }else{
-        brands += ` | ${brand}`
-      }
-    })
-    return brands;
-  }
-
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
-        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/companies/${id}/edit`}>Edit</a>
+        <h4 className="m-0">Pfi Requests</h4>
+        <span className="breadcrumb-item ms-3"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>
       </header>
 
 
@@ -88,19 +80,41 @@ const CompanyDetails = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Company Details</h5>
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Pfi Request Details</h5>
 
               {data ?
                 <>
-                  <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-                    <h6 className="m-0 me-3">Company Logo</h6>
-                    <img src={data.logo} height={40} alt="Company Logo" />
-                  </div>
-                  <DataListItem title="Company Name" value={data.name} />
-                  <DataListItem title="Company Code" value={data.code} />
-                  <DataListItem title="Email" value={data.email} />
-                  <DataListItem title="Address" value={data.address} />
-                  <DataListItem title="Brands" value={listCompanyBrands(data.brands)} />
+                  <DataListItem title="Employee" value={`${data.employee.firstName} ${data.employee.lastName}`} />
+                  <DataListItem title="Customer" value={data.customer.companyName} />
+                  <DataListItem title="Customer Address" value={data.customer.address} />
+                  <DataListItem title="Contact Person Name" value={data.contactPerson.name} />
+                  <DataListItem title="Phone Number" value={data.contactPerson.phoneNumber} />
+                  <DataListItem title="Email" value={data.contactPerson.email} />
+                  <DataListItem title="Brand" value={data.brand.name} />
+                  <DataListItem title="Product" value={data.product.name} />
+                  <DataListItem title="Vehicle Details" value={data.vehicleDetails} />
+                  <DataListItem title="Quantity" value={data.quantity} />
+                  <DataListItem title="Price Per Vehicle" value={data.pricePerVehicle} />
+                  <DataListItem title="Body Type Description" value={data.bodyTypeDescription} />
+                  <DataListItem title="Vehicle Service Details" value={data.vehicleServiceDetails} />
+                  <DataListItem title="Special Fitment Details" value={data.specialFitmentDetails} />
+                  <DataListItem title="Cost For Special Fitment" value={data.costForSpecialFitment} />
+                  <DataListItem title="Discount" value={data.discount} />
+                  <DataListItem title="VAT Deduction" value={data.vatDeduction ? "Yes" : "No"} />
+                  <DataListItem title="WHT Deduction" value={data.whtDeduction? "Yes" : "No"} />
+                  <DataListItem title="Registration" value={data.registration? "Yes" : "No"} />
+                  <DataListItem title="Refund/Rebate Amount" value={data.refundRebateAmount} />
+                  <DataListItem title="Refund/Rebate Recipient" value={data.refundRebateRecipient} />
+                  <DataListItem title="Designation" value={data.designation} />
+                  <DataListItem title="Relationship With Transaction" value={data.relationshipWithTransaction} />
+                  <DataListItem title="Estimated Order Closing Time (No of days)" value={data.estimatedOrderClosingTime} />
+                  <DataListItem title="Payment Type" value={data.paymentType} />
+                  <DataListItem title="Delivery Location" value={data.deliveryLocation} />
+                  <DataListItem title="Approved" value={data.approved ? "Yes" : "No"} />
+                  <DataListItem title="Locked" value={data.locked ? "Yes" : "No"} />
+                  <DataListItem title="Pfi Reference Number" value={data.pfiReferenceNumber} />
+                  <DataListItem title="Pfi Date" value={data.pfiDate} />
+                  <DataListItem title="Additional Information" value={data.additionalInformation} />
                 </> :
                 <LoadingFallBack />
 
@@ -113,4 +127,4 @@ const CompanyDetails = () => {
   )
 }
 
-export default CompanyDetails
+export default PfiRequestDetails

@@ -55,7 +55,6 @@ const PriceMaster = () =>{
     queryFn:  ()=>apiGet({ url: "/priceMaster"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -86,13 +85,12 @@ const PriceMaster = () =>{
     return data.map( (item, index) => {
       const {id, product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill} = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/priceMaster/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{product.name}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/priceMaster/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{product.name}</h6>
             <p className="mb-0 fw-normal">{brand.name}</p>
           </td>
           <td className="border-bottom-0">

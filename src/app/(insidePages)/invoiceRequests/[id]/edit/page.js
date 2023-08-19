@@ -7,139 +7,171 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
-const EditCompany = () =>{
+const EditInvoiceRequest = () => {
   const params = useParams();
-  const {id} = params;
+  const { id } = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
-  const {data, isFetching} = useQuery({
-    queryKey: ["allCompanies", id],
-    queryFn: () => apiGet({ url: `/company/${id}`})
-    .then(res =>{
-      console.log(res.data)
-      dispatchMessage({ message: res.message})
-      return res.data
-    })
-    .catch(error =>{
-      console.log(error.message)
-      dispatchMessage({ severity: "error", message: error.message})
-    })
-  }) 
-  
-  useEffect(()=>{
-    if(data){
-      let {name, code, email, address, logo, brands} = data;
-      setFormData( prevState =>({
+  const { data, isFetching } = useQuery({
+    queryKey: ["allInvoiceRequests", id],
+    queryFn: () => apiGet({ url: `/invoiceRequestForm/${id}` })
+      .then(res => {
+        console.log(res.data)
+        return res.data
+      })
+      .catch(error => {
+        // console.log(error.message)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+      staleTime: Infinity
+  })
+
+  useEffect(() => {
+    if (data) {
+      let { employeeId, customerId, contactPersonId, customerType, pfiRequestFormId, invoiceName, address, contactOfficeTelephone, emailAddress, salesThru, industry, brandId, productId, vehicleModelDetails, quantity, color, totalInvoiceValuePerVehicle, typeOfBodyBuilding, bodyFabricatorName, registration, whtDeduction, vatDeduction, rebateAmount, refundToCustomer, servicePackageDetails, rebateReceiver, relationshipWithTransaction, expectedDeliveryDate, deliveryLocation, deliveredBy, paymentStatus, bankName, bankAccountName, accountNumber, amountPaid, dateOfPayment, lpoNumber, paymentDueDate, otherPaymentDetails, additionalInformation } = data;
+
+      setFormData(prevState => ({
         ...prevState,
-        name, code, email, address, logo, brands
+        employeeId, customerId, contactPersonId, customerType, pfiRequestFormId, invoiceName, address, contactOfficeTelephone, emailAddress, salesThru, industry, brandId, productId, vehicleModelDetails, quantity, color, totalInvoiceValuePerVehicle, typeOfBodyBuilding, bodyFabricatorName, registration, whtDeduction, vatDeduction, rebateAmount, refundToCustomer, servicePackageDetails, rebateReceiver, relationshipWithTransaction, expectedDeliveryDate, deliveryLocation, deliveredBy, paymentStatus, bankName, bankAccountName, accountNumber, amountPaid, dateOfPayment, lpoNumber, paymentDueDate, otherPaymentDetails, additionalInformation
       }))
     }
   }, [data])
 
-
   const [formData, setFormData] = useState({
-    name: "",
-    code: "",
-    email: "",
+    employeeId: "",
+    customerId: "",
+    contactPersonId: "",
+    customerType: "",
+    pfiRequestFormId: "",
+    invoiceName: "",
     address: "",
-    logo: "",
-    brands: []
+    contactOfficeTelephone: "",
+    emailAddress: "",
+    salesThru: "",
+    industry: "",
+    brandId: "",
+    productId: "",
+    vehicleModelDetails: "",
+    quantity: "",
+    color: "",
+    totalInvoiceValuePerVehicle: "",
+    typeOfBodyBuilding: "",
+    bodyFabricatorName: "",
+    registration: false,
+    whtDeduction: false,
+    vatDeduction: false,
+    rebateAmount: "",
+    refundToCustomer: "",
+    servicePackageDetails: "",
+    rebateReceiver: "",
+    relationshipWithTransaction: "",
+    expectedDeliveryDate: "",
+    deliveryLocation: "",
+    deliveredBy: "",
+    paymentStatus: "",
+    bankName: "",
+    bankAccountName: "",
+    accountNumber: "",
+    amountPaid: "",
+    dateOfPayment: "",
+    lpoNumber: "",
+    paymentDueDate: "",
+    otherPaymentDetails: "",
+    additionalInformation: ""
   })
 
-  const brandsQuery = useQuery({
-    queryKey: ["allBrands" ],
-    queryFn:  ()=> apiGet({ url: "/brand"})
-    .then(res => {
-      console.log(res)
-      return res.data
-    })
-    .catch(error =>{
-      console.log(error)
-      dispatchMessage({severity: "error", message: error.message})
-    })
-  })
+  const [errors, setErrors] = useState({})
 
-  const handleCheck = (brand) =>(event) =>{
-    if(event.target.checked){
-      let brandData;
-      brandsQuery.data.forEach( item =>{
-        if(item.name === brand){
-          brandData = item.name;
-        }
-      })
-      let state = formData;
-      state.brands.push(brandData);
-      setFormData(prevState =>({
-        ...prevState,
-        ...state
-      }))
-    }else{
-      let state = formData;
-      state.brands = state.brands.filter( function(item){ return item !== brand })
-      setFormData(prevState =>({
-        ...prevState,
-        ...state
-      }))
-    }
-  }
-
-  const isChecked = (prop) =>{
-    let checked = false;
-    formData.brands.forEach( item =>{
-      if(item === prop){
-        checked = true
-      }
-    })
-    return checked;
-  }
-
-  const listBrands = () =>{
-    return brandsQuery.data.map(brand =>
-      <div className="form-check ms-3" key={brand.id}>
-        <input className="form-check-input" type="checkbox" checked={isChecked(brand.name)} onChange={handleCheck(brand.name)} value={brand.name} id={brand.id} />
-        <label className="form-check-label fw-bold" htmlFor={brand.id}>
-          {brand.name}
-        </label>
-      </div>
-    )
-  }
-
-
-  const [ selectedFile, setSelectedFile] = useState("");
-  const [ imageUrl, setImageUrl] = useState("");
-  const [ base64Image, setBase64Image ] = useState("");
 
   useEffect(()=>{
-    if(base64Image){
+    if(formData.paymentStatus === "Cash"){
       setFormData( prevState => ({
         ...prevState,
-        logo: base64Image
+        lpoNumber: "",
+        paymentDueDate: "",
+        otherPaymentDetails: ""
       }))
     }
-  }, [base64Image])
+    if(formData.paymentStatus === "Credit"){
+      setFormData( prevState => ({
+        ...prevState,
+        bankName: "",
+        bankAccountName: "",
+        amountPaid: "",
+        accountNumber: "",
+        dateOfPayment: ""
+      }))
+    }
+  }, [formData.paymentStatus])
 
-  
+  const brandsQuery = useQuery({
+    queryKey: ["allBrands"],
+    queryFn: () => apiGet({ url: "/brand" })
+      .then(res => {
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
 
-  const uploadImage = (event) => {
-    const file = event.target.files[0];
-    if(file){
-      Compress.imageFileResizer(
-        file, // the file from input
-        120, // width
-        120, // height
-        "PNG", // compress format WEBP, JPEG, PNG
-        80, // quality
-        0, // rotation
-        (uri) => {
-          setBase64Image(uri)
-        },
-        "base64" // blob or base64 default base64
-      );
-      setSelectedFile(file);
-      setImageUrl(URL.createObjectURL(file));
+  const productQuery = useQuery({
+    queryKey: ["allProducts"],
+    queryFn: () => apiGet({ url: `/product` })
+      .then(res => {
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
+
+  const pfiRequestQuery = useQuery({
+    queryKey: ["allPfiRequests"],
+    queryFn: () => apiGet({ url: `/pfiRequestForm` })
+      .then(res => {
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
+
+  const listBrandOptions = () => {
+    if (brandsQuery?.data?.length) {
+      return brandsQuery.data.map(brand =>
+        <option key={brand.id} value={brand.id}>{brand.name}</option>
+      )
+    }
+  }
+
+  const listProductOptions = () => {
+    let products = productQuery?.data;
+    if (formData.brandId) {
+      products = products.filter(item => item.brandId === formData.brandId)
+    }
+    if (products.length) {
+      return products.map(product =>
+        <option key={product.id} value={product.id}>{product.name}</option>
+      )
+    }
+  }
+
+  const listPfiRequestOptions = () => {
+    if (pfiRequestQuery?.data?.length) {
+      return pfiRequestQuery.data.map(pfiRequest =>
+        <option key={pfiRequest.id} value={pfiRequest.id}>{pfiRequest.pfiReferenceNumber}-{pfiRequest.customer.companyName}-{pfiRequest.contactPerson.name}</option>
+      )
     }
   }
 
@@ -152,90 +184,336 @@ const EditCompany = () =>{
   }
 
   const queryClient = useQueryClient();
-  const {isLoading, mutate} = useMutation({
-    mutationFn: ()=>apiPatch({ url: `/company/${id}`, data: formData})
-    .then( res =>{
-      console.log(res.data)
-      dispatchMessage({ message: res.message})
-      queryClient.invalidateQueries(["allCompanies", id])
-    })
-    .catch(error =>{
-      console.log(error)
-      dispatchMessage({severity: "error", message: error.message})
-    }),
+  const { isLoading, mutate } = useMutation({
+    mutationFn: () => apiPatch({ url: `/invoiceRequestForm/${id}`, data: formData })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: res.message })
+        queryClient.invalidateQueries(["allInvoiceRequests", id])
+        router.push(`/invoiceRequests/${id}`)
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
   })
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
-    mutate()
+    // console.log(formData)
+    mutate()       
   }
 
-  
+
 
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Company</h4>
-        <span className="breadcrumb-item ms-3"><a href="/companies"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
+        <h4 className="m-0">Invoice Request</h4>
+        <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
       </header>
-      
+
 
       <div className="row">
-          <div className="col-12 d-flex align-items-stretch">
-            <div className="card w-100">
-              <div className="card-body p-4" style={{maxWidth: "700px"}}>
-                <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Company Details</h5>
-                <form>
-                  <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Company Name</label>
-                    <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange("name")}/>
+        <div className="col-12 d-flex align-items-stretch">
+          <div className="card w-100">
+            <div className="card-body p-4" style={{ maxWidth: "700px" }}>
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Invoice Request Details</h5>
+              <form>
+                <div className="mb-3">
+                  <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference No (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select" id="pfiRequestFormId" onChange={handleChange("pfiRequestFormId")} value={formData.pfiRequestFormId} aria-label="Default select example">
+                      <option value="">Select Pfi Reference Number</option>
+                      {!pfiRequestQuery.isLoading && listPfiRequestOptions()}
+                    </select>
                   </div>
+                  <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
+                </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="code" className="form-label">Company Code</label>
-                    <input type="text" className="form-control" id="code" value={formData.code} onChange={handleChange("code")}  />
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="customerType" className="form-label">Customer Type (<span className='fst-italic text-warning'>required</span>)</label>
+                  <select className="form-select shadow-none" id="customerType" onChange={handleChange("customerType")} value={formData.customerType} aria-label="Default select example">
+                    <option value="">Select Customer Type</option>
+                    <option value="existing customer">Existing Customer</option>
+                    <option value="new customer">New Customer</option>
+                  </select>
+                </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" className="form-control"  id="email" value={formData.email} onChange={handleChange("email")}  />
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="invoiceName" className="form-label">Invoice Name (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control" value={formData.invoiceName} onChange={handleChange("invoiceName")} id="invoiceName" placeholder="Invoice Name" />
+                  <span className='text-danger font-monospace small'>{errors.invoiceName}</span>
+                </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="address" className="form-label">Address</label>
-                    <textarea className="form-control" id="address" rows={4} value={formData.address} onChange={handleChange("address")}></textarea>
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="address" className="form-label">Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control shadow-none" value={formData.address} onChange={handleChange("address")} id="address" rows={3}></textarea>
+                  <span className='text-danger font-monospace small'>{errors.address}</span>
+                </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="companyLogo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
-                    <input className="form-control" id="companyLogo" accept="image/*" type="file" onChange={uploadImage} />
-                    {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
-                    {(imageUrl || formData.logo) &&
-                      <div>
-                        <h6 className='small fw-bold mt-3'>Logo Preview</h6>
-                        <img src={imageUrl || formData.logo} alt="Logo Preview" className='border rounded' width="100px" />
-                      </div>}
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="contactOfficeTelephone" className="form-label">Contact Office Telephone (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.contactOfficeTelephone} onChange={handleChange("contactOfficeTelephone")} id="contactOfficeTelephone" placeholder="Phone Number" />
+                  <span className='text-danger font-monospace small'>{errors.contactOfficeTelephone}</span>
+                </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="brands" className="form-label">Brands (<span className='fst-italic text-warning'>required</span>)</label>
-                    {!brandsQuery.isLoading && !brandsQuery.isError &&
-                      <div className='d-flex'> {listBrands()} </div>}
-                      {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="emailAddress" className="form-label">Email Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.emailAddress} onChange={handleChange("emailAddress")} id="emailAddress" placeholder="Email Address" />
+                  <span className='text-danger font-monospace small'>{errors.emailAddress}</span>
+                </div>
 
-                  <div className="mt-5">
-                    <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
-                    <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/companies">Cancel</a>
+
+
+
+                <div className="mb-3">
+                  <label htmlFor="salesThru" className="form-label">Sales Through (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.salesThru} onChange={handleChange("salesThru")} id="salesThru" aria-label="Default select example">
+                      <option value="">Select Sales Through</option>
+                      <option value="KA">KA</option>
+                      <option value="Retail">Retail</option>
+                      <option value="Agent">Agent</option>
+                      <option value="Govt">Govt</option>
+                      <option value="Fleet">Fleet</option>
+                      <option value="Others">Others</option>
+                    </select>
                   </div>
-                </form>
-              </div>
+                  <span className='text-danger font-monospace small'>{errors.salesThru}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="industry" className="form-label">Industry (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.industry} onChange={handleChange("industry")} id="industry" aria-label="Default select example">
+                      <option value="">Select Industry</option>
+                      <option value="Agric">Agric</option>
+                      <option value="Construction">Construction</option>
+                      <option value="Distribution">Distribution</option>
+                      <option value="Food & Bevereges">Food & Bevereges</option>
+                      <option value="Government">Government</option>
+                      <option value="Manufacturing">Manufacturing</option>
+                      <option value="Oil & Gas">Oil & Gas</option>
+                      <option value="Transportation">Transportation</option>
+                      <option value="Others">Others</option>
+                    </select>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.industry}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="brandId" className="form-label">Vehicle Brand (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.brandId} onChange={handleChange("brandId")} id="brandId" aria-label="Default select example">
+                      <option value="">Select Brand</option>
+                      {!brandsQuery.isLoading && listBrandOptions()}
+                    </select>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.brandId}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="productId" className="form-label">Product (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.productId} onChange={handleChange("productId")} id="productId" aria-label="Default select example">
+                      <option value="">Select Product</option>
+                      {!productQuery.isLoading && listProductOptions()}
+                    </select>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.productId}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="vehicleModelDetails" className="form-label">Vehicle Model Specific Details (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control shadow-none" value={formData.vehicleModelDetails} onChange={handleChange("vehicleModelDetails")} id="vehicleModelDetails" rows={5}></textarea>
+                  <span className='text-danger font-monospace small'>{errors.vehicleModelDetails}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="quantity" className="form-label">Quantity  (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.quantity} onChange={handleChange("quantity")} id="quantity" placeholder="Quantity of Products" />
+                  <span className='text-danger font-monospace small'>{errors.quantity}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="color" className="form-label">Colour  (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.color} onChange={handleChange("color")} id="color" placeholder="Color of Vehicles" />
+                  <span className='text-danger font-monospace small'>{errors.color}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="totalInvoiceValuePerVehicle" className="form-label">Total Invoice Value Per Vehicle (<span className='fst-italic text-warning'>required</span>)<span className='ms-3 fw-bold'>{formatAsCurrency(formData.totalInvoiceValuePerVehicle)}</span></label>
+                  <input type="text" className="form-control shadow-none" value={formData.totalInvoiceValuePerVehicle} onChange={handleChange("totalInvoiceValuePerVehicle")} id="totalInvoiceValuePerVehicle" placeholder="Price Per Vehicle" />
+                  <span className='text-danger font-monospace small'>{errors.totalInvoiceValuePerVehicle}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="typeOfBodyBuilding" className="form-label">Type of Body Building</label>
+                  <textarea className="form-control shadow-none" value={formData.typeOfBodyBuilding} onChange={handleChange("typeOfBodyBuilding")} id="typeOfBodyBuilding" rows={3}></textarea>
+                  <span className='text-danger font-monospace small'>{errors.typeOfBodyBuilding}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="bodyFabricatorName" className="form-label">Body Fabricator Name</label>
+                  <textarea className="form-control shadow-none" value={formData.bodyFabricatorName} onChange={handleChange("bodyFabricatorName")} id="bodyFabricatorName" rows={3}></textarea>
+                  <span className='text-danger font-monospace small'>{errors.bodyFabricatorName}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="registration" className="form-label">Registration (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.registration} onChange={handleChange("registration")} id="registration" aria-label="Default select example">
+                      <option value="">Select Registration Type</option>
+                      <option value="Private">Private</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.registration}</span>
+                </div>
+
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" checked={formData.vatDeduction} onChange={handleChange("vatDeduction")} id="vatDeduction" />
+                  <label className="form-check-label" htmlFor="vatDeduction">
+                    VAT Deduction
+                  </label>
+                </div>
+
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" checked={formData.whtDeduction} onChange={handleChange("whtDeduction")} id="whtDeduction" />
+                  <label className="form-check-label" htmlFor="whtDeduction">
+                    WHT Deduction
+                  </label>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="rebateAmount" className="form-label">Rebate Amount <span className='ms-3 fw-bold'>{formatAsCurrency(formData.rebateAmount)}</span></label>
+                  <input type="text" className="form-control shadow-none" value={formData.rebateAmount} onChange={handleChange("rebateAmount")} id="rebateAmount" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="refundToCustomer" className="form-label">Refund to Customer <span className='ms-3 fw-bold'>{formatAsCurrency(formData.refundToCustomer)}</span></label>
+                  <input type="text" className="form-control shadow-none" value={formData.refundToCustomer} onChange={handleChange("refundToCustomer")} id="refundToCustomer" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="servicePackageDetails" className="form-label">Service Package Details (if given) (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control" value={formData.servicePackageDetails} onChange={handleChange("servicePackageDetails")} id="servicePackageDetails"></textarea>
+                  <span className='text-danger font-monospace small'>{errors.servicePackageDetails}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="rebateReceiver" className="form-label">Rebate Receiver</label>
+                  <input type="text" className="form-control shadow-none" value={formData.rebateReceiver} onChange={handleChange("rebateReceiver")} id="rebateReceiver" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="relationshipWithTransaction" className="form-label">Relationship with transaction (if rebate receiver is not working in buying company)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.relationshipWithTransaction} onChange={handleChange("relationshipWithTransaction")} id="relationshipWithTransaction" placeholder="Relationship with Transaction" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="expectedDeliveryDate" className="form-label">Expected Delivery Date</label>
+                  <input type="date" className="form-control shadow-none" value={formData.expectedDeliveryDate} onChange={handleChange("expectedDeliveryDate")} id="expectedDeliveryDate" />
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control" value={formData.deliveryLocation} onChange={handleChange("deliveryLocation")} id="deliveryLocation"></textarea>
+                  <span className='text-danger font-monospace small'>{errors.deliveryLocation}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="deliveredBy" className="form-label">Delivered By (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className="form-check">
+                    <input className="form-check-input" type="checkbox" checked={formData.deliveredBy === "Delivered By Us"} value="Delivered By Us" onChange={handleChange("deliveredBy")} id="deliveredByUs" />
+                    <label className="form-check-label" htmlFor="deliveredByUs">
+                      Delivered By Us
+                    </label>
+                  </div>
+                  <div className="form-check">
+                    <input className="form-check-input" type="checkbox" checked={formData.deliveredBy === "Pickup By Customer"} value="Pickup By Customer" onChange={handleChange("deliveredBy")} id="pickupByCustomer" />
+                    <label className="form-check-label" htmlFor="pickupByCustomer">
+                      Pickup By Customer
+                    </label>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.deliveredBy}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="paymentStatus" className="form-label">Payment Status (<span className='fst-italic text-warning'>required</span>)</label>
+                  <div className='d-flex align-items-center'>
+                    <select className="form-select shadow-none" value={formData.paymentStatus} onChange={handleChange("paymentStatus")} id="paymentStatus" aria-label="Default select example">
+                      <option value="">Select Payment Status</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Credit">Credit</option>
+                    </select>
+                  </div>
+                  <span className='text-danger font-monospace small'>{errors.paymentStatus}</span>
+                </div>
+
+                {
+                  formData.paymentStatus === "Cash" &&
+                  <>
+                    <div className="mb-3">
+                      <label htmlFor="bankName" className="form-label">Bank Name </label>
+                      <input type="text" className="form-control shadow-none" value={formData.bankName} onChange={handleChange("bankName")} id="bankName" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="bankAccountName" className="form-label">Bank Account Name </label>
+                      <input type="text" className="form-control shadow-none" value={formData.bankAccountName} onChange={handleChange("bankAccountName")} id="bankAccountName" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="accountNumber" className="form-label">Account Number </label>
+                      <input type="text" className="form-control shadow-none" value={formData.accountNumber} onChange={handleChange("accountNumber")} id="accountNumber" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="amountPaid" className="form-label">Amount Paid <span className='ms-3 fw-bold'>{formatAsCurrency(formData.amountPaid)}</span> </label>
+                      <input type="text" className="form-control shadow-none" value={formData.amountPaid} onChange={handleChange("amountPaid")} id="amountPaid" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="dateOfPayment" className="form-label">Date Of Payment</label>
+                      <input type="date" className="form-control shadow-none" value={formData.dateOfPayment} onChange={handleChange("dateOfPayment")} id="dateOfPayment" />
+                    </div>
+                  </>
+                }
+
+
+                {
+                  formData.paymentStatus === "Credit" &&
+                  <>
+                    <div className="mb-3">
+                      <label htmlFor="lpoNumber" className="form-label">LPO Number </label>
+                      <input type="text" className="form-control shadow-none" value={formData.lpoNumber} onChange={handleChange("lpoNumber")} id="lpoNumber" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="paymentDueDate" className="form-label">Payment Due Date </label>
+                      <input type="date" className="form-control shadow-none" value={formData.paymentDueDate} onChange={handleChange("paymentDueDate")} id="paymentDueDate" />
+                    </div>
+                    <div className="mb-3">
+                      <label htmlFor="otherPaymentDetails" className="form-label">Other Payment Details </label>
+                      <textarea rows={5} className="form-control shadow-none" value={formData.otherPaymentDetails} onChange={handleChange("otherPaymentDetails")} id="otherPaymentDetails" ></textarea>
+                    </div>
+                  </>
+                }
+
+                <div className="mb-3">
+                  <label htmlFor="deliveryLocation" className="form-label">Additional Information</label>
+                  <textarea className="form-control shadow-none" value={formData.additionalInformation} onChange={handleChange("additionalInformation")} id="deliveryLocation" rows={6}></textarea>
+                </div>
+
+
+                <div className="mt-5">
+                  <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                  <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/invoiceRequests">Cancel</a>
+                </div>
+              </form>
             </div>
           </div>
         </div>
+      </div>
     </div>
   )
 }
 
-export default EditCompany
+export default EditInvoiceRequest

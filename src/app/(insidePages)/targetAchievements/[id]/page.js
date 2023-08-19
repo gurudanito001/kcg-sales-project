@@ -8,9 +8,13 @@ import Skeleton from '@mui/material/Skeleton';
 
 const DataListItem = ({title, value}) => {
   return (
-    <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-      <h6 className="m-0 me-3">{title}</h6>
-      <span>{value}</span>
+    <div className="row mb-3 d-flex align-items-center">
+      <div className="col-12 col-md-4">
+        <h6 className="m-0">{title}</h6>
+      </div>
+      <div className="col-12 col-md-8">
+        <span>{value}</span>
+      </div>
     </div>
   )
 }

@@ -48,7 +48,6 @@ const Brands = () =>{
     queryFn:  ()=>apiGet({ url: "/brand"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -61,16 +60,15 @@ const Brands = () =>{
     return data.map( (item, index) => {
       const {id, name, code, description, logo, _count } = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/brands/${id}`)
-          }}>
+        <tr key={id} className="hover" >
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
             <img src={logo} height={40} alt="Brand Logo" />
           </td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{name}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/brands/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{name}</h6>
             <span className="fw-normal">{_count.products} Product(s)</span>
           </td>
           <td className="border-bottom-0">

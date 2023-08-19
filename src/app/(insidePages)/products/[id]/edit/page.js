@@ -26,7 +26,8 @@ const EditProduct = () =>{
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
-    })
+    }),
+    staleTime: Infinity
   }) 
   
   useEffect(()=>{
@@ -172,6 +173,7 @@ const EditProduct = () =>{
       queryClient.invalidateQueries(["allProducts", id])
       setImageUrls([])
       setBase64Images([])
+      router.push(`/products/${id}`)
     })
     .catch(error =>{
       console.log(error)

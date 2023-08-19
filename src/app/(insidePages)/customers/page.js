@@ -54,7 +54,6 @@ const Customers = () =>{
     queryFn:  ()=>apiGet({ url: "/customer"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -67,13 +66,12 @@ const Customers = () =>{
     return data.map( (item, index) => {
       const {id, companyName, state, lga, city, address, industry, customerType, status, approved } = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          router.push(`/customers/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1 text-capitalize">{companyName}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/customers/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-capitalize text-primary">{companyName}</h6>
           </td>
           <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1 text-capitalize">{customerType}</h6>
@@ -102,6 +100,10 @@ const Customers = () =>{
         <h4 className="m-0">Customer</h4>
         <a className="btn btn-link text-primary ms-auto" href="/customers/add">Add</a>
       </header>
+
+      <div className="row">
+        
+      </div>
 
       <div className="row">
           <div className="col-12 d-flex align-items-stretch">

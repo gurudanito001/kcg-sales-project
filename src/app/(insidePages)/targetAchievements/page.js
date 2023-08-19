@@ -46,7 +46,6 @@ const MonthlyTargets = () =>{
     queryFn:  ()=>apiGet({ url: "/monthlyTarget"})
     .then(res => {
       console.log(res)
-      dispatchMessage({message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -59,13 +58,12 @@ const MonthlyTargets = () =>{
     return data.map( (item, index) => {
       const {id, month, target} = item;
       return( 
-        <tr key={id} className="hover"  onClick={(e)=>{
-          e.stopPropagation()
-          // router.push(`/targetAchievements/${id}`)
-          }}>
+        <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{formatMonth(new Date(month).getMonth())} {new Date(month).getFullYear()}</h6>
+          <td className="border-bottom-0 link-style" onClick={()=>{
+            router.push(`/targetAchievements/${id}`)
+          }}>
+            <h6 className="fw-semibold mb-1 text-primary">{formatMonth(new Date(month).getMonth())} {new Date(month).getFullYear()}</h6>
           </td>
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{target}</p>

@@ -20,13 +20,13 @@ const EditCompany = () =>{
     queryFn: () => apiGet({ url: `/company/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
-    })
+    }),
+    staleTime: Infinity
   }) 
   
   useEffect(()=>{
@@ -63,25 +63,19 @@ const EditCompany = () =>{
   })
 
   const handleCheck = (brand) =>(event) =>{
-    if(event.target.checked){
-      let brandData;
-      brandsQuery.data.forEach( item =>{
-        if(item.name === brand){
-          brandData = item.name;
-        }
-      })
-      let state = formData;
-      state.brands.push(brandData);
-      setFormData(prevState =>({
+    let brands = formData.brands
+    let brandExists = brands.includes(brand);
+    if(brandExists){
+      brands = brands.filter( item => item !== brand)
+      setFormData( prevState => ({
         ...prevState,
-        ...state
+        brands 
       }))
     }else{
-      let state = formData;
-      state.brands = state.brands.filter( function(item){ return item !== brand })
-      setFormData(prevState =>({
+      brands.push(brand);
+      setFormData( prevState => ({
         ...prevState,
-        ...state
+        brands 
       }))
     }
   }
@@ -158,6 +152,7 @@ const EditCompany = () =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allCompanies", id])
+      router.push(`/companies/${id}`)
     })
     .catch(error =>{
       console.log(error)
@@ -167,7 +162,7 @@ const EditCompany = () =>{
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    return console.log(formData)
     mutate()
   }
 

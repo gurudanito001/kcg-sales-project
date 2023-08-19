@@ -40,7 +40,8 @@ const EditEmployee = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity
   })
   useEffect(()=>{
     if(employeeDetailsQuery.data){
@@ -210,6 +211,7 @@ const EditEmployee = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allEmployees", id])
+        router.push(`/employees/${id}`)
       })
       .catch(error => {
         console.log(error)

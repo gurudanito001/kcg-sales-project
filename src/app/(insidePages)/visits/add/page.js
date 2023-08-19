@@ -6,9 +6,11 @@ import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useSelector } from "react-redux";
 //import formValidator from '../../../services/validation';
+import { useRouter } from "next/navigation";
 
 const AddCustomerVisit = () => {
   const dispatchMessage = useDispatchMessage();
+  const router = useRouter()
   const { userData } = useSelector(state => state.userData);
 
   useEffect(() => {
@@ -190,7 +192,7 @@ const AddCustomerVisit = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allVisitReports"])
-        clearState()
+        router.push("/visits")
       })
       .catch(error => {
         console.log(error)
