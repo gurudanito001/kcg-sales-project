@@ -57,7 +57,7 @@ const VisitReportDetails = () => {
     queryFn: () => apiGet({ url: `/visitReport/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
+      // dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -83,9 +83,8 @@ const VisitReportDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Visit Report</h4>
         <span className="breadcrumb-item ms-3"><a href="/visits"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>}
       </header>
-
 
       <div className="row">
         <div className="col-12 d-flex align-items-stretch">
@@ -107,7 +106,6 @@ const VisitReportDetails = () => {
                   <DataListItem title="Pfi Request" value={data.pfiRequest ? "Yes" : "No"} />
                 </> :
                 <LoadingFallBack />
-
               }
             </div>
           </div>

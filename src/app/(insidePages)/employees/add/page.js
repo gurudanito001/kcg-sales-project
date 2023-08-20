@@ -54,6 +54,11 @@ const AddEmployee = () => {
         ...prevState,
         staffCadre: ["supervisor", "salesPerson"]
       }))
+    }else if(formData.staffCadre === "admin"){
+      setFormData( prevState =>({
+        ...prevState,
+        staffCadre: ["admin"]
+      }))
     }
   }, [formData.staffCadre])
 
@@ -247,6 +252,7 @@ const AddEmployee = () => {
                   <label htmlFor="staffCadre" className="form-label">Staff Cadre (<span className='fst-italic text-warning'>required</span>)</label>
                   <select className="form-select shadow-none" id="staffCadre" onChange={handleChange("staffCadre")} value={formData.staffCadre[0]} aria-label="Default select example">
                     <option value="">Select Staff Cadre</option>
+                    <option value="admin">Admin</option>
                     <option value="supervisor">Supervisor</option>
                     <option value="salesPerson">Sales Representative</option>
                   </select>

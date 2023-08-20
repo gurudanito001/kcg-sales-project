@@ -8,10 +8,18 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-    //const offers = await prisma.offer.findMany()
+    
+    const employeeId = searchParams.get('employeeId');
+    const customerId = searchParams.get('customerId');
+    const contactPersonId = searchParams.get('contactPersonId');
   
     let myCursor = "";
     const data = await prisma.visitReport.findMany({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(customerId && { customerId }),
+        ...(contactPersonId && { contactPersonId }),
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
@@ -30,7 +38,13 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.visitReport.count()
+    const totalCount = await prisma.visitReport.count({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(customerId && { customerId }),
+        ...(contactPersonId && { contactPersonId }),
+      }
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
   

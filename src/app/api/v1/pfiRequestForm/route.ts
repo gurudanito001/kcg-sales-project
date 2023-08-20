@@ -8,9 +8,35 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
+
+    const employeeId = searchParams.get('employeeId');
+    const customerId = searchParams.get('customerId');
+    const contactPersonId = searchParams.get('contactPersonId');
+    const brandId = searchParams.get('brandId');
+    const productId = searchParams.get('productId');
+    const pfiReferenceNumber = searchParams.get('pfiReferenceNumber');
+    let approved: any = searchParams.get('approved');
+
+    if(approved === "approved"){
+      approved = true
+    }else if(approved === "unApproved"){
+      approved = false
+    }else{
+      approved === null
+    }
+    
   
     let myCursor = "";
     const data = await prisma.pfiRequestForm.findMany({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(customerId && { customerId }),
+        ...(contactPersonId && { contactPersonId }),
+        ...(brandId && { brandId }),
+        ...(productId && { productId }),
+        ...(pfiReferenceNumber && { pfiReferenceNumber }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
@@ -32,7 +58,17 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.pfiRequestForm.count()
+    const totalCount = await prisma.pfiRequestForm.count({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(customerId && { customerId }),
+        ...(contactPersonId && { contactPersonId }),
+        ...(brandId && { brandId }),
+        ...(productId && { productId }),
+        ...(pfiReferenceNumber && { pfiReferenceNumber }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+      }
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
   

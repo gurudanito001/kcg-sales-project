@@ -38,9 +38,13 @@ const EditBranch = () => {
     })
   })
 
-  const listStateOptions = () =>{
-    return NaijaStates.states().map(state =>
-      <option key={state} value={state}>{state}</option>
+  const listStateOptions = () => {
+    return NaijaStates.states().map(state =>{
+      if(state === "Federal Capital Territory"){
+        return <option key="Abuja" value={`Abuja`}>Abuja</option>
+      }
+      return <option key={state} value={state}>{state}</option>
+    }
     )
   }
 

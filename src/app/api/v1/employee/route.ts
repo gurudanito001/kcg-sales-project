@@ -11,10 +11,22 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-    //const offers = await prisma.offer.findMany()
+  
+    const companyId = searchParams.get('companyId');
+    const branchId = searchParams.get('branchId');
+    const staffCadre = searchParams.get('staffCadre');
+    const firstName = searchParams.get('firstName');
+    const lastName = searchParams.get('lastName');
   
     let myCursor = "";
     const data = await prisma.employee.findMany({
+      where: {
+        ...(companyId && { companyId }),
+        ...(branchId && { branchId }),
+        ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
+        ...(lastName && { lastName: { contains: lastName, mode: 'insensitive' } }),
+        ...(staffCadre && {staffCadre: {has: staffCadre}})
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
@@ -33,7 +45,15 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.employee.count()
+    const totalCount = await prisma.employee.count({
+      where: {
+        ...(companyId && { companyId }),
+        ...(branchId && { branchId }),
+        ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
+        ...(lastName && { lastName: { contains: lastName, mode: 'insensitive' } }),
+        ...(staffCadre && {staffCadre: {has: staffCadre}})
+      }
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
   

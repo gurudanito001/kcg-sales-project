@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import AddContactPerson from '../add/addContactPerson';
 import EditContactPerson from "./edit/editContactPerson";
 import { useState } from "react";
+import { useSelector } from "react-redux";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -86,6 +87,7 @@ const CustomerDetails = () => {
   const params = useParams();
   const { id } = params;
   console.log(id);
+  const {userData} = useSelector( state => state.userData);
   const dispatchMessage = useDispatchMessage();
   const [currentForm, setCurrentForm] = useState("")
   const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
@@ -121,12 +123,12 @@ const CustomerDetails = () => {
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
-          <td className="border-bottom-0">
+          {userData?.staffCadre.includes("salesPerson") &&<td className="border-bottom-0">
             <button className="btn btn-link text-primary ms-auto" onClick={()=>{
               setCurrentlyEditedContactPerson(item);
               setCurrentForm("editContactPerson")
             }}>Edit</button>
-          </td>
+          </td>}
         </tr>
     )
     })
@@ -138,8 +140,8 @@ const CustomerDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Customer</h4>
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>
-        <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>
+        {userData?.staffCadre.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
+        {userData?.staffCadre.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
       </header>
 
 

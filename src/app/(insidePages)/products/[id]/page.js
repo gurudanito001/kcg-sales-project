@@ -5,6 +5,7 @@ import { apiGet } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
+import { useSelector } from "react-redux";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -51,6 +52,7 @@ const ProductDetails = () => {
   const params = useParams();
   const {id} = params;
   console.log(id);
+  const {userData} = useSelector( state => state.userData);
   const dispatchMessage = useDispatchMessage();
 
   const {data, isFetching} = useQuery({
@@ -58,7 +60,7 @@ const ProductDetails = () => {
     queryFn: () => apiGet({ url: `/product/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
+      // dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -78,7 +80,7 @@ const ProductDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Product</h4>
         <span className="breadcrumb-item ms-3"><a href="/products"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>
+        {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
       </header>
 
 

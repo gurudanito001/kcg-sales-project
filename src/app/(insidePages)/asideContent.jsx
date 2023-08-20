@@ -1,9 +1,10 @@
 "use client"
 import { usePathname } from "next/navigation";
 import path from "path";
+import { useSelector } from "react-redux";
 
 
-const SidebarListItem = ({ route, title, active, iconClass }: { route: string; title: string; active: boolean; iconClass: string }) => {
+const SidebarListItem = ({ route, title, active, iconClass }) => {
   
   return (
     <li className="sidebar-item my-1">
@@ -19,10 +20,11 @@ const SidebarListItem = ({ route, title, active, iconClass }: { route: string; t
 
 const AsideContent = () => {
   const pathname = usePathname();
+  const {userData} = useSelector( state => state.userData);
   return (
     <nav className="sidebar-nav scroll-sidebar h-100" data-simplebar="">
       <div className="brand-logo d-flex align-items-center mb-4 p-0">
-        <a href="./index.html" className="text-nowrap logo-img">
+        <a href="/" className="text-nowrap logo-img">
           <h4>KCG-Sales-Project</h4>
         </a>
         <div className="close-btn d-xl-none d-block sidebartoggler cursor-pointer ms-auto" id="sidebarCollapse" data-bs-dismiss="offcanvas" aria-label="Close">
@@ -31,12 +33,11 @@ const AsideContent = () => {
       </div>
       <ul id="sidebarnav">
         <SidebarListItem route="/" title="Dashboard" active={pathname === "/"} iconClass="fa-solid fa-chart-line" />
-        <SidebarListItem route="/companies" title="Companies" active={pathname.includes("/companies")} iconClass="fa-regular fa-building" />
-        <SidebarListItem route="/branches" title="Branches" active={pathname.includes("/branches")} iconClass="fa-solid fa-code-branch" />
-        <SidebarListItem route="/brands" title="Brands" active={pathname.includes("/brands")} iconClass="fa-solid fa-trademark"/>
+        {userData?.staffCadre?.includes("admin") && <SidebarListItem route="/companies" title="Companies" active={pathname.includes("/companies")} iconClass="fa-regular fa-building" />}
+        {userData?.staffCadre?.includes("admin") && <SidebarListItem route="/brands" title="Brands" active={pathname.includes("/brands")} iconClass="fa-solid fa-trademark"/>}
         <SidebarListItem route="/products" title="Products" active={pathname.includes("/products")} iconClass="fa-solid fa-car-rear" />
-        <SidebarListItem route="/priceMaster" title="Price Master" active={pathname.includes("/priceMaster")} iconClass="fa-regular fa-money-bill-1" />
-        <SidebarListItem route="/employees" title="Employees" active={pathname.includes("/employees")} iconClass="fa-solid fa-user" />
+        {userData?.staffCadre?.includes("admin") && <SidebarListItem route="/priceMaster" title="Price Master" active={pathname.includes("/priceMaster")} iconClass="fa-regular fa-money-bill-1" />}
+        {userData?.staffCadre?.includes("admin") && <SidebarListItem route="/employees" title="Employees" active={pathname.includes("/employees")} iconClass="fa-solid fa-user" />}
         <SidebarListItem route="/customers" title="Customers" active={pathname.includes("/customers")} iconClass="fa-solid fa-city" />
         <SidebarListItem route="/visits" title="Visit Reports" active={pathname.includes("/visits")} iconClass="fa-solid fa-calendar-days" />
         <SidebarListItem route="/pfiRequests" title="Pfi Requests" active={pathname.includes("/pfiRequests")} iconClass="fa-solid fa-file-lines" />

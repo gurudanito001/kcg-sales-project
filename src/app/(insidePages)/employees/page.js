@@ -5,7 +5,8 @@ import { apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
-import clipLongText from "@/services/clipLongText";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const LoadingFallBack = () =>{
   return (
@@ -44,13 +45,133 @@ const Employees = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
+  const [showFilters, setShowFilters] = useState(false);
+  const { userData } = useSelector(state => state.userData);
+  const [page, setPage] = useState(1);
+
+  const [formData, setFormData] = useState({
+    companyId: "",
+    branchId: "",
+    staffCadre: "",
+    firstName: "",
+    lastName: ""
+  })
+
+  const [listMetaData, setListMetaData] = useState({
+    currentPage: 1,
+    totalCount: 0,
+    take: 0
+  })
+
+  const clearState = () =>{
+    setFormData( prevState =>({
+      ...prevState,
+      companyId: "",
+      branchId: "",
+      staffCadre: "",
+      firstName: "",
+      lastName: ""
+    }))
+  }
+
+  const setNextPage = () =>{
+    let {currentPage, take, totalCount} = listMetaData;
+    if((currentPage * take) < totalCount){
+      setPage( prevState => prevState + 1)
+    }
+  }
+
+  const setPrevPage = () =>{
+    let {currentPage} = listMetaData;
+    if(currentPage > 1){
+      setPage( prevState => prevState - 1)
+    }
+  }
+
+  const [queryUrlString, setQueryUrlString] = useState("")
+
+  const handleChange = (props) => (event) => {
+    setFormData(prevState => ({
+      ...prevState,
+      [props]: event.target.value
+    }))
+  }
+
+  const generateQueryString = () =>{
+    let queryString = ""
+    let data = formData;
+    let dataKeys = Object.keys(data);
+    dataKeys.forEach( key => {
+      if(data[key]){
+        if(queryString === ""){
+          queryString += `${key}=${data[key]}`
+        }else{
+          queryString += `&${key}=${data[key]}`
+        }
+      }
+    })
+    return queryString
+  }
+
+  const companyQuery = useQuery({
+    queryKey: ["allCompanies"],
+    queryFn: () => apiGet({ url: `/company` })
+      .then(res => {
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
+
+  const branchQuery = useQuery({
+    queryKey: ["allBranches"],
+    queryFn: () => apiGet({ url: `/branch` })
+      .then(res => {
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
+
+  const listCompanyOptions = () => {
+    if (companyQuery?.data?.length) {
+      return companyQuery.data.map(company =>
+        <option key={company.id} value={company.id}>{company.name}</option>
+      )
+    }
+  }
+
+  const listBranchOptions = () => {
+    let branches = branchQuery?.data;
+    if (formData.companyId) {
+      branches = branches.filter(item => item.companyId === formData.companyId)
+    }
+    if (branches.length) {
+      return branches.map(branch =>
+        <option key={branch.id} value={branch.id}>{branch.name}</option>
+      )
+    }
+  }
 
 
-  const {data, isFetching} = useQuery({
+
+  const {data, isFetching, refetch} = useQuery({
     queryKey: ["allEmployees" ],
-    queryFn:  ()=>apiGet({ url: "/employee"})
+    queryFn:  ()=>apiGet({ url: `/employee?${queryUrlString}&page=${page}&take=${20}`})
     .then(res => {
       console.log(res)
+      setListMetaData( prevState => ({
+        ...prevState,
+        totalCount: res.totalCount,
+        currentPage: res.page,
+        take: res.take
+      }))
       return res.data
     })
     .catch(error =>{
@@ -58,6 +179,17 @@ const Employees = () =>{
       dispatchMessage({severity: "error", message: error.message})
     })
   })
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    let queryString = generateQueryString()
+    setQueryUrlString(queryString)
+    //return console.log(formData, queryString)
+  }
+
+  useEffect(()=>{
+    refetch()
+  }, [queryUrlString, page])
 
   const listEmployees = () =>{
     return data.map( (item, index) => {
@@ -94,8 +226,57 @@ const Employees = () =>{
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Employee</h4>
-        <a className="btn btn-link text-primary ms-auto" href="/employees/add">Add</a>
+        <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
+        <a className="btn btn-link text-primary ms-3" href="/employees/add">Add</a>
       </header>
+
+      {showFilters &&
+        <div className="container-fluid card p-3">
+          <form className="row">
+            <h6 className="col-12 mb-3 text-muted">Filter Employee List</h6>
+
+            <div className="mb-3 col-6">
+              <label htmlFor="companyId" className="form-label">Company</label>
+              <select className="form-select shadow-none" value={formData.companyId} onChange={handleChange("companyId")} id="companyId" aria-label="Default select example">
+                <option value="">Select Company</option>
+                {listCompanyOptions()}
+              </select>
+            </div>
+
+            <div className="mb-3 col-6">
+              <label htmlFor="branchId" className="form-label">Branch</label>
+              <select className="form-select shadow-none" value={formData.branchId} onChange={handleChange("branchId")} id="branchId" aria-label="Default select example">
+                <option value="">Select Branch</option>
+                {listBranchOptions()}
+              </select>
+            </div>
+
+            <div className="mb-3 col-6">
+              <label htmlFor="staffCadre" className="form-label">Staff Cadre</label>
+              <select className="form-select shadow-none" value={formData.staffCadre} onChange={handleChange("staffCadre")} id="staffCadre" aria-label="Default select example">
+                <option value="">Select Staff Cadre</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="salesPerson">Sales Person</option>
+              </select>
+            </div>
+
+            <div className="mb-3 col-lg-6">
+              <label htmlFor="firstName" className="form-label">First Name</label>
+              <input type="text" className="form-control shadow-none" id="firstName" value={formData.firstName} onChange={handleChange("firstName")}/>
+            </div>
+
+            <div className="mb-3 col-lg-6">
+              <label htmlFor="lastName" className="form-label">Last Name</label>
+              <input type="text" className="form-control shadow-none" id="lastName" value={formData.lastName} onChange={handleChange("lastName")}/>
+            </div>
+
+            <div className="d-flex col-12 align-items-center mt-5">
+              <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
+              <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
+            </div>
+          </form>
+        </div>
+      }
 
       <div className="row">
           <div className="col-12 d-flex align-items-stretch">
@@ -104,6 +285,7 @@ const Employees = () =>{
                 <h5 className="card-title fw-semibold mb-4 opacity-75">All Employees</h5>
                 <div className="table-responsive">
                   <table className="table text-nowrap mb-0 align-middle">
+                    <caption className='p-3'><span className="fw-bold">Current Page: </span>{listMetaData.currentPage}  <span className="fw-bold ms-2">Total Pages: </span>{Math.ceil(listMetaData.totalCount / listMetaData.take)} <span className="fw-bold ms-2"> Total Count: </span> {listMetaData.totalCount}</caption>
                     <thead className="text-dark fs-4">
                       <tr>
                         <th className="border-bottom-0">
@@ -130,6 +312,14 @@ const Employees = () =>{
                         {data ? listEmployees() : <LoadingFallBack />}                 
                     </tbody>
                   </table>
+                </div>
+                <div className="px-3">
+                  <button className="btn btn-outline-primary py-1 px-2" disabled={isFetching} type="button" onClick={setPrevPage}>
+                    <i className="fa-solid fa-angle-left text-primary"></i>
+                  </button>
+                  <button className="btn btn-outline-primary py-1 px-2 ms-3" disabled={isFetching} type="button" onClick={setNextPage}>
+                    <i className="fa-solid fa-angle-right text-primary"></i>
+                  </button>
                 </div>
               </div>
             </div>

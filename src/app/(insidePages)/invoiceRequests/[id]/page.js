@@ -5,6 +5,7 @@ import { apiGet } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
+import { useSelector } from "react-redux";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -52,13 +53,14 @@ const InvoiceRequestDetails = () => {
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
+  const {userData} = useSelector( state => state.userData)
 
   const {data, isFetching} = useQuery({
     queryKey: ["allInvoiceRequests", id],
     queryFn: () => apiGet({ url: `/invoiceRequestForm/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
+      //dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -72,7 +74,7 @@ const InvoiceRequestDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Invoice Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
       </header>
 
 

@@ -8,11 +8,28 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-    //const offers = await prisma.offer.findMany()
+
+    const employeeId = searchParams.get('employeeId');
+    let approved: any = searchParams.get('approved');
+    const state = searchParams.get('state');
+    const companyName = searchParams.get('companyName');
+
+    if(approved === "approved"){
+      approved = true
+    }else if(approved === "unApproved"){
+      approved = false
+    }else{
+      approved === null
+    }
 
     let myCursor = "";
     const data = await prisma.customer.findMany({
-      where: {},
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+        ...(state && { state }),
+        ...(companyName && { companyName: { contains: companyName, mode: 'insensitive' } }),
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
@@ -30,7 +47,14 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.customer.count()
+    const totalCount = await prisma.customer.count({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+        ...(state && { state }),
+        ...(companyName && { companyName: { contains: companyName, mode: 'insensitive' } }),
+      }
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
 

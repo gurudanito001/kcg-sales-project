@@ -84,10 +84,15 @@ const Layout = ({ children }) => {
                 <li className="nav-item dropdown">
                   <a className="nav-link nav-icon-hover" href="" id="drop2" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                    <img src="/images/profile/user-1.jpg" alt="" width="35" height="35" className="rounded-circle" />
+                    <img src={`/images/profile/${userData?.staffCadre}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />
                   </a>
                   <div className="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
                     <div className="message-body">
+                      <div className="px-3">
+                        <h6 className="text-capitalize m-0">{userData?.firstName} {userData?.lastName}</h6>
+                        <p className="text-capitalize small">{userData?.staffCadre}</p>
+                      </div>
+                      
                       <a href="" className="d-flex align-items-center gap-2 dropdown-item">
                         <i className="ti ti-user fs-6"></i>
                         <p className="mb-0 fs-3">My Profile</p>

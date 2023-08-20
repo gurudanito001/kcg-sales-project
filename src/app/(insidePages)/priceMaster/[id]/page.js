@@ -59,7 +59,7 @@ const PriceMasterDetails = () => {
     queryFn: () => apiGet({ url: `/priceMaster/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: res.message})
+      // dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
