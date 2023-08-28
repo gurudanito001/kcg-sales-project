@@ -8,17 +8,26 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
+    const resourceId = searchParams.get("resourceId");
     //const offers = await prisma.offer.findMany()
 
     let myCursor = "";
     const data = await prisma.comment.findMany({
-      take: take,
+      where: {
+        viewed: false,
+        ...(resourceId && {resourceId})
+      },
+      include:{
+        sender: true
+      }
+      /* take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,
         }
-      })
+      }) */
+      
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -26,9 +35,14 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.comment.count()
-    const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
-    myCursor = lastItemInData?.id // Example: 29
+    const totalCount = await prisma.comment.count({
+      where: {
+        viewed: false,
+        ...(resourceId && {resourceId})
+      }
+    })
+    //const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
+    //myCursor = lastItemInData?.id // Example: 29
 
     return new NextResponse(JSON.stringify({page, take, totalCount, message: `${routeName} list fetched successfully`, data }), {
       status: 200,

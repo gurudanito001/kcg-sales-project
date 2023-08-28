@@ -92,7 +92,8 @@ tr.hover:hover {
 
 .link-style {
   color: #5D87FF;
-  cursor: pointer
+  cursor: pointer;
+  background-color: #767676b6
 }
 
 .link-style:hover {
@@ -104,5 +105,5 @@ tr.hover:hover {
 
 
 td, th {
-  padding: 10px !important
+  padding: 10px !important;
 }

@@ -78,6 +78,14 @@ export async function POST(request: Request) {
     if(typeof encryptedPassword === "string") data.password = encryptedPassword;
     
     // create user in database
+    let {email} = data;
+    let emailExists = await prisma.employee.findFirst({ where: {email}})
+    if(emailExists){
+      return new NextResponse(JSON.stringify({ message: `Employee with email "${email}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
     const user = await prisma.employee.create({
       data,
     }) ;

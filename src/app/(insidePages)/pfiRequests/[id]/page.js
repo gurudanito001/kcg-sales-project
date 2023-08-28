@@ -1,11 +1,15 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
+import { getDecodedToken } from "@/services/localStorageService";
+import { usePathname } from "next/navigation";
+import useGetComments from "@/hooks/useGetComments";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPost } from "@/services/apiService";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -54,6 +58,9 @@ const PfiRequestDetails = () => {
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const {userData} = useSelector( state => state.userData)
+  const tokenData = getDecodedToken();
+  const pathName = usePathname();
+  const {refetch, comments, listComments} = useGetComments(id);
 
   const {data, isFetching} = useQuery({
     queryKey: ["allPfiRequests", id],
@@ -69,17 +76,73 @@ const PfiRequestDetails = () => {
     })
   }) 
 
+
+  const [commentData, setCommentData] = useState({
+    senderId: "",
+    receiverId: "",
+    resourceId: "",
+    resourceUrl: "",
+    message: ""
+  });
+
+  const clearComment = () => {
+    setCommentData( prevState => ({
+      ...prevState, 
+      message: ""
+    }))
+  }
+  
+  const queryClient = useQueryClient();
+  const commentMutation = useMutation({
+    mutationFn: () => apiPost({ url: "/comment", data: commentData })
+      .then(res => {
+        clearComment();
+        console.log(res.data)
+        //dispatchMessage({ message: res.message })
+        refetch()
+        
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const handleChangeComment =  (event) => {
+    setCommentData(prevState => ({
+      ...prevState,
+      message: event.target.value
+    }))
+  }
+
+  const handleSubmit = (e)=>{
+    e.preventDefault();
+    // return console.log(commentData)
+    commentMutation.mutate()
+  }
+
+  useEffect(()=>{
+    setCommentData( prevState =>({
+      ...prevState,
+      senderId: tokenData?.user_id,
+      receiverId: data?.employeeId,
+      resourceId: id,
+      resourceUrl: pathName
+    }))
+  },[data])
+
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Pfi Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
+        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
       </header>
 
 
       <div className="row">
-        <div className="col-12 d-flex align-items-stretch">
+        <div className="col-12 d-flex flex-column align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <h5 className="card-title fw-semibold mb-4 opacity-75">Pfi Request Details</h5>
@@ -121,6 +184,20 @@ const PfiRequestDetails = () => {
                 <LoadingFallBack />
 
               }
+            </div>
+          </div>
+
+
+          <div className="card w-100 p-3">
+            <h5 className="mb-4">Comments</h5>
+            <ul className="list-unstyled">
+              {listComments()}
+            </ul>
+            <div className="mb-3 d-flex">
+              <textarea rows={3} className="form-control" id="location" value={commentData.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
+              <div className="d-flex align-items-center">
+                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
+              </div>
             </div>
           </div>
         </div>

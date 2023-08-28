@@ -13,7 +13,7 @@ model Company {
   name      String     @unique @db.VarChar(50)
   logo      String?    @db.VarChar(255)
   email     String     @unique @db.VarChar(50)
-  address   String?    @db.VarChar(255)
+  address   String?    @db.VarChar(1000)
   brands    String[]
   extraData Json?
   branches  Branch[]
@@ -30,7 +30,7 @@ model Branch {
   lga          String     @db.VarChar(50)
   name         String     @db.VarChar(50)
   code         String?    @unique @db.VarChar(255)
-  address      String     @db.VarChar(255)
+  address      String     @db.VarChar(1000)
   isHeadOffice Boolean    @default(false)
   phoneNumber  String?    @db.VarChar(50)
   email        String     @db.VarChar(50)
@@ -44,7 +44,7 @@ model Brand {
   id                  String                   @id @default(uuid())
   name                String                   @unique @db.VarChar(50)
   code                String?                  @unique @db.VarChar(50)
-  description         String?                  @db.VarChar(255)
+  description         String?                  @db.VarChar(1000)
   logo                String?                  @db.VarChar(255)
   products            Product[]
   prices              PriceMaster[]
@@ -61,15 +61,15 @@ model Product {
   code                String?               @unique @db.VarChar(50)
   brand               Brand                 @relation(fields: [brandId], references: [id])
   brandId             String
-  description         String?               @db.VarChar(255)
-  specifications      String?               @db.VarChar(255)
+  description         String?               @db.VarChar(1000)
+  specifications      String?               @db.VarChar(1000)
   brochures           String[]
-  images              String[]              @db.VarChar(255)
+  images              String[]              @db.VarChar(2000)
   price               PriceMaster?
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   vatInclusive        Boolean?              @default(false)
-  vatRate             String?               @db.VarChar(255)
+  vatRate             String?               @db.VarChar(50)
   extraData           Json?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
@@ -80,7 +80,7 @@ model PriceMaster {
   unitPrice  String    @db.VarChar(50)
   promoPrice String?   @db.VarChar(50)
   anyPromo   Boolean   @default(false)
-  promoText  String?   @db.VarChar(255)
+  promoText  String?   @db.VarChar(1000)
   validFrom  String?
   validTill  String?
   brand      Brand     @relation(fields: [brandId], references: [id])
@@ -104,7 +104,7 @@ model Employee {
   email                 String                   @unique @db.VarChar(50)
   password              String                   @db.VarChar(255)
   supervisorId          String?
-  employmentDate        String?                  @db.VarChar(255)
+  employmentDate        String?                  @db.VarChar(50)
   brandsAssigned        String[]
   customers             Customer[]
   contactPersons        ContactPerson[]
@@ -114,7 +114,6 @@ model Employee {
   MarkettingActivities  MarkettingActivity[]
   sentComments          Comment[]               @relation("Sender")
   receivedComments      Comment[]               @relation("Receiver")
-  receivedNotifications Notification[]          @relation("ReceivedNotification")
   extraData             Json?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
@@ -130,12 +129,12 @@ model Customer {
   state               String?              @db.VarChar(50)
   lga                 String?              @db.VarChar(50)
   city                String?              @db.VarChar(50)
-  address             String?              @db.VarChar(255)
+  address             String?              @db.VarChar(1000)
   companyWebsite      String?              @db.VarChar(50)
   industry            String?              @db.VarChar(50)
   customerType        String?              @db.VarChar(50)
   enquirySource       String?              @db.VarChar(50)
-  status              String?              @default("cold") @db.VarChar(255)
+  status              String?              @default("cold") @db.VarChar(50)
   approved            Boolean              @default(false)
   lastVisited         DateTime             @default(now())
   contactPersons      ContactPerson[]
@@ -178,7 +177,7 @@ model VisitReport {
   productsDiscussed   String[]
   quantity            String?               @db.VarChar(50)
   durationOfMeeting   String                @db.VarChar(50)
-  meetingOutcome      String?               @db.VarChar(255)
+  meetingOutcome      String?               @db.VarChar(1000)
   visitDate           String?
   followUpVisits      Json[]
   pfiRequest          Boolean?              @default(false)
@@ -199,7 +198,7 @@ model PfiRequestForm {
   contactPersonId             String?
   customerType                String              
   companyName                 String?             @db.VarChar(50)
-  companyAddress              String?             @db.VarChar(255)
+  companyAddress              String?             @db.VarChar(1000)
   contactPersonName           String?             @db.VarChar(50)
   phoneNumber                 String?             @db.VarChar(50)
   emailAddress                String?             @db.VarChar(50)
@@ -207,12 +206,12 @@ model PfiRequestForm {
   brandId                     String
   product                     Product             @relation(fields: [productId], references: [id])
   productId                   String
-  vehicleDetails              String?             @db.VarChar(255)
+  vehicleDetails              String?             @db.VarChar(1000)
   quantity                    String?
   pricePerVehicle             String?
-  bodyTypeDescription         String?             @db.VarChar(255)
-  vehicleServiceDetails       String?             @db.VarChar(255)
-  specialFitmentDetails       String?             @db.VarChar(255)
+  bodyTypeDescription         String?             @db.VarChar(1000)
+  vehicleServiceDetails       String?             @db.VarChar(1000)
+  specialFitmentDetails       String?             @db.VarChar(1000)
   costForSpecialFitment       String?             @db.VarChar(50)
   discount                    String?
   vatDeduction                Boolean             @default(false)
@@ -224,12 +223,12 @@ model PfiRequestForm {
   relationshipWithTransaction String?             @db.VarChar(255)
   estimatedOrderClosingTime   String?             @db.VarChar(50)
   paymentType                 String?             @db.VarChar(50)
-  deliveryLocation            String?             @db.VarChar(255)
+  deliveryLocation            String?             @db.VarChar(1000)
   approved                    Boolean             @default(false)
   locked                      Boolean             @default(false)
   pfiReferenceNumber          String?
   pfiDate                     String?
-  additionalInformation       String?             @db.VarChar(255)
+  additionalInformation       String?             @db.VarChar(1000)
   extraData                   Json?
   invoiceRequestForm          InvoiceRequestForm?
   createdAt                   DateTime            @default(now())
@@ -248,7 +247,7 @@ model InvoiceRequestForm {
   contactPersonId             String?
   customerType                String?
   invoiceName                 String?        @db.VarChar(50)
-  address                     String?        @db.VarChar(255)
+  address                     String?        @db.VarChar(1000)
   contactOfficeTelephone      String?        @db.VarChar(50)
   emailAddress                String?        @db.VarChar(50)
   salesThru                   String?        @db.VarChar(50)
@@ -257,12 +256,12 @@ model InvoiceRequestForm {
   brandId                     String
   product                     Product        @relation(fields: [productId], references: [id])
   productId                   String
-  vehicleModelDetails         String?        @db.VarChar(255)
+  vehicleModelDetails         String?        @db.VarChar(1000)
   quantity                    String?        @db.VarChar(50)
   color                       String?        @db.VarChar(50)
   totalInvoiceValuePerVehicle String?        @db.VarChar(50)
-  typeOfBodyBuilding          String?        @db.VarChar(255)
-  bodyFabricatorName          String?        @db.VarChar(255)
+  typeOfBodyBuilding          String?        @db.VarChar(1000)
+  bodyFabricatorName          String?        @db.VarChar(1000)
   registration                String?        @db.VarChar(50)
   vatDeduction                Boolean        @default(false)
   whtDeduction                Boolean        @default(false)
@@ -272,7 +271,7 @@ model InvoiceRequestForm {
   rebateReceiver              String?        @db.VarChar(50)
   relationshipWithTransaction String?        @db.VarChar(50)
   expectedDeliveryDate        String?        @db.VarChar(50)
-  deliveryLocation            String?        @db.VarChar(255)
+  deliveryLocation            String?        @db.VarChar(1000)
   deliveredBy                 String?        @db.VarChar(50)
   paymentStatus               String?        @db.VarChar(50)
   bankName                    String?        @db.VarChar(50)
@@ -282,7 +281,7 @@ model InvoiceRequestForm {
   dateOfPayment               String?
   lpoNumber                   String?        @db.VarChar(50)
   paymentDueDate              String?
-  otherPaymentDetails         String?        @db.VarChar(255)
+  otherPaymentDetails         String?        @db.VarChar(1000)
   invoiceNumber               String?        @db.VarChar(50)
   invoiceDate                 String?
   deliveryNoteNumber          String?        @db.VarChar(50)
@@ -305,14 +304,14 @@ model MarkettingActivity {
   employeeId   String
   activityName String   @db.VarChar(50)
   activityDate String
-  participants String?  @db.VarChar(255)
+  participants String?  @db.VarChar(1000)
   location     String
   objective    String
   targetResult String
   briefReport  String   @db.VarChar(1000)
   images       String[]
   costIncurred String   @db.VarChar(50)
-  pdfDetails   String?  @db.VarChar(255)
+  pdfDetails   String?  @db.VarChar(1000)
   approved     Boolean? @default(false)
   extraData    Json?
   createdAt    DateTime @default(now())
@@ -345,12 +344,14 @@ model Comment {
 
 model Notification {
   id          String   @id @default(uuid())
-  receiver    Employee @relation("ReceivedNotification", fields: [receiverId], references: [id])
-  receiverId  String
+  receiverId  String?
+  staffCadre  String   @default("salesPerson")
   resourceId  String?
   resourceUrl String?
-  message     String?
+  title       String?  @default("New Notification")
+  message     String
   viewed      Boolean? @default(false)
+  viewedBy    String[] 
   extraData   Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

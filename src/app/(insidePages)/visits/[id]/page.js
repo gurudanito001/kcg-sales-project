@@ -1,10 +1,15 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
+import Skeleton from '@mui/material/Skeleton';
+import { getDecodedToken } from "@/services/localStorageService";
+import CommentItem from "@/components/commentItem";
+import { usePathname } from "next/navigation";
+import useGetComments from "@/hooks/useGetComments";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
-import Skeleton from '@mui/material/Skeleton';
 
 const DataListItem = ({title, value}) => {
   return (
@@ -49,8 +54,10 @@ const LoadingFallBack = () =>{
 const VisitReportDetails = () => {
   const params = useParams();
   const {id} = params;
-  console.log(id);
   const dispatchMessage = useDispatchMessage();
+  const pathName = usePathname()
+  const tokenData = getDecodedToken();
+  const {refetch, comments, listComments} = useGetComments(id);
 
   const {data, isFetching} = useQuery({
     queryKey: ["allVisitReports", id],
@@ -78,16 +85,71 @@ const VisitReportDetails = () => {
     return products;
   }
 
+
+  const [commentData, setCommentData] = useState({
+    senderId: "",
+    receiverId: "",
+    resourceId: "",
+    resourceUrl: "",
+    message: ""
+  });
+
+  const clearComment = () => {
+    setCommentData( prevState => ({
+      ...prevState, 
+      message: ""
+    }))
+  }
+  
+  const queryClient = useQueryClient();
+  const commentMutation = useMutation({
+    mutationFn: () => apiPost({ url: "/comment", data: commentData })
+      .then(res => {
+        clearComment();
+        console.log(res.data)
+        //dispatchMessage({ message: res.message })
+        refetch()
+        
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const handleChangeComment =  (event) => {
+    setCommentData(prevState => ({
+      ...prevState,
+      message: event.target.value
+    }))
+  }
+
+  const handleSubmit = (e)=>{
+    e.preventDefault();
+    // return console.log(commentData)
+    commentMutation.mutate()
+  }
+
+  useEffect(()=>{
+    setCommentData( prevState =>({
+      ...prevState,
+      senderId: tokenData?.user_id,
+      receiverId: data?.employeeId,
+      resourceId: id,
+      resourceUrl: pathName
+    }))
+  },[data])
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Visit Report</h4>
         <span className="breadcrumb-item ms-3"><a href="/visits"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>}
+        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>}
       </header>
 
       <div className="row">
-        <div className="col-12 d-flex align-items-stretch">
+        <div className="col-12 d-flex flex-column align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <h5 className="card-title fw-semibold mb-4 opacity-75">Visit Report Details</h5>
@@ -109,6 +171,20 @@ const VisitReportDetails = () => {
               }
             </div>
           </div>
+
+          <div className="card w-100 p-3">
+            <h5 className="mb-4">Comments</h5>
+            <ul className="list-unstyled">
+              {listComments()}
+            </ul>
+            <div className="mb-3 d-flex">
+              <textarea rows={3} className="form-control" id="location" value={commentData.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
+              <div className="d-flex align-items-center">
+                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

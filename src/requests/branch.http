@@ -2,7 +2,7 @@
 @baseUrl = http://localhost:3000/api/v1/
 
 # @name getBranches
-GET {{baseUrl}}/branch HTTP/1.1
+GET {{baseUrl}}/notification?staffCadre=salesPerson HTTP/1.1
 
 ###
 

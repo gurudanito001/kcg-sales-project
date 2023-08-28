@@ -9,6 +9,7 @@ import clipLongText from "@/services/clipLongText";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { getDecodedToken } from "@/services/localStorageService";
 
 const LoadingFallBack = () =>{
   return (
@@ -57,6 +58,7 @@ const PfiRequests = () =>{
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const { userData } = useSelector(state => state.userData);
+  const tokenData = getDecodedToken()
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -112,7 +114,7 @@ const PfiRequests = () =>{
   }
 
   useEffect(() => {
-    if(userData?.staffCadre?.includes("salesPerson")){
+    if(tokenData?.staffCadre?.includes("salesPerson")){
       setFormData(prevState => ({
         ...prevState,
         employeeId: userData.id
@@ -320,7 +322,7 @@ const PfiRequests = () =>{
             <p className="fw-semibold m-0">{employee.email}</p>
           </td>
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
+            {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
           </td>
         </tr>
     )
@@ -332,14 +334,14 @@ const PfiRequests = () =>{
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Pfi Request</h4>
         <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/pfiRequests/add">Add</a>}
+        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/pfiRequests/add">Add</a>}
       </header>
 
       {showFilters &&
         <div className="container-fluid card p-3">
           <form className="row">
             <h6 className="col-12 mb-3 text-muted">Filter Pfi Request List</h6>
-            {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&
+            {(tokenData?.staffCadre?.includes("admin") || tokenData?.staffCadre?.includes("supervisor")) &&
               <div className="mb-3 col-6">
                 <label htmlFor="employeeId" className="form-label">Employee</label>
                 <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">

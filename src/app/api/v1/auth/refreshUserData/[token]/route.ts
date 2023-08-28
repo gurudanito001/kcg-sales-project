@@ -14,7 +14,7 @@ export async function POST(
   try {
     const token = params.token;
     if(process.env.TOKEN_KEY){
-      let {user_id, email} = await jwt.verify(token, process.env.TOKEN_KEY) as TokenData;
+      let {user_id} = await jwt.verify(token, process.env.TOKEN_KEY) as TokenData;
       
       const user: any = await prisma.employee.findUnique({
         where: {
@@ -29,7 +29,7 @@ export async function POST(
       }
       // Create token
       const newToken = jwt.sign(
-        { user_id: user.id, email: user.email },
+        { user_id: user.id, email: user.email, staffCadre: user.staffCadre },
         process.env.TOKEN_KEY as string,
         {
           expiresIn: "2h",

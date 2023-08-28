@@ -1,23 +1,48 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
 import { ReactNode, useEffect } from "react";
-import AsideContent from "./asideContent";
+import AsideContent from "../../components/asideContent";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { clearUserData, setUserData } from "@/store/slices/userDataSlice";
 import { useRouter } from "next/navigation";
 import { apiPost } from "@/services/apiService";
+import * as jwt from 'jsonwebtoken';
+import { getDecodedToken } from "@/services/localStorageService";
+import AppNotifications from "../../components/appNotifications";
+import useGetNotifications from "@/hooks/useGetNotifications";
 
+const styles = {
+  notificationIcon: {
+    fontSize: ".7rem", 
+    position: "relative", 
+    left: "-10px", 
+    top: "-10px",
+    height: "15px",
+    width: "15px"
+  }
+}
 
 const Layout = ({ children }) => {
   const {userData} = useSelector((state) => state.userData);
+  const tokenData = getDecodedToken();
   const dispatch = useDispatch();
   const router = useRouter();
+  const {count} = useGetNotifications()
 
   useEffect(()=>{
     let token = localStorage.getItem("token")
-    if(!token){
-      router.push("/login")
+    if(!token && !userData.id){
+      return router.push("/login")
+    }
+    //let data = jwt.decode(token);
+    
+    //console.log(data)
+    
+    if(tokenData && tokenData.user_id !== userData.id){
+      let {email, staffCadre, user_id} = tokenData;
+      console.log("setting data")
+      dispatch(setUserData({email, staffCadre, id: user_id}))
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   })
@@ -76,21 +101,28 @@ const Layout = ({ children }) => {
             <div className="navbar-collapse justify-content-end px-0" id="navbarNav">
               <ul className="navbar-nav flex-row ms-auto align-items-center justify-content-end">
                 <li className="nav-item">
-                  <a className="nav-link nav-icon-hover" href="">
+                  <a className="nav-link p-2 nav-icon-hover" href="">
+                    <i className="fa-regular fa-message fs-6"></i>
+                    {/* <span className="badge bg-primary rounded-circle p-1 small d-flex align-items-center justify-content-center" style={styles.notificationIcon}>4</span> */}
+                  </a>
+                </li>
+                
+                <li className="nav-item">
+                  <a className="nav-link p-2 nav-icon-hover"  data-bs-toggle="offcanvas" href="#offcanvasExample22" role="button" aria-controls="offcanvasExample22">
                     <i className="ti ti-bell-ringing"></i>
-                    <div className="notification bg-primary rounded-circle"></div>
+                    {count > 0 && <span className="badge bg-primary rounded-circle p-1 small d-flex align-items-center justify-content-center" style={styles.notificationIcon}>{count}</span>}
                   </a>
                 </li>
                 <li className="nav-item dropdown">
                   <a className="nav-link nav-icon-hover" href="" id="drop2" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                    <img src={`/images/profile/${userData?.staffCadre}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />
+                    <img src={`/images/profile/${tokenData?.staffCadre[0]}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />
                   </a>
                   <div className="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
                     <div className="message-body">
                       <div className="px-3">
                         <h6 className="text-capitalize m-0">{userData?.firstName} {userData?.lastName}</h6>
-                        <p className="text-capitalize small">{userData?.staffCadre}</p>
+                        <p className="text-capitalize small">{tokenData?.staffCadre[0]}</p>
                       </div>
                       
                       <a href="" className="d-flex align-items-center gap-2 dropdown-item">
@@ -116,7 +148,7 @@ const Layout = ({ children }) => {
 
         {children}
       </main>
-
+      <AppNotifications />
     </div>
   )
 }

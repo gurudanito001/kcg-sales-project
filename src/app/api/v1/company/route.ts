@@ -61,7 +61,6 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "application/json" },
     }); 
   }
-  
     
 }
 
@@ -75,6 +74,30 @@ export async function POST(request: Request) {
       result = await uploadImage({ data: json.logo });
       console.log(result)
       json.logo = result.secure_url
+    }
+    let {code, name, email} = json;
+    let codeExists = await prisma.company.findFirst({ where: {code}})
+    if(codeExists){
+      return new NextResponse(JSON.stringify({ message: `Company with code "${code}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
+    let nameExists = await prisma.company.findFirst({ where: {name}})
+    if(nameExists){
+      return new NextResponse(JSON.stringify({ message: `Company with name "${name}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
+    let emailExists = await prisma.company.findFirst({ where: {email}})
+    if(emailExists){
+      return new NextResponse(JSON.stringify({ message: `Company with email "${email}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
     }
     
     const data = await prisma.company.create({

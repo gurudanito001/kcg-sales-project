@@ -82,9 +82,21 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     // validate data here
+    let {pfiRequestFormId} = json;
+    let pfiExists = await prisma.invoiceRequestForm.findFirst({ where: {pfiRequestFormId}})
+    if(pfiExists){
+      return new NextResponse(JSON.stringify({ message: `Invoice request with pfi request already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
     const data = await prisma.invoiceRequestForm.create({
       data: json,
     });
+    await prisma.notification.create({
+      data: {staffCadre: "admin", resourceUrl: `/invoiceRequests/${data.id}`, message: "New Invoice Request created (pending approval)" }
+    })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

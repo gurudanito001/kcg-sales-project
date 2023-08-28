@@ -49,6 +49,16 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     // validate data here
+    let {productId} = json;
+    let productExists = await prisma.priceMaster.findFirst({ where: {productId}})
+    if(productExists){
+      return new NextResponse(JSON.stringify({ message: `Price Master with product already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
+
     const data = await prisma.priceMaster.create({
       data: json,
     });

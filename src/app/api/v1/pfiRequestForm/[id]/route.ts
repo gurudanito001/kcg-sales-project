@@ -53,6 +53,12 @@ export async function PATCH(
       data: json,
     });
 
+    if(json.approved){
+      await prisma.notification.create({
+        data: {receiverId: updatedData.employeeId, resourceUrl: `/pfiRequests/${updatedData.id}`, message: `${updatedData.companyName} has been approved as your customer`}
+      })
+    }
+
     if (!updatedData) {
       return new NextResponse(JSON.stringify({message: `${modelName} with ID not found`}), {
         status: 404,

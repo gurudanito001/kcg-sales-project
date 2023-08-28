@@ -73,6 +73,24 @@ export async function POST(request: Request) {
       json.logo = result.secure_url
     }
 
+
+    let {code, name} = json;
+    let codeExists = await prisma.brand.findFirst({ where: {code}})
+    if(codeExists){
+      return new NextResponse(JSON.stringify({ message: `Brand with code "${code}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
+    let nameExists = await prisma.brand.findFirst({ where: {name}})
+    if(nameExists){
+      return new NextResponse(JSON.stringify({ message: `Brand with name "${name}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
+
     const data = await prisma.brand.create({
       data: json,
     });

@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import NaijaStates from 'naija-state-local-government';
+import { getDecodedToken } from "@/services/localStorageService";
 
 const LoadingFallBack = () => {
   return (
@@ -52,6 +53,7 @@ const Customers = () => {
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const { userData } = useSelector(state => state.userData);
+  const tokenData = getDecodedToken()
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -101,7 +103,7 @@ const Customers = () => {
   }
 
   useEffect(() => {
-    if(userData?.staffCadre?.includes("salesPerson")){
+    if(tokenData?.staffCadre?.includes("salesPerson")){
       setFormData(prevState => ({
         ...prevState,
         employeeId: userData.id
@@ -181,7 +183,7 @@ const Customers = () => {
 
   const listCustomers = () => {
     return data.map((item, index) => {
-      const { id, companyName, state, lga, city, address, industry, customerType, status, approved } = item;
+      const { id, companyName, state, employee, approved } = item;
       return (
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -191,21 +193,20 @@ const Customers = () => {
             <h6 className="fw-semibold mb-1 text-capitalize text-primary">{companyName}</h6>
           </td>
           <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1 text-capitalize">{customerType}</h6>
+            <span className="small text-capitalize">{state}</span>
           </td>
+          {tokenData?.staffCadre.includes("admin") && 
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal text-capitalize">{industry}</p>
+            <span className="small text-capitalize">{employee.firstName} {employee.lastName}</span>
           </td>
+          }
           <td className="border-bottom-0">
-            <p className="small mb-0 d-flex flex-wrap text-capitalize" style={{ maxWidth: "200px" }}>{clipLongText(address)}</p>
-            <span className="small text-capitalize">{city} {lga} {state}</span>
+            <h6 className="fw-semibold m-0">{approved ? "Yes" : "Pending"}</h6>
           </td>
+          {tokenData?.staffCadre.includes("staffCadre") && 
           <td className="border-bottom-0">
-            <h6 className="fw-semibold m-0">{approved ? "Yes" : "No"}</h6>
-          </td>
-          <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") &&<a className="btn btn-link text-primary ms-auto" href={`/customers/${id}/edit`}>Edit</a>}
-          </td>
+            <a className="btn btn-link text-primary ms-auto" href={`/customers/${id}/edit`}>Edit</a>
+          </td>}
         </tr>
       )
     })
@@ -227,14 +228,14 @@ const Customers = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Customer</h4>
         <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/customers/add">Add</a>}
+        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/customers/add">Add</a>}
       </header>
 
       {showFilters &&
         <div className="container-fluid card p-3">
           <form className="row">
             <h6 className="col-12 mb-3 text-muted">Filter Customer List</h6>
-             {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&  
+             {(tokenData?.staffCadre?.includes("admin") || tokenData?.staffCadre?.includes("supervisor")) &&  
               <div className="mb-3 col-lg-6">
                 <label htmlFor="employeeId" className="form-label">Employee</label>
                 <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">
@@ -292,20 +293,19 @@ const Customers = () => {
                         <h6 className="fw-semibold mb-0">Company Name</h6>
                       </th>
                       <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Customer Type</h6>
+                        <h6 className="fw-semibold mb-0">State</h6>
                       </th>
+                      {tokenData?.staffCadre.includes("admin") && 
                       <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Industry</h6>
-                      </th>
-                      <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Address</h6>
-                      </th>
+                        <h6 className="fw-semibold mb-0">Staff</h6>
+                      </th>}
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Approved</h6>
                       </th>
+                      {tokenData?.staffCadre.includes("salesPerson") && 
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Actions</h6>
-                      </th>
+                      </th>}
                     </tr>
                   </thead>
                   <tbody>

@@ -53,6 +53,12 @@ export async function PATCH(
       where: { id },
       data: json,
     });
+
+    if(json.approved){
+      await prisma.notification.create({
+        data: {receiverId: updatedData.employeeId, resourceUrl: `/invoiceRequests/${updatedData.id}`, message: `Invoice Request has been approved`}
+      })
+    }
   
     if (!updatedData) {
       return new NextResponse(JSON.stringify({message: `${modelName} with ID not found`}), {

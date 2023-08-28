@@ -104,9 +104,13 @@ export async function POST(request: Request) {
       json.customerId = customerId
       json.contactPersonId = contactPersonId
     }
+    
     const data = await prisma.pfiRequestForm.create({
       data: json,
     });
+    await prisma.notification.create({
+      data: {staffCadre: "admin", resourceUrl: `/pfiRequests/${data.id}`, message: "New Pfi Request created (pending approval)" }
+    })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

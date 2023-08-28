@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
+import { getDecodedToken } from "@/services/localStorageService";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -53,6 +54,7 @@ const ProductDetails = () => {
   const {id} = params;
   console.log(id);
   const {userData} = useSelector( state => state.userData);
+  const tokenData = getDecodedToken()
   const dispatchMessage = useDispatchMessage();
 
   const {data, isFetching} = useQuery({
@@ -80,7 +82,7 @@ const ProductDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Product</h4>
         <span className="breadcrumb-item ms-3"><a href="/products"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
+        {tokenData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
       </header>
 
 

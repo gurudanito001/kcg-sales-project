@@ -8,17 +8,33 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
+    const employeeId = searchParams.get("employeeId");
+    const staffCadre = searchParams.get("staffCadre");
     //const offers = await prisma.offer.findMany()
+    let whereObject = {}
+    if(staffCadre === "admin"){
+      whereObject = {
+        staffCadre: "admin",
+        viewed: false
+      }
+    }else{
+      whereObject = {
+        ...({ OR: [{ staffCadre: "salesPerson" }, { receiverId: employeeId }, {
+          NOT: {
+            viewedBy: {
+              has: employeeId,
+            },
+          },
+        }] }),
+        viewed: false,
+      }
+    }
   
-    let myCursor = "";
     const data = await prisma.notification.findMany({
-      take: take,
-      skip: (page - 1) * take,
-      ...(myCursor !== "" && {
-        cursor: {
-          id: myCursor,
-        }
-      })
+      where: whereObject,
+      orderBy: {
+        createdAt: "desc"
+      }
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -26,11 +42,13 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.notification.count()
-    const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
-    myCursor = lastItemInData?.id // Example: 29
+    const totalCount = await prisma.notification.count({
+      where: whereObject
+    })
+    //const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
+    //myCursor = lastItemInData?.id // Example: 29
   
-    return new NextResponse(JSON.stringify({page, take, totalCount, message: `${routeName} list fetched successfully`, data }), {
+    return new NextResponse(JSON.stringify({/* page, take, */ totalCount, message: `${routeName} list fetched successfully`, data }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }); 

@@ -20,10 +20,10 @@ export async function POST(request: Request) {
       
       // Create token
       const token = jwt.sign(
-        { user_id: user.id, email: user.email },
+        { user_id: user.id, email: user.email, staffCadre: user.staffCadre },
         process.env.TOKEN_KEY as string,
         {
-          expiresIn: "2h",
+          expiresIn: "24h",
         }
       );
       // add token to user object

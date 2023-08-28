@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import formatMonth from "@/services/formatMonth"
 
 
 let routeName = "Monthly Targets"
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
     const data = await prisma.monthlyTarget.create({
       data: json,
     });
+    await prisma.notification.create({
+      data: {staffCadre: "salesPerson", resourceUrl: `/targetAchievements/${data.id}`, message: `Monthly Target for ${formatMonth(data.month)} has been set.` }
+    })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

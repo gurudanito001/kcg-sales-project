@@ -59,6 +59,15 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     // validate data here
+    
+    let {code} = json;
+    let codeExists = await prisma.branch.findFirst({ where: {code}})
+    if(codeExists){
+      return new NextResponse(JSON.stringify({ message: `Branch with code "${code}" already exists`}), { 
+        status: 400, 
+        headers: { "Content-Type": "application/json" },
+       });
+    }
     const data = await prisma.branch.create({
       data: json,
     });

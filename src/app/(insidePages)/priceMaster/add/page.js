@@ -167,26 +167,28 @@ const AddProductPrice = () =>{
                     <label className="form-check-label" htmlFor="anyPromo">Any Promo?</label>
                   </div>
 
-                  {formData.anyPromo &&
-                  <div className="mb-3">
-                    <label htmlFor="promoPrice" className="form-label">Promo Price</label>
-                    <input type="text" className="form-control" id="promoPrice" value={formData.promoPrice} onChange={handleChange("promoPrice")}  />
-                  </div>}
+                {formData.anyPromo &&
+                  <>
+                    <div className="mb-3">
+                      <label htmlFor="promoPrice" className="form-label">Promo Price</label>
+                      <input type="text" className="form-control" id="promoPrice" value={formData.promoPrice} onChange={handleChange("promoPrice")} />
+                    </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="promoText" className="form-label">Promo Text</label>
-                    <textarea className="form-control" id="promoText" value={formData.promoText} onChange={handleChange("promoText")}></textarea>
-                  </div>
+                    <div className="mb-3">
+                      <label htmlFor="promoText" className="form-label">Promo Text</label>
+                      <textarea className="form-control" id="promoText" value={formData.promoText} onChange={handleChange("promoText")}></textarea>
+                    </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="validFrom" className="form-label">Valid From</label>
-                    <input type="datetime-local" className="form-control"  id="validFrom" value={formData.validFrom} onChange={handleChange("validFrom")}  />
-                  </div>
+                    <div className="mb-3">
+                      <label htmlFor="validFrom" className="form-label">Valid From</label>
+                      <input type="datetime-local" className="form-control" id="validFrom" value={formData.validFrom} onChange={handleChange("validFrom")} />
+                    </div>
 
-                  <div className="mb-3">
-                    <label htmlFor="validTill" className="form-label">Valid Till</label>
-                    <input type="datetime-local" className="form-control"  id="validTill" value={formData.validTill} onChange={handleChange("validTill")}  />
-                  </div>
+                    <div className="mb-3">
+                      <label htmlFor="validTill" className="form-label">Valid Till</label>
+                      <input type="datetime-local" className="form-control" id="validTill" value={formData.validTill} onChange={handleChange("validTill")} />
+                    </div>
+                  </>}
 
                   <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
                 </form>

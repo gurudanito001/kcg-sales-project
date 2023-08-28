@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
 import formatMonth from '@/services/formatMonth';
 import { useSelector } from "react-redux";
+import { getDecodedToken } from "@/services/localStorageService";
 
 const LoadingFallBack = () =>{
   return (
@@ -40,6 +41,7 @@ const MonthlyTargets = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const {userData} = useSelector( state => state.userData);
+  const tokenData = getDecodedToken()
 
 
 
@@ -71,7 +73,7 @@ const MonthlyTargets = () =>{
             <p className="mb-0 fw-normal">{target}</p>
           </td>
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>}
+            {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>}
           </td>
         </tr>
     )
@@ -82,7 +84,7 @@ const MonthlyTargets = () =>{
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Monthly Target</h4>
-        {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href="/targetAchievements/add">Add</a>}
+        {tokenData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href="/targetAchievements/add">Add</a>}
       </header>
 
       <div className="row">
