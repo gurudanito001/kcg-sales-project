@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
+import { useSelector } from "react-redux";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -57,7 +58,8 @@ const MarketingActivityDetails = () => {
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
-  const tokenData = getDecodedToken();
+  // const tokenData = getDecodedToken();
+  const {userData} = useSelector( state => state.userData);
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
@@ -130,7 +132,7 @@ const MarketingActivityDetails = () => {
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: tokenData?.user_id,
+      senderId: userData?.user_id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
@@ -143,7 +145,7 @@ const MarketingActivityDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Marketing Activity</h4>
         <span className="breadcrumb-item ms-3"><a href="/marketingActivities"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/marketingActivities/${id}/edit`}>Edit</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/marketingActivities/${id}/edit`}>Edit</a>}
       </header>
 
 

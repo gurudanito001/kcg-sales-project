@@ -9,7 +9,8 @@ import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/services/apiService";
+import { apiGet, apiPatch, apiPost } from "@/services/apiService";
+import ConfirmationModal from '@/components/confirmationModal';
 
 const DataListItem = ({title, value}) => {
   return (
@@ -55,14 +56,13 @@ const LoadingFallBack = () =>{
 const InvoiceRequestDetails = () => {
   const params = useParams();
   const {id} = params;
-  console.log(id);
   const dispatchMessage = useDispatchMessage();
   const {userData} = useSelector( state => state.userData)
-  const tokenData = getDecodedToken();
+  // const tokenData = getDecodedToken();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refetchInvoiceRequestData} = useQuery({
     queryKey: ["allInvoiceRequests", id],
     queryFn: () => apiGet({ url: `/invoiceRequestForm/${id}`})
     .then(res =>{
@@ -84,6 +84,61 @@ const InvoiceRequestDetails = () => {
     message: ""
   });
 
+  const [formData, setFormData] = useState({
+    invoiceNumber: "",
+    invoiceDate: "",
+    deliveryNoteNumber: "",
+    actualDeliveryDate: "",
+    chasisNumber: "",
+    delivery: "",
+    payment: "",
+    approved: true,
+    approvedByGM: false,
+    approvedByProductHead: false,
+    additionalInformation: "",
+  })
+
+  useEffect(() => {
+    if (data) {
+      const { invoiceNumber, invoiceDate, deliveryNoteNumber, actualDeliveryDate, chasisNumber, delivery, payment, approvedByGM, approvedByProductHead, additionalInformation } = data;
+      setFormData(prevState => ({
+        ...prevState,
+        invoiceNumber: invoiceNumber || "",
+        invoiceDate: invoiceDate || "",
+        deliveryNoteNumber: deliveryNoteNumber || "",
+        actualDeliveryDate: actualDeliveryDate || "",
+        chasisNumber: chasisNumber || "",
+        delivery: delivery || "",
+        payment: payment || "",
+        approvedByGM,
+        approvedByProductHead,
+        additionalInformation: additionalInformation || ""
+      }))
+    }
+  }, [data])
+
+  const [errors, setErrors] = useState({})
+
+  const {mutate: updateInvoiceRequest, isLoading: isLoadingInvoiceUpdate} = useMutation({
+    mutationFn: () => apiPatch({ url: `/invoiceRequestForm/${id}`, data: formData})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: res.message})
+      refetchInvoiceRequestData()
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const handleUpdateInvoice = (e) =>{
+    e.preventDefault();
+    //return console.log(formData);
+    updateInvoiceRequest();
+  }
+
   const clearComment = () => {
     setCommentData( prevState => ({
       ...prevState, 
@@ -99,7 +154,6 @@ const InvoiceRequestDetails = () => {
         console.log(res.data)
         //dispatchMessage({ message: res.message })
         refetch()
-        
       })
       .catch(error => {
         console.log(error)
@@ -114,16 +168,30 @@ const InvoiceRequestDetails = () => {
     }))
   }
 
+  const handleChange = (prop) => (event) => {
+    if ( prop === "approvedByGM" || prop === "approvedByProductHead") {
+      setFormData(prevState => ({
+        ...prevState,
+        [prop]: !prevState[prop]
+      }))
+      return
+    }
+    setFormData(prevState => ({
+      ...prevState,
+      [prop]: event.target.value
+    }))
+  }
+
   const handleSubmit = (e)=>{
     e.preventDefault();
-    // return console.log(commentData)
+    console.log(commentData)
     commentMutation.mutate()
   }
 
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: tokenData?.user_id,
+      senderId: userData?.user_id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
@@ -136,7 +204,7 @@ const InvoiceRequestDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Invoice Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
       </header>
 
 
@@ -144,7 +212,16 @@ const InvoiceRequestDetails = () => {
         <div className="col-12 d-flex flex-column align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Invoice Request Details</h5>
+              
+
+              <div className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold mb-4 opacity-75 me-auto">Invoice Request Details</h5>
+                {
+                  data?.approved ?
+                  <span className=" border border-success text-success-emphasis px-3 py-2 rounded-3">Approved <i className="fa-regular fa-circle-check ms-1"></i></span> :
+                  <span className=" border border-muted text-muted px-3 py-2 rounded-2">Pending Approval </span>
+                }
+              </div>
 
               {data ?
                 <>
@@ -203,20 +280,93 @@ const InvoiceRequestDetails = () => {
             </div>
           </div>
 
+          {(userData?.staffCadre?.includes("admin") && !data?.pfiReferenceNumber) && <div className="card w-100 p-3">
+            <div className="card-body p-4" style={{ maxWidth: "700px" }}> 
+              <form>
+                <div className="mb-3">
+                  <label htmlFor="invoiceNumber" className="form-label">Invoice Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.invoiceNumber} onChange={handleChange("invoiceNumber")} id="invoiceNumber" />
+                  <span className='text-danger font-monospace small'>{errors.invoiceNumber}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="invoiceDate" className="form-label">Invoice Date (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="date" className="form-control shadow-none" value={formData.invoiceDate} onChange={handleChange("invoiceDate")} id="invoiceDate" />
+                  <span className='text-danger font-monospace small'>{errors.invoiceDate}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="deliveryNoteNumber" className="form-label">Delivery Note Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.deliveryNoteNumber} onChange={handleChange("deliveryNoteNumber")} id="deliveryNoteNumber" />
+                  <span className='text-danger font-monospace small'>{errors.deliveryNoteNumber}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="actualDeliveryDate" className="form-label">Actual Delivery Date (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="date" className="form-control shadow-none" value={formData.actualDeliveryDate} onChange={handleChange("actualDeliveryDate")} id="actualDeliveryDate" />
+                  <span className='text-danger font-monospace small'>{errors.actualDeliveryDate}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="chasisNumber" className="form-label">Chasis Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control shadow-none" rows={4} value={formData.chasisNumber} onChange={handleChange("chasisNumber")} id="chasisNumber" ></textarea>
+                  <span className='text-danger font-monospace small'>{errors.chasisNumber}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="delivery" className="form-label">Delivery</label>
+                  <textarea className="form-control shadow-none" value={formData.delivery} onChange={handleChange("delivery")} id="delivery" ></textarea>
+                  <span className='text-danger font-monospace small'>{errors.delivery}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="payment" className="form-label">Payment</label>
+                  <textarea className="form-control shadow-none" value={formData.payment} onChange={handleChange("payment")} id="payment" ></textarea>
+                  <span className='text-danger font-monospace small'>{errors.payment}</span>
+                </div>
+
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" value={formData.approvedByGM} checked={formData.approvedByGM} onChange={handleChange("approvedByGM")} id="approvedByGM" />
+                  <label className="form-check-label" htmlFor="approvedByGM">
+                    Approved By GM
+                  </label>
+                </div>
+
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" value={formData.approvedByProductHead} checked={formData.approvedByProductHead} onChange={handleChange("approvedByProductHead")} id="approvedByProductHead" />
+                  <label className="form-check-label" htmlFor="approvedByProductHead">
+                    Approved By Product Head
+                  </label>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="additionalInformation" className="form-label">Additional Information</label>
+                  <textarea className="form-control shadow-none" rows={4} value={formData.additionalInformation} onChange={handleChange("additionalInformation")} id="additionalInformation" ></textarea>
+                  <span className='text-danger font-monospace small'>{errors.additionalInformation}</span>
+                </div>
+
+                {/* <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoadingInvoiceUpdate} onClick={handleUpdateInvoice}>{isLoadingInvoiceUpdate ? "Loading..." : "Approve"}</button> */}
+                <button className="btn btn-primary" onClick={(e)=> e.preventDefault()} data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>
+              </form>
+            </div>
+          </div>}
+
           <div className="card w-100 p-3">
             <h5 className="mb-4">Comments</h5>
             <ul className="list-unstyled">
               {listComments()}
             </ul>
             <div className="mb-3 d-flex">
-              <textarea rows={3} className="form-control" id="location" value={commentData.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
+              <textarea rows={3} className="form-control" id="location" value={commentData?.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
               <div className="d-flex align-items-center">
-                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
+                <button className="btn nav-icon-hover" disabled={commentMutation?.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`${data?.approved ? "Update" : "Approve"} Invoice Request`} message={`Are you sure your want to ${data?.approved ? "update" : "approve"} this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" />}
     </div>
   )
 }

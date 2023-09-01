@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/services/apiService";
+import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
@@ -13,6 +13,8 @@ import { getDecodedToken } from "@/services/localStorageService";
 import CommentItem from "@/components/commentItem";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
+import ConfirmationModal from '@/components/confirmationModal';
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -91,14 +93,15 @@ const CustomerDetails = () => {
   const params = useParams();
   const { id } = params;
   const pathName = usePathname()
-  const tokenData = getDecodedToken();
+  //const tokenData = getDecodedToken();
+  const {userData} = useSelector( state => state.userData)
   const dispatchMessage = useDispatchMessage();
   const {refetch, comments, listComments} = useGetComments(id);
   
   const [currentForm, setCurrentForm] = useState("")
   const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, refetch: refetchCustomerDetails } = useQuery({
     queryKey: ["allCustomers", id],
     queryFn: () => apiGet({ url: `/customer/${id}` })
       .then(res => {
@@ -157,12 +160,24 @@ const CustomerDetails = () => {
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: tokenData?.user_id,
+      senderId: userData?.user_id,
       receiverId: data?.employee?.id,
       resourceId: id,
       resourceUrl: pathName
     }))
   },[data])
+
+  const { isLoading, mutate: approveCustomer } = useMutation({
+    mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: {approved: true} })
+      .then(res => {
+        console.log(res.data)
+        refetchCustomerDetails()
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
  
 
   const listContactPersons = () =>{
@@ -183,7 +198,7 @@ const CustomerDetails = () => {
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
-          {tokenData?.staffCadre.includes("salesPerson") &&<td className="border-bottom-0">
+          {userData?.staffCadre?.includes("salesPerson") &&<td className="border-bottom-0">
             <button className="btn btn-link text-primary ms-auto" onClick={()=>{
               setCurrentlyEditedContactPerson(item);
               setCurrentForm("editContactPerson")
@@ -199,9 +214,11 @@ const CustomerDetails = () => {
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Customer</h4>
+        
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {tokenData?.staffCadre.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
-        {tokenData?.staffCadre.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
+        {!data?.approved && <button className="btn btn-outline-primary ms-auto" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Approve</button>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
       </header>
 
 
@@ -221,7 +238,15 @@ const CustomerDetails = () => {
 
 
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Customer Details</h5>
+              <div className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold mb-0 opacity-75">Customer Details</h5>
+                {
+                  data?.approved ?
+                    <span className="ms-auto border border-success text-success-emphasis px-3 py-2 rounded-3">Approved <i className="fa-regular fa-circle-check ms-1"></i></span> :
+                    <span className="ms-auto border border-muted text-muted px-3 py-2 rounded-2">Pending Approval </span>
+                }
+              </div>
+              
 
               {data ?
                 <>
@@ -296,6 +321,8 @@ const CustomerDetails = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal title="Confirm Approval" message="Are you sure you want to approve this customer?" isLoading={isLoading} onSubmit={approveCustomer} />
     </div>
   )
 }

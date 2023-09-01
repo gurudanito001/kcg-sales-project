@@ -282,11 +282,12 @@ model InvoiceRequestForm {
   lpoNumber                   String?        @db.VarChar(50)
   paymentDueDate              String?
   otherPaymentDetails         String?        @db.VarChar(1000)
+
   invoiceNumber               String?        @db.VarChar(50)
   invoiceDate                 String?
-  deliveryNoteNumber          String?        @db.VarChar(50)
+  deliveryNoteNumber          String?        @db.VarChar(2000)
   actualDeliveryDate          String?
-  chasisNumber                String?        @db.VarChar(255)
+  chasisNumber                String?        @db.VarChar(2000)
   delivery                    String         @default("pending")
   payment                     String?        @default("pending")
   approved                    Boolean        @default(false)
@@ -351,7 +352,7 @@ model Notification {
   title       String?  @default("New Notification")
   message     String
   viewed      Boolean? @default(false)
-  viewedBy    String[] 
+  viewedBy    String[] @default(["firstIdJustForTesting"])
   extraData   Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

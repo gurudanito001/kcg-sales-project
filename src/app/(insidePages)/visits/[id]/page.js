@@ -7,11 +7,14 @@ import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/services/apiService";
+import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
+import { useSelector } from 'react-redux';
+import ConfirmationModal from '@/components/confirmationModal';
+import DeleteFollowUpButton from '@/components/deleteFollowUpButton';
 
-const DataListItem = ({title, value}) => {
+const DataListItem = ({ title, value }) => {
   return (
     <div className="row mb-3 d-flex align-items-center">
       <div className="col-12 col-md-4">
@@ -24,61 +27,90 @@ const DataListItem = ({title, value}) => {
   )
 }
 
-const LoadingFallBack = () =>{
+const LoadingFallBack = () => {
   return (
     <div>
       <article className="d-flex">
-        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )"}} animation="wave" />
-        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )"}} width="60%" animation="wave" />
+        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )" }} animation="wave" />
+        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )" }} width="60%" animation="wave" />
       </article>
       <article className="d-flex">
-        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )"}} animation="wave" />
-        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )"}} width="60%" animation="wave" />
+        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )" }} animation="wave" />
+        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )" }} width="60%" animation="wave" />
       </article>
       <article className="d-flex">
-        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )"}} animation="wave" />
-        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )"}} width="60%" animation="wave" />
+        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )" }} animation="wave" />
+        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )" }} width="60%" animation="wave" />
       </article>
       <article className="d-flex">
-        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )"}} animation="wave" />
-        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )"}} width="60%" animation="wave" />
+        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )" }} animation="wave" />
+        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )" }} width="60%" animation="wave" />
       </article>
       <article className="d-flex">
-        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )"}} animation="wave" />
-        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )"}} width="60%" animation="wave" />
+        <Skeleton className="me-3" height={40} sx={{ width: "clamp(100px, 25%, 250px )" }} animation="wave" />
+        <Skeleton height={40} sx={{ width: "clamp(200px, 45%, 400px )" }} width="60%" animation="wave" />
       </article>
     </div>
   );
 }
 
+const FollowUpLoadingFallBack = () =>{
+  return (
+    <>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+    </>
+  );
+}
+
 const VisitReportDetails = () => {
   const params = useParams();
-  const {id} = params;
+  const { id } = params;
   const dispatchMessage = useDispatchMessage();
   const pathName = usePathname()
-  const tokenData = getDecodedToken();
-  const {refetch, comments, listComments} = useGetComments(id);
+  // const tokenData = getDecodedToken();
+  const {userData} = useSelector( state => state.userData);
+  const { refetch, comments, listComments } = useGetComments(id);
 
-  const {data, isFetching} = useQuery({
+  const { data, isFetching, refetch: refetchVisitReport } = useQuery({
     queryKey: ["allVisitReports", id],
-    queryFn: () => apiGet({ url: `/visitReport/${id}`})
-    .then(res =>{
-      console.log(res.data)
-      // dispatchMessage({ message: res.message})
-      return res.data
-    })
-    .catch(error =>{
-      console.log(error.message)
-      dispatchMessage({ severity: "error", message: error.message})
-    })
-  }) 
+    queryFn: () => apiGet({ url: `/visitReport/${id}` })
+      .then(res => {
+        console.log(res.data)
+        // dispatchMessage({ message: res.message})
+        return res.data
+      })
+      .catch(error => {
+        console.log(error.message)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
+  })
 
-  const listProductsDiscussed = () =>{
+  const listProductsDiscussed = () => {
     let products = ""
-    data.productsDiscussed.forEach( item => {
-      if(products === ""){
+    data.productsDiscussed.forEach(item => {
+      if (products === "") {
         products += `${item}`
-      }else{
+      } else {
         products += ` | ${item}`
       }
     })
@@ -95,12 +127,39 @@ const VisitReportDetails = () => {
   });
 
   const clearComment = () => {
-    setCommentData( prevState => ({
-      ...prevState, 
+    setCommentData(prevState => ({
+      ...prevState,
       message: ""
     }))
   }
-  
+
+  const [followUpVisits, setFollowUpVisits] = useState([]);
+  const [followUpVisit, setFollowUpVisit] = useState({
+    id: "",
+    meetingDate: "",
+    meetingDuration: "",
+    meetingOutcome: ""
+  })
+
+  useEffect(() => {
+    if (data) {
+      setFollowUpVisits(data.followUpVisits)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (data) {
+      if (followUpVisits.length !== data?.followUpVisits.length) {
+        console.log(followUpVisits)
+      }
+    }
+  }, [followUpVisits])
+
+
+  const [showFollowUpVisitForm, setShowFollowUpVisitForm] = useState(false)
+
+  const [errors, setErrors] = useState({})
+
   const queryClient = useQueryClient();
   const commentMutation = useMutation({
     mutationFn: () => apiPost({ url: "/comment", data: commentData })
@@ -109,7 +168,6 @@ const VisitReportDetails = () => {
         console.log(res.data)
         //dispatchMessage({ message: res.message })
         refetch()
-        
       })
       .catch(error => {
         console.log(error)
@@ -117,39 +175,160 @@ const VisitReportDetails = () => {
       }),
   })
 
-  const handleChangeComment =  (event) => {
+  const followUpVisitMutation = useMutation({
+    mutationFn: (data) => apiPatch({ url: `/visitReport/${id}`, data: { followUpVisits: data } })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: res.message })
+        refetchVisitReport()
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const handleChangeFollowUp = (prop) => (event) => {
+    setFollowUpVisit(prevState => ({
+      ...prevState,
+      [prop]: event.target.value
+    }))
+  }
+
+  const handleSubmitFollowUp = (e) => {
+    e.preventDefault();
+    let id = new Date().getTime();
+    let followUpData = [
+      ...data.followUpVisits,
+      {...followUpVisit, id }
+    ]
+    followUpVisitMutation.mutate(followUpData);
+
+    setFollowUpVisit(prevState => ({
+      id: "",
+      meetingDate: "",
+      meetingDuration: "",
+      meetingOutcome: ""
+    }))
+  }
+
+  const handleChangeComment = (event) => {
     setCommentData(prevState => ({
       ...prevState,
       message: event.target.value
     }))
   }
 
-  const handleSubmit = (e)=>{
+
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     // return console.log(commentData)
     commentMutation.mutate()
   }
 
-  useEffect(()=>{
-    setCommentData( prevState =>({
+  useEffect(() => {
+    setCommentData(prevState => ({
       ...prevState,
-      senderId: tokenData?.user_id,
+      senderId: userData?.user_id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
     }))
-  },[data])
+  }, [data])
+
+  const listFollowUpVisits = () => {
+    return data?.followUpVisits.map((item, index) => {
+      const { id, meetingDate, meetingDuration, meetingOutcome } = item;
+      return (
+        <tr key={id} className="hover">
+          <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
+          <td className="border-bottom-0">
+            <h6 className="fw-semibold mb-1">{new Date(meetingDate).toDateString()}</h6>
+          </td>
+          <td className="border-bottom-0">
+            <p className="mb-0 fw-normal">{meetingDuration}</p>
+          </td>
+          <td className="border-bottom-0">
+            <div className="d-flex align-items-center gap-2">
+              <p className="fw-semibold m-0">{meetingOutcome}</p>
+            </div>
+          </td>
+          {(userData?.staffCadre?.includes("salesPerson") && !userData?.staffCadre?.includes("supervisor")) &&
+          <td className="border-bottom-0">
+            <DeleteFollowUpButton isLoading={followUpVisitMutation.isLoading} deleteFunc={()=>deleteFollowUpVisit(id)} />
+          </td>}
+        </tr>
+      )
+    })
+  }
+
+  const deleteFollowUpVisit = (id) =>{
+    let followUpData = data.followUpVisits
+    followUpData = followUpData.filter( item => item.id !== id);
+    console.log(followUpData)
+    followUpVisitMutation.mutate(followUpData);
+  }
 
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Visit Report</h4>
         <span className="breadcrumb-item ms-3"><a href="/visits"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <button className="btn btn-link text-primary ms-auto" onClick={() => setShowFollowUpVisitForm(true)} >Add Follow-up visit</button>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-2" href={`/visits/${id}/edit`}>Edit</a>}
       </header>
 
       <div className="row">
-        <div className="col-12 d-flex flex-column align-items-stretch">
+        <div className="col-12 d-flex flex-column flex-column align-items-stretch">
+
+          {showFollowUpVisitForm && <div className="card w-100">
+            <div className="card-body p-4" style={{ maxWidth: "700px" }}>
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Add Follow-up Visit</h5>
+              <form>
+                <div className="mb-3">
+                  <label htmlFor="meetingDate" className="form-label">Meeting Date (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="date" className="form-control shadow-none" value={followUpVisit.meetingDate} onChange={handleChangeFollowUp("meetingDate")} id="meetingDate" />
+                  <span className='text-danger font-monospace small'>{errors.meetingDate}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="meetingDuration" className="form-label">Duration Of Meeting (<span className='fst-italic text-warning'>required</span>)</label>
+                  <select className="form-select shadow-none" id="meetingDuration" onChange={handleChangeFollowUp("meetingDuration")} value={followUpVisit.meetingDuration} aria-label="Default select example">
+                    <option value="">Select Meeting Duration</option>
+                    <option value="30 mins">30 mins</option>
+                    <option value="1 hr">1 hr</option>
+                    <option value="1hr 30mins">1hr 30mins</option>
+                    <option value="2 hrs">2 hrs</option>
+                    <option value="2hrs 30 mins">2hrs 30 mins</option>
+                    <option value="3 hrs">3 hrs</option>
+                    <option value="3hrs 30 mins">3hrs 30 mins</option>
+                    <option value="4hrs">4hrs</option>
+                    <option value="4hrs 30 mins">4hrs 30 mins</option>
+                    <option value="5 hrs">5 hrs</option>
+                  </select>
+                  <span className='text-danger font-monospace small'>{errors.meetingDuration}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="meetingOutcome" className="form-label">Meeting Outcome (<span className='fst-italic text-warning'>required</span>)</label>
+                  <textarea className="form-control shadow-none" value={followUpVisit.meetingOutcome} onChange={handleChangeFollowUp("meetingOutcome")} id="meetingOutcome" ></textarea>
+                  <span className='text-danger font-monospace small'>{errors.meetingOutcome}</span>
+                </div>
+
+                <div>
+                  <button className="btn btn-secondary me-3" onClick={(e) => {
+                    e.preventDefault();
+                    setShowFollowUpVisitForm(false);
+                  }}>Cancel</button>
+                  <button className="btn btn-primary" disabled={followUpVisitMutation.isLoading} onClick={handleSubmitFollowUp}>Add Follow-up Visit</button>
+                </div>
+
+              </form>
+            </div>
+          </div>}
+
+
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <h5 className="card-title fw-semibold mb-4 opacity-75">Visit Report Details</h5>
@@ -172,6 +351,43 @@ const VisitReportDetails = () => {
             </div>
           </div>
 
+          <div className="card w-100">
+            <div className="card-body p-4" style={{ maxWidth: "700px" }}>
+              <h6 className="card-title fw-semibold mb-4 opacity-75">Follow Up Visits</h6>
+
+              <div className="table-responsive">
+                <table className="table text-nowrap mb-0 align-middle">
+                  
+                  <thead className="text-dark fs-4">
+                    <tr>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">#</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Meeting Date</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Meeting Duration</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Meeting Outcome</h6>
+                      </th>
+                      {(userData?.staffCadre?.includes("salesPerson") && !userData?.staffCadre?.includes("supervisor")) && 
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Actions</h6>
+                      </th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data ? listFollowUpVisits() : <FollowUpLoadingFallBack />}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+
+
           <div className="card w-100 p-3">
             <h5 className="mb-4">Comments</h5>
             <ul className="list-unstyled">
@@ -187,6 +403,8 @@ const VisitReportDetails = () => {
 
         </div>
       </div>
+
+      
     </div>
   )
 }

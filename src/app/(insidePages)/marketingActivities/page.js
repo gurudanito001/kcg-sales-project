@@ -51,7 +51,7 @@ const MarketingActivity = () => {
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const { userData } = useSelector(state => state.userData);
-  const tokenData = getDecodedToken();
+  // const tokenData = getDecodedToken();
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -97,7 +97,7 @@ const MarketingActivity = () => {
   }
 
   useEffect(() => {
-    if (tokenData?.staffCadre?.includes("salesPerson")) {
+    if (userData?.staffCadre?.includes("salesPerson")) {
       setFormData(prevState => ({
         ...prevState,
         employeeId: userData.id
@@ -198,7 +198,7 @@ const MarketingActivity = () => {
             <p className="fw-semibold m-0">{costIncurred}</p>
           </td>
           <td className="border-bottom-0">
-            {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/marketingActivities/${id}/edit`}>Edit</a>}
+            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/marketingActivities/${id}/edit`}>Edit</a>}
           </td>
         </tr>
       )
@@ -210,14 +210,14 @@ const MarketingActivity = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Marketing Activity</h4>
         <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/marketingActivities/add">Add</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/marketingActivities/add">Add</a>}
       </header>
 
       {showFilters &&
         <div className="container-fluid card p-3">
           <form className="row">
             <h6 className="col-12 mb-3 text-muted">Filter Customer List</h6>
-            {(tokenData?.staffCadre?.includes("admin") || tokenData?.staffCadre?.includes("supervisor")) &&
+            {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&
               <div className="mb-3 col-lg-6">
                 <label htmlFor="employeeId" className="form-label">Employee</label>
                 <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">

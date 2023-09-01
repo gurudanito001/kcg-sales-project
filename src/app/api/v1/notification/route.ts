@@ -19,13 +19,12 @@ export async function GET(request: Request) {
       }
     }else{
       whereObject = {
-        ...({ OR: [{ staffCadre: "salesPerson" }, { receiverId: employeeId }, {
-          NOT: {
-            viewedBy: {
-              has: employeeId,
-            },
-          },
-        }] }),
+        staffCadre: "salesPerson",
+        NOT: {
+          viewedBy: {
+            has: employeeId
+          }
+        },
         viewed: false,
       }
     }

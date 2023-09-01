@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import formatMonth from "@/services/formatMonth"
 
 let modelName = "Monthly Target"
 export async function GET(
@@ -46,6 +47,9 @@ export async function PATCH(
       where: { id },
       data: json,
     });
+    await prisma.notification.create({
+      data: {title: "Monthly Target", staffCadre: "salesPerson", resourceUrl: `/targetAchievements/${id}`, message: `Monthly Target for ${updatedData.month} has been updated.` }
+    })
   
     if (!updatedData) {
       return new NextResponse(JSON.stringify({message: `${modelName} with ID not found`}), {

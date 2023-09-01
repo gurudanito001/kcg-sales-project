@@ -17,3 +17,9 @@ export function millisToMinutesAndSeconds(millis) {
   var seconds = ((millis % 60000) / 1000).toFixed(0);
   return minutes + (minutes > 1 ? " minutes" : " minute");
 }
+
+export function getTimeElapsed(millis){
+  let currentTime = new Date().getTime();
+  let timeElapsedInMillis = currentTime - millis;
+  return millisToMinutesAndSeconds(timeElapsedInMillis);
+}

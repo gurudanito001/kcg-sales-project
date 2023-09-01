@@ -19,7 +19,10 @@ export async function GET(request: Request) {
         cursor: {
           id: myCursor,
         }
-      })
+      }),
+      orderBy: {
+        createdAt: "desc"
+      }
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {
@@ -53,7 +56,7 @@ export async function POST(request: Request) {
       data: json,
     });
     await prisma.notification.create({
-      data: {staffCadre: "salesPerson", resourceUrl: `/targetAchievements/${data.id}`, message: `Monthly Target for ${formatMonth(data.month)} has been set.` }
+      data: {title: "Monthly Target", staffCadre: "salesPerson", resourceUrl: `/targetAchievements/${data.id}`, message: `Monthly Target for ${data.month} has been set.` }
     })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 

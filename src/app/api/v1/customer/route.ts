@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       })
     }
     await prisma.notification.create({
-      data: {staffCadre: "admin", resourceUrl: `/customers/${data.id}`, message: "New customer created (pending approval)" }
+      data: {title: "Customer", staffCadre: "admin", resourceUrl: `/customers/${data.id}`, message: "New customer created (pending approval)" }
     })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 

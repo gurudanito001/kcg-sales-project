@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     const brandId = searchParams.get('brandId');
     const productId = searchParams.get('productId');
     const pfiReferenceNumber = searchParams.get('pfiReferenceNumber');
+    const locked = searchParams.get('locked');
     let approved: any = searchParams.get('approved');
 
     if(approved === "approved"){
@@ -29,6 +30,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.pfiRequestForm.findMany({
       where: {
+        ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
         ...(contactPersonId && { contactPersonId }),
@@ -60,6 +62,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.pfiRequestForm.count({
       where: {
+        ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
         ...(contactPersonId && { contactPersonId }),

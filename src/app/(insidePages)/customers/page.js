@@ -53,7 +53,7 @@ const Customers = () => {
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const { userData } = useSelector(state => state.userData);
-  const tokenData = getDecodedToken()
+  //const tokenData = getDecodedToken()
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -103,7 +103,7 @@ const Customers = () => {
   }
 
   useEffect(() => {
-    if(tokenData?.staffCadre?.includes("salesPerson")){
+    if(userData?.staffCadre?.includes("salesPerson")){
       setFormData(prevState => ({
         ...prevState,
         employeeId: userData.id
@@ -195,7 +195,7 @@ const Customers = () => {
           <td className="border-bottom-0">
             <span className="small text-capitalize">{state}</span>
           </td>
-          {tokenData?.staffCadre.includes("admin") && 
+          {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0">
             <span className="small text-capitalize">{employee.firstName} {employee.lastName}</span>
           </td>
@@ -203,7 +203,7 @@ const Customers = () => {
           <td className="border-bottom-0">
             <h6 className="fw-semibold m-0">{approved ? "Yes" : "Pending"}</h6>
           </td>
-          {tokenData?.staffCadre.includes("staffCadre") && 
+          {userData?.staffCadre?.includes("staffCadre") && 
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/customers/${id}/edit`}>Edit</a>
           </td>}
@@ -228,14 +228,14 @@ const Customers = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Customer</h4>
         <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/customers/add">Add</a>}
+        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/customers/add">Add</a>}
       </header>
 
       {showFilters &&
         <div className="container-fluid card p-3">
           <form className="row">
             <h6 className="col-12 mb-3 text-muted">Filter Customer List</h6>
-             {(tokenData?.staffCadre?.includes("admin") || tokenData?.staffCadre?.includes("supervisor")) &&  
+             {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&  
               <div className="mb-3 col-lg-6">
                 <label htmlFor="employeeId" className="form-label">Employee</label>
                 <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">
@@ -295,14 +295,14 @@ const Customers = () => {
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">State</h6>
                       </th>
-                      {tokenData?.staffCadre.includes("admin") && 
+                      {userData?.staffCadre?.includes("admin") && 
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Staff</h6>
                       </th>}
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Approved</h6>
                       </th>
-                      {tokenData?.staffCadre.includes("salesPerson") && 
+                      {userData?.staffCadre?.includes("salesPerson") && 
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Actions</h6>
                       </th>}

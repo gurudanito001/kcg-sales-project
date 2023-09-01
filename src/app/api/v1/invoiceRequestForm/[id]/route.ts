@@ -72,6 +72,7 @@ export async function PATCH(
       headers: { "Content-Type": "application/json" },
     }); 
   } catch (error: any) {
+    console.log(error)
     return new NextResponse(JSON.stringify({message: error.message}), {
       status: 500,
       headers: { "Content-Type": "application/json" },

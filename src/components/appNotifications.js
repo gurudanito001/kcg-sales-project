@@ -4,6 +4,10 @@ import { apiGet, apiPatch } from "@/services/apiService";
 import { useRouter } from "next/navigation";
 import useGetNotifications from "@/hooks/useGetNotifications";
 import { useMutation } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { useRef } from "react";
+import getTimeElapsed from "@/services/formatTime";
+import moment from "moment";
 
 
 const styles = {
@@ -11,6 +15,7 @@ const styles = {
     padding: "15px",
     borderRadius: "15px",
     background: "#767676b6",
+    cursor: "pointer",
   },
   notificationIcon: {
     fontSize: ".7rem", 
@@ -23,13 +28,14 @@ const styles = {
 }
 
 
-const NotificationItem = ({ title, message, url, onClose }) => {
-  const router = useRouter()
+const NotificationItem = ({ title, message, onClose, onClick, createdAt }) => {
+  let timeElapsedInMillis = new Date(createdAt).getTime()
+  
   return (
-    <div style={styles.notificationItem} className="my-2 text-white" onClick={() => router.push(url)}>
+    <div style={styles.notificationItem} className="my-2 text-white" onClick={onClick}>
       <div className="d-flex align-items-center">
         <h6 className="m-0">{title}</h6>
-        <span className="ms-auto small fst-italic">1hr 30mins ago</span>
+        <span className="ms-auto small fst-italic">{moment(createdAt).fromNow()}</span>
         <a className="ms-3 text-danger p-2 py-1 rounded-circle" onClick={onClose} ><i className="fa-solid fa-xmark"></i></a>
       </div>
       <p className="m-0">
@@ -42,33 +48,18 @@ const NotificationItem = ({ title, message, url, onClose }) => {
 
 const AppNotifications = () => {
   const tokenData = getDecodedToken();
-  const {data, refetch} = useGetNotifications()
-
-  /* const getNotificationQueryString = () =>{
-    if(staffCadre.includes("admin")){
-      return "staffCadre=admin"
-    }else{
-      return `employeeId=${user_id}`
-    }
-  } */
-  /* const notificationQuery = useQuery({
-    queryKey: ["allNotifications"],
-    queryFn: () => apiGet({ url: `/notification` })
-      .then(res => {
-        console.log(res)
-        return res.data
-      })
-      .catch(error => {
-        console.log(error)
-      })
-  }) */
+  const {userData} = useSelector( state => state.userData)
+  const {data, refetch} = useGetNotifications();
+  const closeOffCanvas = useRef();
+  const router = useRouter()
 
   const closeNotification = (notification) =>{
     let patchData = {viewed: true}
     
     if(notification.staffCadre === "salesPerson" && notification.receiverId === null){
-      let viewedBy = [...notification.viewedBy, tokenData.user_id]
+      let viewedBy = [...notification.viewedBy, tokenData?.user_id]
       patchData = {viewedBy}
+      console.log(patchData)
     }
     //return console.log(patchData)
     apiPatch({ url: `/notification/${notification.id}`, data: patchData})
@@ -84,10 +75,17 @@ const AppNotifications = () => {
   const listNotifications = () => {
     if (data) {
       return data.map(notification => {
-        return <NotificationItem key={notification.id} message={notification.message} title={notification.title} url={notification.resourceUrl} onClose={(e)=>{
-          e.stopPropagation()
-          closeNotification(notification)
-        }} />
+        return <NotificationItem key={notification.id} message={notification.message} title={notification.title} createdAt={notification.createdAt}
+          onClose={(e) => {
+            e.stopPropagation()
+            closeNotification(notification)
+          }}
+
+          onClick={() => {
+            router.push(notification.resourceUrl);
+            closeOffCanvas.current.click();
+          }}
+        />
       })
     }
   }
@@ -96,7 +94,7 @@ const AppNotifications = () => {
     <div className="offcanvas offcanvas-end" tabIndex="-1" id="offcanvasExample22" aria-labelledby="offcanvasExampleLabel22">
       <div className="offcanvas-header">
         <h5 className="offcanvas-title" id="offcanvasExampleLabel">Notifications</h5>
-        <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close" ref={closeOffCanvas}></button>
       </div>
       <div className="offcanvas-body">
         {listNotifications()}

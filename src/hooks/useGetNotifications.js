@@ -9,7 +9,7 @@ const useGetNotifications = () =>{
     if(tokenData?.staffCadre[0] === "admin"){
       return "staffCadre=admin"
     }else{
-      return `employeeId=${tokenData.user_id}&staffCadre=salesPerson`
+      return `employeeId=${tokenData?.user_id}`
     }
   }
   

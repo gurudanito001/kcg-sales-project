@@ -53,7 +53,7 @@ export async function PATCH(
     let product = await prisma.product.findUnique({where: {id: updatedData.productId}});
 
     await prisma.notification.create({
-      data: {staffCadre: "salesPerson", resourceUrl: `/priceMaster/${updatedData.id}`, message: `${product?.name} pricing details has been updated`}
+      data: {title: "Price Master", staffCadre: "salesPerson", resourceUrl: `/priceMaster/${updatedData.id}`, message: `${product?.name} pricing details has been updated`}
     })
   
     if (!updatedData) {

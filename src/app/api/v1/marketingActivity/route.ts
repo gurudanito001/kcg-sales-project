@@ -83,9 +83,9 @@ export async function POST(request: Request) {
     const data = await prisma.markettingActivity.create({
       data: json,
     });
-    await prisma.notification.create({
+    /* await prisma.notification.create({
       data: {staffCadre: "admin", resourceUrl: `/marketingActivities/${data.id}`, message: "Marketing Activity created (pending approval)" }
-    })
+    }) */
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

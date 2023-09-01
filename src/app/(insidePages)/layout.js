@@ -39,8 +39,8 @@ const Layout = ({ children }) => {
     
     //console.log(data)
     
-    if(tokenData && tokenData.user_id !== userData.id){
-      let {email, staffCadre, user_id} = tokenData;
+    if(userData && userData.user_id !== userData.id){
+      let {email, staffCadre, user_id} = userData;
       console.log("setting data")
       dispatch(setUserData({email, staffCadre, id: user_id}))
     }
@@ -116,13 +116,13 @@ const Layout = ({ children }) => {
                 <li className="nav-item dropdown">
                   <a className="nav-link nav-icon-hover" href="" id="drop2" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                    <img src={`/images/profile/${tokenData?.staffCadre[0]}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />
+                    {userData?.staffCadre && <img src={`/images/profile/${userData?.staffCadre[0]}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />}
                   </a>
                   <div className="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
                     <div className="message-body">
                       <div className="px-3">
                         <h6 className="text-capitalize m-0">{userData?.firstName} {userData?.lastName}</h6>
-                        <p className="text-capitalize small">{tokenData?.staffCadre[0]}</p>
+                        {userData?.staffCadre && <p className="text-capitalize small">{userData?.staffCadre[0]}</p>}
                       </div>
                       
                       <a href="" className="d-flex align-items-center gap-2 dropdown-item">

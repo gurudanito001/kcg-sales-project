@@ -9,7 +9,8 @@ import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/services/apiService";
+import { apiGet, apiPost, apiPatch } from "@/services/apiService";
+import ConfirmationModal from '@/components/confirmationModal';
 
 const DataListItem = ({title, value}) => {
   return (
@@ -58,11 +59,11 @@ const PfiRequestDetails = () => {
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const {userData} = useSelector( state => state.userData)
-  const tokenData = getDecodedToken();
+  // const tokenData = getDecodedToken();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refreshPfiDetails} = useQuery({
     queryKey: ["allPfiRequests", id],
     queryFn: () => apiGet({ url: `/pfiRequestForm/${id}`})
     .then(res =>{
@@ -85,6 +86,26 @@ const PfiRequestDetails = () => {
     message: ""
   });
 
+  const [formData, setFormData] = useState({
+    pfiReferenceNumber: "",
+    pfiDate: "",
+  });
+
+  useEffect(() => {
+    if (data) {
+      const { pfiReferenceNumber, pfiDate } = data;
+      setFormData(prevState => ({
+        ...prevState,
+        invoiceNumber: pfiReferenceNumber || "",
+        invoiceDate: pfiDate || "",
+      }))
+    }
+  }, [data])
+
+  const [errors, setErrors] = useState({})
+
+
+
   const clearComment = () => {
     setCommentData( prevState => ({
       ...prevState, 
@@ -92,7 +113,6 @@ const PfiRequestDetails = () => {
     }))
   }
   
-  const queryClient = useQueryClient();
   const commentMutation = useMutation({
     mutationFn: () => apiPost({ url: "/comment", data: commentData })
       .then(res => {
@@ -115,16 +135,82 @@ const PfiRequestDetails = () => {
     }))
   }
 
-  const handleSubmit = (e)=>{
+  const handleSubmitComment = (e)=>{
     e.preventDefault();
     // return console.log(commentData)
     commentMutation.mutate()
   }
 
+  const handleChange = (prop) => (event) => {
+    setFormData(prevState => ({
+      ...prevState,
+      [prop]: event.target.value
+    }))
+  }
+
+  const { isLoading: isLoadingApprovePfi, mutate: approvePfiRequest } = useMutation({
+    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data.id}`, data: {pfiDate: formData.pfiDate, pfiReferenceNumber: formData.pfiReferenceNumber, approved: true} })
+      .then(res => {
+        console.log(res.data)
+        refreshPfiDetails()
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const handleApprovePfiRequest = () =>{
+    if(!formData.pfiDate && !formData.pfiReferenceNumber){
+      return dispatchMessage({ severity: "error", message: `Fill in Pfi Reference Number and Pfi Date`})
+    }
+    console.log(formData)
+    approvePfiRequest();
+  }
+
+  const { isLoading: isLoadingLockPfi, mutate: lockPfiRequest } = useMutation({
+    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data.id}`, data: {locked: true} })
+      .then(res => {
+        console.log(res.data)
+        refreshPfiDetails()
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+
+  const { isLoading: isRequestingEdit, mutate: requestForEdit } = useMutation({
+    mutationFn: () => apiPost({ url: `/notification`, data: {staffCadre: "admin", resourceId: data?.id, resourceUrl: pathName, title: "Pfi Request", message: `${userData.firstName} ${userData.lastName} is requesting to edit Pfi Request`} })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: "Request has been sent to admin" })
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const { isLoading: isUnlockingPfi, mutate: unLockPfiRequest } = useMutation({
+    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data?.id}`, data: {locked: false, approved: false} })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: "Pfi has been unlocked" });
+        refreshPfiDetails();
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+ 
+
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: tokenData?.user_id,
+      senderId: userData?.user_id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
@@ -136,8 +222,12 @@ const PfiRequestDetails = () => {
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Pfi Requests</h4>
-        <span className="breadcrumb-item ms-3"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {tokenData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
+        <span className="breadcrumb-item ms-3 me-auto"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left"></i> Back</a></span>
+        
+        {(!data?.locked && userData?.staffCadre?.includes("salesPerson")) && <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lockItModal">Lock It <i className="fa-solid fa-lock ms-1"></i></button>}
+        {(data?.locked && userData?.staffCadre?.includes("admin")) && <button className="btn btn-outline-primary ms-2"  data-bs-toggle="modal" data-bs-target="#unlockItModal"> {isUnlockingPfi ? "Loading..." : "Unlock It"}<i className="fa-solid fa-lock-open ms-1"></i></button>}
+        {(userData?.staffCadre?.includes("salesPerson") && !data?.locked)&& <a className={`btn btn-link text-primary`} href={`/pfiRequests/${id}/edit`}>Edit</a>}
+        {(data?.locked  && userData?.staffCadre?.includes("salesPerson")) && <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestEditModal">Request Edit</button>}
       </header>
 
 
@@ -145,7 +235,18 @@ const PfiRequestDetails = () => {
         <div className="col-12 d-flex flex-column align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Pfi Request Details</h5>
+              <div className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold mb-0 opacity-75 me-auto">Pfi Request Details</h5>
+                {
+                  data?.locked &&
+                  <span className=" border border-primary text-primary px-3 py-2 rounded-3 me-2">Locked <i className="fa-solid fa-lock ms-1"></i></span>
+                }
+                {
+                  data?.approved ?
+                  <span className=" border border-success text-success-emphasis px-3 py-2 rounded-3">Approved <i className="fa-regular fa-circle-check ms-1"></i></span> :
+                  <span className=" border border-muted text-muted px-3 py-2 rounded-2">Pending Approval </span>
+                }
+              </div>
 
               {data ?
                 <>
@@ -187,6 +288,26 @@ const PfiRequestDetails = () => {
             </div>
           </div>
 
+          {(userData?.staffCadre?.includes("admin") && !data?.pfiReferenceNumber) && <div className="card w-100 p-3">
+            <div className="card-body p-4" style={{ maxWidth: "700px" }}> 
+              <form>
+                <div className="mb-3">
+                  <label htmlFor="pfiReferenceNumber" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="text" className="form-control shadow-none" value={formData.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} id="pfiReferenceNumber" />
+                  <span className='text-danger font-monospace small'>{errors.pfiReferenceNumber}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="pfiDate" className="form-label">Pfi Date (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input type="date" className="form-control shadow-none" value={formData.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
+                  <span className='text-danger font-monospace small'>{errors.pfiDate}</span>
+                </div>
+
+                {(!data?.approved && data?.locked) && <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>}
+              </form>
+            </div>
+          </div>}
+
 
           <div className="card w-100 p-3">
             <h5 className="mb-4">Comments</h5>
@@ -196,12 +317,21 @@ const PfiRequestDetails = () => {
             <div className="mb-3 d-flex">
               <textarea rows={3} className="form-control" id="location" value={commentData.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
               <div className="d-flex align-items-center">
-                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
+                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmitComment}><i className="fa-solid fa-paper-plane h1"></i></button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Approve Pfi Request" message="Are you sure your want to approve this Pfi Request" isLoading={isLoadingApprovePfi} onSubmit={handleApprovePfiRequest} id="approveModal" />}
+
+      {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Lock Pfi Request" message="After Locking Pfi Request, Pfi will be sent to admin and you won't be able to make any changes. Do you still want to proceed?" isLoading={isLoadingLockPfi} onSubmit={lockPfiRequest} id="lockItModal" />}
+
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Unlock Pfi Request" message="After Unlocking Pfi Request, Employee will be able to make changes. Do you still want to proceed?" isLoading={isUnlockingPfi} onSubmit={unLockPfiRequest} id="unlockItModal" />}
+
+      {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Request to Edit Pfi Request" message="A notification will be sent to the admin to unlock the Pfi 
+      Request to enable editing. Do you still want to proceed?" isLoading={isRequestingEdit} onSubmit={requestForEdit} id="requestEditModal" />}
     </div>
   )
 }

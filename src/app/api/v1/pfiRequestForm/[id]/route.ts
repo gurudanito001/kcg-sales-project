@@ -55,7 +55,20 @@ export async function PATCH(
 
     if(json.approved){
       await prisma.notification.create({
-        data: {receiverId: updatedData.employeeId, resourceUrl: `/pfiRequests/${updatedData.id}`, message: `${updatedData.companyName} has been approved as your customer`}
+        data: { title: "Pfi Request", receiverId: updatedData.employeeId, resourceUrl: `/pfiRequests/${id}`, message: `Pfi with reference number: ${updatedData.pfiReferenceNumber} has been approved`}
+      })
+    }
+
+    if(json.locked){
+      await prisma.notification.create({
+        data: { title: "Pfi Request", staffCadre: "admin", resourceUrl: `/pfiRequests/${id}`, message: `New Pfi Request has been sent for approval`}
+      })
+    }
+
+    if(!json.locked){
+      let pfiDetails = await prisma.pfiRequestForm.findUnique({where: {id}});
+      await prisma.notification.create({
+        data: { title: "Pfi Request", receiverId: pfiDetails?.employeeId, resourceUrl: `/pfiRequests/${id}`, message: `Pfi Request has been unlocked by admin`}
       })
     }
 

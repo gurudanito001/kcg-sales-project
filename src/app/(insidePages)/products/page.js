@@ -50,7 +50,7 @@ const LoadingFallBack = () =>{
 const Products = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
-  const tokenData = getDecodedToken()
+  // const tokenData = getDecodedToken()
 
 
   const [showFilters, setShowFilters] = useState(false);
@@ -193,7 +193,7 @@ const Products = () =>{
           }}>
             <h6 className="fw-semibold mb-1 text-primary">{name}</h6>
           </td>
-          {tokenData?.staffCadre.includes("admin") && 
+          {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0 py-2">
             <p className="mb-0 fw-normal">{code}</p>
           </td>}
@@ -205,9 +205,9 @@ const Products = () =>{
           <td className="border-bottom-0 py-2">
             <p className="small mb-0 d-flex flex-wrap">{price ? formatAsCurrency(deriveProductStatus(price).price) : ""}</p>
           </td>
-          {tokenData?.staffCadre.includes("admin") && 
+          {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0 py-2">
-            {tokenData?.staffCadre?.includes("admin") && <a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
+            {userData?.staffCadre?.includes("admin") && <a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
           </td>}
         </tr>
     )
@@ -232,7 +232,7 @@ const Products = () =>{
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Product</h4>
         <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {tokenData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-3" href="/products/add">Add</a>}
+        {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-3" href="/products/add">Add</a>}
       </header>
 
       {showFilters &&
