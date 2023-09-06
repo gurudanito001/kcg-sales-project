@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
+import moment from 'moment';
 
 const DataListItem = ({title, value}) => {
   return (
@@ -92,7 +93,7 @@ const InvoiceRequestDetails = () => {
     chasisNumber: "",
     delivery: "",
     payment: "",
-    approved: true,
+    approved: false,
     approvedByGM: false,
     approvedByProductHead: false,
     additionalInformation: "",
@@ -100,7 +101,7 @@ const InvoiceRequestDetails = () => {
 
   useEffect(() => {
     if (data) {
-      const { invoiceNumber, invoiceDate, deliveryNoteNumber, actualDeliveryDate, chasisNumber, delivery, payment, approvedByGM, approvedByProductHead, additionalInformation } = data;
+      const { invoiceNumber, invoiceDate, deliveryNoteNumber, actualDeliveryDate, chasisNumber, delivery, payment, approvedByGM, approvedByProductHead, approved, additionalInformation } = data;
       setFormData(prevState => ({
         ...prevState,
         invoiceNumber: invoiceNumber || "",
@@ -112,6 +113,7 @@ const InvoiceRequestDetails = () => {
         payment: payment || "",
         approvedByGM,
         approvedByProductHead,
+        approved,
         additionalInformation: additionalInformation || ""
       }))
     }
@@ -133,8 +135,7 @@ const InvoiceRequestDetails = () => {
     })
   }) 
 
-  const handleUpdateInvoice = (e) =>{
-    e.preventDefault();
+  const handleUpdateInvoice = () =>{
     //return console.log(formData);
     updateInvoiceRequest();
   }
@@ -169,7 +170,7 @@ const InvoiceRequestDetails = () => {
   }
 
   const handleChange = (prop) => (event) => {
-    if ( prop === "approvedByGM" || prop === "approvedByProductHead") {
+    if ( prop === "approvedByGM" || prop === "approvedByProductHead" || prop === "approved") {
       setFormData(prevState => ({
         ...prevState,
         [prop]: !prevState[prop]
@@ -191,12 +192,12 @@ const InvoiceRequestDetails = () => {
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: userData?.user_id,
+      senderId: userData?.id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
     }))
-  },[data])
+  },[data, userData])
 
 
   return (
@@ -246,7 +247,7 @@ const InvoiceRequestDetails = () => {
                   <DataListItem title="Registration" value={data.registration} />
                   <DataListItem title="Rebate Receiver" value={data.rebateReceiver} />
                   <DataListItem title="Relationship With Transaction" value={data.relationshipWithTransaction} />
-                  <DataListItem title="Expected Delivery Date" value={data.expectedDeliveryDate} />
+                  <DataListItem title="Expected Delivery Date" value={moment(data.expectedDeliveryDate).format('ll')} />
                   <DataListItem title="Delivery Location" value={data.deliveryLocation} />
                   <DataListItem title="Payment Type" value={data.paymentType} />
                   <DataListItem title="Delivery Location" value={data.deliveryLocation} />
@@ -257,15 +258,15 @@ const InvoiceRequestDetails = () => {
                   <DataListItem title="Bank Account Name" value={data.bankAccountName} />
                   <DataListItem title="Account Number" value={data.accountNumber} />
                   <DataListItem title="Amount Paid" value={data.amountPaid} />
-                  <DataListItem title="Date Of Payment" value={data.dateOfPayment} />
+                  <DataListItem title="Date Of Payment" value={moment(data.dateOfPayment).format('ll') || "---"} />
                   <DataListItem title="LPO Number" value={data.lpoNumber} />
-                  <DataListItem title="Payment Due Date" value={data.paymentDueDate} />
+                  <DataListItem title="Payment Due Date" value={moment(data.paymentDueDate).format('ll')} />
                   <DataListItem title="Other Payment Details" value={data.otherPaymentDetails} />
                   <DataListItem title="Invoice Number" value={data.invoiceNumber} />
 
-                  <DataListItem title="Invoice Date" value={data.invoiceDate} />
+                  <DataListItem title="Invoice Date" value={moment(data.invoiceDate).format('ll')} />
                   <DataListItem title="Delivery Note Number" value={data.deliveryNoteNumber} />
-                  <DataListItem title="Actual Delivery Date" value={data.actualDeliveryDate} />
+                  <DataListItem title="Actual Delivery Date" value={moment(data.actualDeliveryDate).format('ll')} />
                   <DataListItem title="Chasis Number" value={data.chasisNumber} />
                   <DataListItem title="Delivery" value={data.delivery} />
                   <DataListItem title="Payment" value={data.payment} />
@@ -273,6 +274,8 @@ const InvoiceRequestDetails = () => {
                   <DataListItem title="Approved By GM" value={data.approvedByGM ? "Yes" : "No"} />
                   <DataListItem title="Approved By Product Head" value={data.approvedByProductHead ? "Yes" : "No"} />
                   <DataListItem title="Additional Information" value={data.additionalInformation} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
 
@@ -280,7 +283,8 @@ const InvoiceRequestDetails = () => {
             </div>
           </div>
 
-          {(userData?.staffCadre?.includes("admin") && !data?.pfiReferenceNumber) && <div className="card w-100 p-3">
+          {(userData?.staffCadre?.includes("admin")) && 
+          <div className="card w-100 p-3">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}> 
               <form>
                 <div className="mb-3">
@@ -339,6 +343,14 @@ const InvoiceRequestDetails = () => {
                   </label>
                 </div>
 
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
+                  <label className="form-check-label" htmlFor="approved">
+                    Approved
+                  </label>
+                  <div className='form-text text-warning-emphasis'> This is the final approval</div>
+                </div>
+
                 <div className="mb-3">
                   <label htmlFor="additionalInformation" className="form-label">Additional Information</label>
                   <textarea className="form-control shadow-none" rows={4} value={formData.additionalInformation} onChange={handleChange("additionalInformation")} id="additionalInformation" ></textarea>
@@ -346,7 +358,7 @@ const InvoiceRequestDetails = () => {
                 </div>
 
                 {/* <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoadingInvoiceUpdate} onClick={handleUpdateInvoice}>{isLoadingInvoiceUpdate ? "Loading..." : "Approve"}</button> */}
-                <button className="btn btn-primary" onClick={(e)=> e.preventDefault()} data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>
+                <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>
               </form>
             </div>
           </div>}
@@ -366,7 +378,7 @@ const InvoiceRequestDetails = () => {
         </div>
       </div>
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`${data?.approved ? "Update" : "Approve"} Invoice Request`} message={`Are you sure your want to ${data?.approved ? "update" : "approve"} this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`Update Invoice Request`} message={`Are you sure your want to update this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" />}
     </div>
   )
 }

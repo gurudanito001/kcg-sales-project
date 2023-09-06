@@ -16,7 +16,7 @@ const AddCompany = () =>{
     code: "",
     email: "",
     address: "",
-    logo: "logourl",
+    logo: "",
     brands: []
   })
 

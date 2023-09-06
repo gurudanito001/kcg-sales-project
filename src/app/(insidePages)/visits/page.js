@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
 
-const LoadingFallBack = () =>{
+const LoadingFallBack = () => {
   return (
     <>
       <tr sx={{ width: "100%" }}>
@@ -45,7 +45,7 @@ const LoadingFallBack = () =>{
 }
 
 
-const VisitReports = () =>{  
+const VisitReports = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
@@ -66,8 +66,8 @@ const VisitReports = () =>{
   })
 
 
-  const clearState = () =>{
-    setFormData( prevState =>({
+  const clearState = () => {
+    setFormData(prevState => ({
       ...prevState,
       employeeId: "",
       companyName: "",
@@ -76,17 +76,17 @@ const VisitReports = () =>{
     }))
   }
 
-  const setNextPage = () =>{
-    let {currentPage, take, totalCount} = listMetaData;
-    if((currentPage * take) < totalCount){
-      setPage( prevState => prevState + 1)
+  const setNextPage = () => {
+    let { currentPage, take, totalCount } = listMetaData;
+    if ((currentPage * take) < totalCount) {
+      setPage(prevState => prevState + 1)
     }
   }
 
-  const setPrevPage = () =>{
-    let {currentPage} = listMetaData;
-    if(currentPage > 1){
-      setPage( prevState => prevState - 1)
+  const setPrevPage = () => {
+    let { currentPage } = listMetaData;
+    if (currentPage > 1) {
+      setPage(prevState => prevState - 1)
     }
   }
 
@@ -101,7 +101,7 @@ const VisitReports = () =>{
   }
 
   useEffect(() => {
-    if(userData?.staffCadre?.includes("salesPerson")){
+    if (userData?.staffCadre?.includes("salesPerson")) {
       setFormData(prevState => ({
         ...prevState,
         employeeId: userData.id
@@ -109,15 +109,15 @@ const VisitReports = () =>{
     }
   }, [])
 
-  const generateQueryString = () =>{
+  const generateQueryString = () => {
     let queryString = ""
     let data = formData;
     let dataKeys = Object.keys(data);
-    dataKeys.forEach( key => {
-      if(data[key]){
-        if(queryString === ""){
+    dataKeys.forEach(key => {
+      if (data[key]) {
+        if (queryString === "") {
           queryString += `${key}=${data[key]}`
-        }else{
+        } else {
           queryString += `&${key}=${data[key]}`
         }
       }
@@ -195,30 +195,30 @@ const VisitReports = () =>{
       )
     }
   }
-  
+
 
 
 
   const visitReportQuery = useQuery({
-    queryKey: ["allVisitReports" ],
-    queryFn:  ()=>apiGet({ url: `/visitReport?${queryUrlString}&page=${page}&take=${20}`})
-    .then(res => {
-      setListMetaData( prevState => ({
-        ...prevState,
-        totalCount: res.totalCount,
-        currentPage: res.page,
-        take: res.take
-      }))
-      console.log(res)
-      return res.data
-    })
-    .catch(error =>{
-      console.log(error)
-      dispatchMessage({severity: "error", message: error.message})
-    })
+    queryKey: ["allVisitReports"],
+    queryFn: () => apiGet({ url: `/visitReport?${queryUrlString}&page=${page}&take=${20}` })
+      .then(res => {
+        setListMetaData(prevState => ({
+          ...prevState,
+          totalCount: res.totalCount,
+          currentPage: res.page,
+          take: res.take
+        }))
+        console.log(res)
+        return res.data
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      })
   })
 
-  const {data, isFetching} = visitReportQuery;
+  const { data, isFetching } = visitReportQuery;
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -227,21 +227,24 @@ const VisitReports = () =>{
     //return console.log(formData, queryString)
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     visitReportQuery.refetch()
   }, [queryUrlString, page])
 
-  const listVisitReports = () =>{
-    return data.map( (item, index) => {
-      const {id, customer, contactPerson} = item;
-      return( 
+  const listVisitReports = () => {
+    return data.map((item, index) => {
+      const { id, customer, contactPerson, employee } = item;
+      return (
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0 link-style" onClick={()=>{
+          <td className="border-bottom-0 link-style" onClick={() => {
             router.push(`/visits/${id}`)
           }}>
             <h6 className="fw-semibold mb-1 text-primary">{customer.companyName}</h6>
             <span>{contactPerson.name}</span>
+          </td>
+          <td className="border-bottom-0">
+            <p className="mb-0 fw-normal">{customer.industry}</p>
           </td>
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{contactPerson.phoneNumber}</p>
@@ -252,13 +255,18 @@ const VisitReports = () =>{
             </div>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0 d-flex flex-wrap" style={{maxWidth: "200px"}}>{new Date(customer.lastVisited).toDateString()}</p>
+            <p className="small mb-0 d-flex flex-wrap" style={{ maxWidth: "200px" }}>{new Date(customer.lastVisited).toDateString()}</p>
           </td>
+          {userData?.staffCadre?.includes("admin") &&
+            <td className="border-bottom-0">
+              <p className="small mb-0 d-flex flex-wrap">{employee.firstName} {employee.lastName}</p>
+            </td>}
+          {userData?.staffCadre?.includes("salesPerson") && 
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>}
-          </td>
+            <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>
+          </td>}
         </tr>
-    )
+      )
     })
   }
 
@@ -309,56 +317,64 @@ const VisitReports = () =>{
         </div>
       }
 
-      
+
 
       <div className="row">
-          <div className="col-12 d-flex align-items-stretch">
-            <div className="card w-100">
-              <div className="card-body p-4">
-                <h5 className="card-title fw-semibold mb-4 opacity-75">All Visit Reports</h5>
-                <div className="table-responsive">
-                  <table className="table text-nowrap mb-0 align-middle">
-                    <caption className='p-3'><span className="fw-bold">Current Page: </span>{listMetaData.currentPage}  <span className="fw-bold ms-2">Total Pages: </span>{Math.ceil(listMetaData.totalCount / listMetaData.take)} <span className="fw-bold ms-2"> Total Count: </span> {listMetaData.totalCount}</caption>
-                    <thead className="text-dark fs-4">
-                      <tr>
+        <div className="col-12 d-flex align-items-stretch">
+          <div className="card w-100">
+            <div className="card-body p-4">
+              <h5 className="card-title fw-semibold mb-4 opacity-75">All Visit Reports</h5>
+              <div className="table-responsive">
+                <table className="table text-nowrap mb-0 align-middle">
+                  <caption className='p-3'><span className="fw-bold">Current Page: </span>{listMetaData.currentPage}  <span className="fw-bold ms-2">Total Pages: </span>{Math.ceil(listMetaData.totalCount / listMetaData.take)} <span className="fw-bold ms-2"> Total Count: </span> {listMetaData.totalCount}</caption>
+                  <thead className="text-dark fs-4">
+                    <tr>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">#</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Customer</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Industry</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Phone</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Email</h6>
+                      </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Last Visited</h6>
+                      </th>
+                      {userData?.staffCadre?.includes("admin") &&
                         <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">#</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Customer</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Phone</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Email</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Last Visited</h6>
-                        </th>
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                        {data ? listVisitReports() : <LoadingFallBack />}                 
-                    </tbody>
-                  </table>
-                </div>
+                          <h6 className="fw-semibold mb-0">Employee</h6>
+                        </th>}
+                      {userData?.staffCadre?.includes("salesPerson") && 
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Actions</h6>
+                      </th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data ? listVisitReports() : <LoadingFallBack />}
+                  </tbody>
+                </table>
+              </div>
 
-                <div className="px-3">
-                  <button className="btn btn-outline-primary py-1 px-2" disabled={isFetching} type="button" onClick={setPrevPage}>
-                    <i className="fa-solid fa-angle-left text-primary"></i>
-                  </button>
-                  <button className="btn btn-outline-primary py-1 px-2 ms-3" disabled={isFetching} type="button" onClick={setNextPage}>
-                    <i className="fa-solid fa-angle-right text-primary"></i>
-                  </button>
-                </div>
+              <div className="px-3">
+                <button className="btn btn-outline-primary py-1 px-2" disabled={isFetching} type="button" onClick={setPrevPage}>
+                  <i className="fa-solid fa-angle-left text-primary"></i>
+                </button>
+                <button className="btn btn-outline-primary py-1 px-2 ms-3" disabled={isFetching} type="button" onClick={setNextPage}>
+                  <i className="fa-solid fa-angle-right text-primary"></i>
+                </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
     </div>
   )
 }

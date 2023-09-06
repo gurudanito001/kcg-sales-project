@@ -9,6 +9,7 @@ import clipLongText from "@/services/clipLongText";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import { getDecodedToken } from "@/services/localStorageService";
 import { useSelector } from "react-redux";
+import moment from "moment";
 
 
 const LoadingFallBack = () =>{
@@ -108,10 +109,12 @@ const PriceMaster = () =>{
             <h6 className="fw-semibold mb-1">{deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive ? "Yes" : "No"}</h6>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0">{validFrom ? new Date(validFrom).toDateString() : "---"}</p>
+            <p className="small mb-0">{validFrom ? `${moment(new Date(validFrom)).format('lll')}` : "---"}</p>
           </td>
+          {/* <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} /> */}
           <td className="border-bottom-0">
-            <p className="small mb-0">{validTill ? new Date(validTill).toDateString() : "---"}</p>
+            <p className="small mb-0">{validTill ? `${moment(new Date(validTill)).format('lll')}` : "---"}</p>
           </td>
           <td className="border-bottom-0">
             <p className="fw-semibold mb-1" >{promoText ? clipLongText(promoText) : "---"}</p>

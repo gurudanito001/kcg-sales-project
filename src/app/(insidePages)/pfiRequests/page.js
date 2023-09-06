@@ -318,10 +318,11 @@ const PfiRequests = () =>{
           <td className="border-bottom-0">
             <p className="fw-semibold m-0">{formatAsCurrency(pricePerVehicle)}</p>
           </td>
-          <td className="border-bottom-0">
+          {userData?.staffCadre?.includes("admin")&&
+            <td className="border-bottom-0">
             <h6 className="fw-semibold m-0">{employee.firstName} {employee.lastName}</h6>
             <p className="fw-semibold m-0">{employee.email}</p>
-          </td>
+          </td>}
           <td className="border-bottom-0">
             {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
           </td>
@@ -396,7 +397,7 @@ const PfiRequests = () =>{
                 <option value="approved"> Approved</option>
                 <option value="unApproved">Not Approved</option>
               </select>
-            </div>
+             name</div>
 
             <div className="d-flex col-12 align-items-center mt-5">
               <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
@@ -437,12 +438,14 @@ const PfiRequests = () =>{
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Price</h6>
                         </th>
+                        {userData?.staffCadre?.includes("admin") &&
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Employee</h6>
-                        </th>
+                        </th>}
+                        {userData?.staffCadre?.includes("salesPerson") &&
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
+                        </th>}
                       </tr>
                     </thead>
                     <tbody>

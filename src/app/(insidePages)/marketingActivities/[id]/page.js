@@ -11,6 +11,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import { useSelector } from "react-redux";
+import moment from "moment";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -173,6 +174,8 @@ const MarketingActivityDetails = () => {
                       {listImages()}
                     </figure>
                   </div>
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
               }

@@ -372,12 +372,7 @@ const AddPfiRequest = () => {
                   <input type="text" className="form-control shadow-none" value={formData.quantity} onChange={handleChange("quantity")} id="quantity" placeholder="Quantity of Products" />
                   <span className='text-danger font-monospace small'>{errors.quantity}</span>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="pricePerVehicle" className="form-label">Price Per Vehicle (<span className='fst-italic text-warning'>required</span>)<span className='ms-3 fw-bold'>{formatAsCurrency(formData.pricePerVehicle)}</span></label>
-                  <input type="text" className="form-control shadow-none" value={formData.pricePerVehicle} onChange={handleChange("pricePerVehicle")} id="pricePerVehicle" placeholder="Price Per Vehicle" />
-                  <span className='text-danger font-monospace small'>{errors.pricePerVehicle}</span>
-                </div>
-
+                
                 <div className="mb-3">
                   <label htmlFor="bodyTypeDescription" className="form-label">Body Type Description / Any Extra Requirement Detail</label>
                   <textarea className="form-control shadow-none" value={formData.bodyTypeDescription} onChange={handleChange("bodyTypeDescription")} id="bodyTypeDescription" rows={3}></textarea>
@@ -402,6 +397,12 @@ const AddPfiRequest = () => {
                   <span className='text-danger font-monospace small'>{errors.costForSpecialFitment}</span>
                 </div>
 
+                <div className="mb-3">
+                  <label htmlFor="pricePerVehicle" className="form-label">Price Per Vehicle (inclusive of VAT) (<span className='fst-italic text-warning'>required</span>)<span className='ms-3 fw-bold'>{formatAsCurrency(formData.pricePerVehicle)}</span></label>
+                  <input type="text" className="form-control shadow-none" value={formData.pricePerVehicle} onChange={handleChange("pricePerVehicle")} id="pricePerVehicle" placeholder="Price Per Vehicle" />
+                  <span className='text-danger font-monospace small'>{errors.pricePerVehicle}</span>
+                </div>
+                
                 <div className="mb-3">
                   <label htmlFor="discount" className="form-label">Discount, if any</label>
                   <input type="text" className="form-control shadow-none" value={formData.discount} onChange={handleChange("discount")} id="discount" placeholder="Discount" />

@@ -179,6 +179,7 @@ model VisitReport {
   durationOfMeeting   String                @db.VarChar(50)
   meetingOutcome      String?               @db.VarChar(1000)
   visitDate           String?
+  nextVisitDate       String?
   followUpVisits      Json[]
   pfiRequest          Boolean?              @default(false)
   extraData           Json?

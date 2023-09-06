@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import formatAsCurrency from "@/services/formatAsCurrency";
+import moment from "moment";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -109,8 +110,10 @@ const PriceMasterDetails = () => {
                   <DataListItem title="Promo Price" value={data.promoPrice ? formatAsCurrency(data.promoPrice) : "---"} />
                   <DataListItem title="Any Promo" value={deriveProductStatus(data.unitPrice, data.promoPrice, data.validTill, data.anyPromo).promoActive ? "Yes" : "No"} />
                   <DataListItem title="Promo Text" value={data.promoText || "---"} />
-                  <DataListItem title="Valid From" value={data.validFrom ? new Date(data.validFrom).toDateString() : "---"} />
-                  <DataListItem title="Valid Till" value={data.validTill ? new Date(data.validTill).toDateString() : "---"} />
+                  <DataListItem title="Valid From" value={data.validFrom ? `${moment(new Date(data.validFrom)).format('MMMM Do YYYY, h:mm:ss a')}` : "---"} />
+                  <DataListItem title="Valid Till" value={data.validTill ? `${moment(new Date(data.validTill)).format('MMMM Do YYYY, h:mm:ss a')}`: "---"} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
 

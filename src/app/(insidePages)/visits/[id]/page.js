@@ -13,6 +13,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useSelector } from 'react-redux';
 import ConfirmationModal from '@/components/confirmationModal';
 import DeleteFollowUpButton from '@/components/deleteFollowUpButton';
+import moment from 'moment';
 
 const DataListItem = ({ title, value }) => {
   return (
@@ -230,12 +231,12 @@ const VisitReportDetails = () => {
   useEffect(() => {
     setCommentData(prevState => ({
       ...prevState,
-      senderId: userData?.user_id,
+      senderId: userData?.id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
     }))
-  }, [data])
+  }, [data, userData])
 
   const listFollowUpVisits = () => {
     return data?.followUpVisits.map((item, index) => {
@@ -345,6 +346,8 @@ const VisitReportDetails = () => {
                   <DataListItem title="Meeting Outcome" value={data.meetingOutcome} />
                   <DataListItem title="Visit Date" value={new Date(data.visitDate).toDateString()} />
                   <DataListItem title="Pfi Request" value={data.pfiRequest ? "Yes" : "No"} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
               }

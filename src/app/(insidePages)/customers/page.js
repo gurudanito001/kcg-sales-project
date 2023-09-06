@@ -21,8 +21,6 @@ const LoadingFallBack = () => {
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -30,12 +28,8 @@ const LoadingFallBack = () => {
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -203,7 +197,7 @@ const Customers = () => {
           <td className="border-bottom-0">
             <h6 className="fw-semibold m-0">{approved ? "Yes" : "Pending"}</h6>
           </td>
-          {userData?.staffCadre?.includes("staffCadre") && 
+          {userData?.staffCadre?.includes("salesPerson") && 
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/customers/${id}/edit`}>Edit</a>
           </td>}

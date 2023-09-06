@@ -5,6 +5,7 @@ import { apiGet } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
+import moment from "moment";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -94,6 +95,8 @@ const BranchDetails = () => {
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
                   <DataListItem title="Head Office" value={data.isHeadOffice ? "Yes" : "No"} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </div> :
                 <LoadingFallBack />
 

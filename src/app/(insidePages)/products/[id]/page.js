@@ -7,6 +7,9 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import formatAsCurrency from "@/services/formatAsCurrency";
+import moment from "moment";
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -77,6 +80,25 @@ const ProductDetails = () => {
     })
   }
 
+    const deriveProductStatus = (priceData)=>{
+    let {unitPrice, promoPrice, validTill, anyPromo} = priceData
+    let validTillString = new Date(validTill).getTime();
+    let currentDateString = new Date().getTime();
+    let result = {};
+    if(!anyPromo){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString >= validTillString){
+      result.price = unitPrice
+      result.promoActive = false;
+    }else if(currentDateString < validTillString){
+      result.price = promoPrice
+      result.promoActive = true;
+    }
+
+    return result
+  }
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -95,16 +117,20 @@ const ProductDetails = () => {
               {data ?
                 <>
                   <DataListItem title="Product Name" value={data.name} />
-                  <DataListItem title="Product Code" value={data.code} />
+                  {userData?.staffCadre?.includes("admin") && <DataListItem title="Product Code" value={data.code} />}
                   <DataListItem title="Brand" value={data.brand.name} />
+                  <DataListItem title="Price" value={formatAsCurrency(deriveProductStatus(data.price).price)} />
                   <DataListItem title="Description" value={data.description} />
                   <DataListItem title="Specifications" value={data.specifications} />
+                  <DataListItem title="Vat Inclusive" value={data.vatInclusive ? "Yes" : "No"} />
                   <div className="mb-3 d-flex flex-column">
                     <h6 className="m-0 me-3">Product Images</h6>
                     <figure>
                       {listProductImages()}
                     </figure>
                   </div>
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
               }

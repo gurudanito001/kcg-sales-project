@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import moment from "moment";
 
 
 
@@ -17,7 +18,7 @@ const CommentItem = ({message, sender, date }) =>{
       
       <span className="d-flex small">
         <span className="me-auto">{sender.firstName} {sender.lastName}</span>
-        <span>{ new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}</span>
+        <span>{moment(date).format('lll')}</span>
       </span>
       {message}
     </li>

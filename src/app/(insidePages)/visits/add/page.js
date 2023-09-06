@@ -32,6 +32,7 @@ const AddCustomerVisit = () => {
     durationOfMeeting: "",
     meetingOutcome: "",
     visitDate: "",
+    nextVisitDate: "",
     followUpVisits: [],
     pfiRequest: false
   })
@@ -202,7 +203,7 @@ const AddCustomerVisit = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    return console.log(formData)
     mutate()
   }
 
@@ -313,6 +314,11 @@ const AddCustomerVisit = () => {
                   <input type="datetime-local" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
                 </div>
 
+                <div className="mb-3">
+                  <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
+                  <input type="datetime-local" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
+                </div>
+
                 <div className="form-check mb-3">
                   <input className="form-check-input" type="checkbox" checked={formData.pfiRequest} onChange={handleCheckPfi} id="pfiRequest" />
                   <label className="form-check-label fw-bold" htmlFor="pfiRequest">
@@ -328,7 +334,6 @@ const AddCustomerVisit = () => {
                 </div>
 
                 <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
-
               </form>
             </div>
 

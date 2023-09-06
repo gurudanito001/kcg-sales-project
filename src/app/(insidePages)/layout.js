@@ -39,18 +39,20 @@ const Layout = ({ children }) => {
     
     //console.log(data)
     
-    if(userData && userData.user_id !== userData.id){
+    /* if(userData && tokenData?.user_id !== userData.id){
       let {email, staffCadre, user_id} = userData;
       console.log("setting data")
       dispatch(setUserData({email, staffCadre, id: user_id}))
-    }
+    } */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   })
 
   useEffect(() => {
     if (!userData.token) {
       let localStorageToken = localStorage.getItem("token");
+      if(localStorageToken){
         refreshUserData(localStorageToken)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData])

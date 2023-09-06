@@ -53,9 +53,10 @@ const AddCustomer = () => {
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
+    console.log(userData);
     setFormData( prevState => ({
       ...prevState,
-      employeeId: userData.id
+      employeeId: userData?.id
     }))
   }, [userData])
 
@@ -133,22 +134,25 @@ const AddCustomer = () => {
                   <input type="text" value={formData.companyName} onChange={handleChange("companyName")} className="form-control shadow-none" id="companyName" placeholder="Company Name" />
                   <span className='text-danger font-monospace small'>{errors.companyName}</span>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="state" className="form-label">State (<span className='fst-italic text-warning'>required</span>)</label>
-                  <select className="form-select shadow-none" value={formData.state} onChange={handleChange("state")} id="state" aria-label="Default select example">
-                    <option value="">Select State</option>
-                    {listStateOptions()}
-                  </select>
-                  <span className='text-danger font-monospace small'>{errors.state}</span>
+                <div className="d-flex align-items-center">
+                  <div className="mb-3 me-3 w-50">
+                    <label htmlFor="state" className="form-label">State (<span className='fst-italic text-warning'>required</span>)</label>
+                    <select className="form-select shadow-none" value={formData.state} onChange={handleChange("state")} id="state" aria-label="Default select example">
+                      <option value="">Select State</option>
+                      {listStateOptions()}
+                    </select>
+                    <span className='text-danger font-monospace small'>{errors.state}</span>
+                  </div>
+                  <div className="mb-3 w-50">
+                    <label htmlFor="lga" className="form-label">LGA (<span className='fst-italic text-warning'>required</span>)</label>
+                    <select className="form-select shadow-none" value={formData.lga} onChange={handleChange("lga")} id="lga" aria-label="Default select example">
+                      <option value="">Select LGA</option>
+                      {listLgaOptions(formData.state)}
+                    </select>
+                    <span className='text-danger font-monospace small'>{errors.lga}</span>
+                  </div>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="lga" className="form-label">LGA (<span className='fst-italic text-warning'>required</span>)</label>
-                  <select className="form-select shadow-none" value={formData.lga} onChange={handleChange("lga")} id="lga" aria-label="Default select example">
-                    <option value="">Select LGA</option>
-                    {listLgaOptions(formData.state)}
-                  </select>
-                  <span className='text-danger font-monospace small'>{errors.lga}</span>
-                </div>
+                
                 <div className="mb-3">
                   <label htmlFor="city" className="form-label">City </label>
                   <input type="text" className="form-control shadow-none" id="companyWebsite" value={formData.city} onChange={handleChange("city")} placeholder="name of city" />

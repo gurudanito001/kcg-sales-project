@@ -14,6 +14,7 @@ import CommentItem from "@/components/commentItem";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import ConfirmationModal from '@/components/confirmationModal';
+import moment from "moment";
 
 
 const DataListItem = ({title, value}) => {
@@ -153,19 +154,19 @@ const CustomerDetails = () => {
 
   const handleSubmit = (e)=>{
     e.preventDefault();
-    console.log(commentData)
+    // return console.log(commentData, userData)
     commentMutation.mutate()
   }
 
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: userData?.user_id,
+      senderId: userData?.id,
       receiverId: data?.employee?.id,
       resourceId: id,
       resourceUrl: pathName
     }))
-  },[data])
+  },[data, userData])
 
   const { isLoading, mutate: approveCustomer } = useMutation({
     mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: {approved: true} })
@@ -198,7 +199,8 @@ const CustomerDetails = () => {
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
-          {userData?.staffCadre?.includes("salesPerson") &&<td className="border-bottom-0">
+          {userData?.staffCadre?.includes("salesPerson") &&
+          <td className="border-bottom-0">
             <button className="btn btn-link text-primary ms-auto" onClick={()=>{
               setCurrentlyEditedContactPerson(item);
               setCurrentForm("editContactPerson")
@@ -216,7 +218,7 @@ const CustomerDetails = () => {
         <h4 className="m-0">Customer</h4>
         
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {!data?.approved && <button className="btn btn-outline-primary ms-auto" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Approve</button>}
+        {!data?.approved && <button className="btn btn-outline-primary ms-auto" data-bs-toggle="modal" data-bs-target="#approveCustomer">Approve</button>}
         {userData?.staffCadre?.includes("salesPerson") && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
         {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
       </header>
@@ -257,8 +259,6 @@ const CustomerDetails = () => {
                   <DataListItem title="Enquiry Source" value={data.enquirySource} />
                   <DataListItem title="Status" value={data.status} />
                   <DataListItem title="Approved" value={data.approved ? "Yes" : "Pending"} />
-                  <DataListItem title="Last Visited" value={new Date(data.lastVisited).toDateString()} />
-
                   <div className="row mb-3 d-flex align-items-center">
                     <div className="col-12 col-md-4">
                       <h6 className="m-0">Address</h6>
@@ -268,6 +268,8 @@ const CustomerDetails = () => {
                       <p className="m-0">{data.city} {data.lga} {data.state}</p>
                     </div>
                   </div>
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
               }
@@ -294,9 +296,10 @@ const CustomerDetails = () => {
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Phone Number</h6>
                       </th>
+                      {userData?.staffCadre?.includes("salesPerson") &&
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Actions</h6>
-                      </th>
+                      </th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -322,7 +325,7 @@ const CustomerDetails = () => {
         </div>
       </div>
 
-      <ConfirmationModal title="Confirm Approval" message="Are you sure you want to approve this customer?" isLoading={isLoading} onSubmit={approveCustomer} />
+      <ConfirmationModal title="Confirm Approval" message="Are you sure you want to approve this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} />
     </div>
   )
 }

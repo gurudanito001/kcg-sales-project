@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPost, apiPatch } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
+import moment from 'moment';
 
 const DataListItem = ({title, value}) => {
   return (
@@ -96,8 +97,8 @@ const PfiRequestDetails = () => {
       const { pfiReferenceNumber, pfiDate } = data;
       setFormData(prevState => ({
         ...prevState,
-        invoiceNumber: pfiReferenceNumber || "",
-        invoiceDate: pfiDate || "",
+        pfiReferenceNumber: pfiReferenceNumber || "",
+        pfiDate: pfiDate || "",
       }))
     }
   }, [data])
@@ -210,12 +211,12 @@ const PfiRequestDetails = () => {
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: userData?.user_id,
+      senderId: userData?.id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName
     }))
-  },[data])
+  },[data, userData])
 
 
   return (
@@ -250,7 +251,8 @@ const PfiRequestDetails = () => {
 
               {data ?
                 <>
-                  <DataListItem title="Employee" value={`${data.employee.firstName} ${data.employee.lastName}`} />
+                  {userData?.staffCadre?.includes("admin") &&
+                  <DataListItem title="Employee" value={`${data.employee.firstName} ${data.employee.lastName}`} />}
                   <DataListItem title="Customer" value={data.customer.companyName} />
                   <DataListItem title="Customer Address" value={data.customer.address} />
                   <DataListItem title="Contact Person Name" value={data.contactPerson.name} />
@@ -260,11 +262,11 @@ const PfiRequestDetails = () => {
                   <DataListItem title="Product" value={data.product.name} />
                   <DataListItem title="Vehicle Details" value={data.vehicleDetails} />
                   <DataListItem title="Quantity" value={data.quantity} />
-                  <DataListItem title="Price Per Vehicle" value={data.pricePerVehicle} />
                   <DataListItem title="Body Type Description" value={data.bodyTypeDescription} />
                   <DataListItem title="Vehicle Service Details" value={data.vehicleServiceDetails} />
                   <DataListItem title="Special Fitment Details" value={data.specialFitmentDetails} />
                   <DataListItem title="Cost For Special Fitment" value={data.costForSpecialFitment} />
+                  <DataListItem title="Price Per Vehicle (inclusive of VAT)" value={data.pricePerVehicle} />
                   <DataListItem title="Discount" value={data.discount} />
                   <DataListItem title="VAT Deduction" value={data.vatDeduction ? "Yes" : "No"} />
                   <DataListItem title="WHT Deduction" value={data.whtDeduction? "Yes" : "No"} />
@@ -279,8 +281,10 @@ const PfiRequestDetails = () => {
                   <DataListItem title="Approved" value={data.approved ? "Yes" : "No"} />
                   <DataListItem title="Locked" value={data.locked ? "Yes" : "No"} />
                   <DataListItem title="Pfi Reference Number" value={data.pfiReferenceNumber} />
-                  <DataListItem title="Pfi Date" value={data.pfiDate} />
+                  <DataListItem title="Pfi Date" value={moment(new Date(data.pfiDate)).format('ll')} />
                   <DataListItem title="Additional Information" value={data.additionalInformation} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
 
@@ -288,22 +292,22 @@ const PfiRequestDetails = () => {
             </div>
           </div>
 
-          {(userData?.staffCadre?.includes("admin") && !data?.pfiReferenceNumber) && <div className="card w-100 p-3">
+          {(userData?.staffCadre?.includes("admin")) && <div className="card w-100 p-3">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}> 
               <form>
                 <div className="mb-3">
                   <label htmlFor="pfiReferenceNumber" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="text" className="form-control shadow-none" value={formData.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} id="pfiReferenceNumber" />
+                  <input type="text" className="form-control shadow-none" value={formData.pfiReferenceNumber || data?.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} id="pfiReferenceNumber" />
                   <span className='text-danger font-monospace small'>{errors.pfiReferenceNumber}</span>
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="pfiDate" className="form-label">Pfi Date (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="date" className="form-control shadow-none" value={formData.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
+                  <input type="date" className="form-control shadow-none" value={formData.pfiDate || data?.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
                   <span className='text-danger font-monospace small'>{errors.pfiDate}</span>
                 </div>
 
-                {(!data?.approved && data?.locked) && <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>}
+                {(data?.locked) && <button className="btn btn-outline-primary" type='button' data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>}
               </form>
             </div>
           </div>}

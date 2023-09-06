@@ -43,9 +43,6 @@ const AddBranch = () =>{
 
   const listStateOptions = () => {
     return NaijaStates.states().map(state =>{
-      if(state === "Federal Capital Territory"){
-        return <option key="Abuja" value={`Abuja`}>Abuja</option>
-      }
       return <option key={state} value={state}>{state}</option>
     }
     )
@@ -93,7 +90,7 @@ const AddBranch = () =>{
       dispatchMessage({ message: res.message})
       queryClient.invalidateQueries(["allBranches"])
       if(companyId){
-        router.push(`/company/${id}`)
+        router.push(`/companies/${companyId}`)
       }else{
         router.push("/branches")
       }

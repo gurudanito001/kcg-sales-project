@@ -28,6 +28,7 @@ export async function GET(request: Request) {
         }
       }),
       include: {
+        employee: true,
         customer: true,
         contactPerson: true
       }

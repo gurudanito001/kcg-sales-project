@@ -7,6 +7,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import Branches from "../../branches/page";
 import { useRouter } from "next/navigation";
+import moment from "moment";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -58,16 +59,22 @@ const BranchesLoadingFallBack = () =>{
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
-      </tr>
-      <tr sx={{ width: "100%" }}>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
-        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
       </tr>
       <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
+      </tr>
+      <tr sx={{ width: "100%" }}>
+        <td><Skeleton height={50} animation="wave" /></td>
+        <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
         <td><Skeleton height={50} animation="wave" /></td>
@@ -177,6 +184,8 @@ const CompanyDetails = () => {
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
                   <DataListItem title="Brands" value={listCompanyBrands()} />
+                  <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
+                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
                 <LoadingFallBack />
               }

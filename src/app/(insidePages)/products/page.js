@@ -285,18 +285,20 @@ const Products = () =>{
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Name</h6>
                         </th>
+                        {userData?.staffCadre?.includes("admin") && 
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Code</h6>
-                        </th>
+                        </th>}
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Brand Name</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Price</h6>
                         </th>
+                        {userData?.staffCadre?.includes("admin") && 
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
+                        </th>}
                       </tr>
                     </thead>
                     <tbody>
