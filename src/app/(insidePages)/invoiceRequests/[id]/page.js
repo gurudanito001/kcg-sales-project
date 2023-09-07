@@ -348,7 +348,7 @@ const InvoiceRequestDetails = () => {
                   <label className="form-check-label" htmlFor="approved">
                     Approved
                   </label>
-                  <div className='form-text text-warning-emphasis'> This is the final approval</div>
+                  <div className='form-text text-warning-emphasis'> Check this box to approve invoice request</div>
                 </div>
 
                 <div className="mb-3">

@@ -34,7 +34,6 @@ export async function GET(request: Request) {
       orderBy: {
         createdAt: "desc"
       }
-      
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {

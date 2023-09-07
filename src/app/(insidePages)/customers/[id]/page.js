@@ -115,6 +115,19 @@ const CustomerDetails = () => {
       })
   })
 
+  const [formData, setFormData] = useState({
+    approved: false,
+  })
+
+  useEffect(() => {
+    if (data) {
+      setFormData(prevState => ({
+        ...prevState,
+        approved: data.approved
+      }))
+    }
+  }, [data])
+
   const [commentData, setCommentData] = useState({
     senderId: "",
     receiverId: "",
@@ -152,6 +165,20 @@ const CustomerDetails = () => {
     }))
   }
 
+  const handleChange = (prop) => (event) => {
+    if (prop === "approved") {
+      setFormData(prevState => ({
+        ...prevState,
+        [prop]: !prevState[prop]
+      }))
+      return
+    }
+    setFormData(prevState => ({
+      ...prevState,
+      [prop]: event.target.value
+    }))
+  }
+
   const handleSubmit = (e)=>{
     e.preventDefault();
     // return console.log(commentData, userData)
@@ -169,7 +196,7 @@ const CustomerDetails = () => {
   },[data, userData])
 
   const { isLoading, mutate: approveCustomer } = useMutation({
-    mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: {approved: true} })
+    mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: formData })
       .then(res => {
         console.log(res.data)
         refetchCustomerDetails()
@@ -218,7 +245,6 @@ const CustomerDetails = () => {
         <h4 className="m-0">Customer</h4>
         
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {!data?.approved && <button className="btn btn-outline-primary ms-auto" data-bs-toggle="modal" data-bs-target="#approveCustomer">Approve</button>}
         {userData?.staffCadre?.includes("salesPerson") && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
         {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
       </header>
@@ -227,7 +253,6 @@ const CustomerDetails = () => {
       <div className="row">
         <div className="col-12 d-flex flex-column align-items-stretch">
           <div className="card w-100">
-
             {currentForm === "addContactPerson" &&
               <div className="card-body p-4"> 
               <AddContactPerson employeeId={data?.employee?.id} customerId={data?.id} onClose = {()=>setCurrentForm("")} />
@@ -270,6 +295,16 @@ const CustomerDetails = () => {
                   </div>
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
+
+                  <div className="form-check my-3">
+                    <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
+                    <label className="form-check-label" htmlFor="approved">
+                      Approved
+                    </label>
+                    <div className='form-text text-warning-emphasis'> Check this box to approve customer</div>
+                  </div>
+
+                  <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveCustomer">Update</button>
                 </> :
                 <LoadingFallBack />
               }
@@ -325,7 +360,7 @@ const CustomerDetails = () => {
         </div>
       </div>
 
-      <ConfirmationModal title="Confirm Approval" message="Are you sure you want to approve this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} />
+      <ConfirmationModal title="Update Approval Status" message="Are you sure you want to update this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} />
     </div>
   )
 }

@@ -90,6 +90,7 @@ const PfiRequestDetails = () => {
   const [formData, setFormData] = useState({
     pfiReferenceNumber: "",
     pfiDate: "",
+    approved: false
   });
 
   useEffect(() => {
@@ -99,6 +100,7 @@ const PfiRequestDetails = () => {
         ...prevState,
         pfiReferenceNumber: pfiReferenceNumber || "",
         pfiDate: pfiDate || "",
+        approved: data.approved
       }))
     }
   }, [data])
@@ -143,6 +145,13 @@ const PfiRequestDetails = () => {
   }
 
   const handleChange = (prop) => (event) => {
+    if (prop === "approved") {
+      setFormData(prevState => ({
+        ...prevState,
+        [prop]: !prevState[prop]
+      }))
+      return
+    }
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value
@@ -150,7 +159,7 @@ const PfiRequestDetails = () => {
   }
 
   const { isLoading: isLoadingApprovePfi, mutate: approvePfiRequest } = useMutation({
-    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data.id}`, data: {pfiDate: formData.pfiDate, pfiReferenceNumber: formData.pfiReferenceNumber, approved: true} })
+    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data.id}`, data: formData })
       .then(res => {
         console.log(res.data)
         refreshPfiDetails()
@@ -305,6 +314,14 @@ const PfiRequestDetails = () => {
                   <label htmlFor="pfiDate" className="form-label">Pfi Date (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="date" className="form-control shadow-none" value={formData.pfiDate || data?.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
                   <span className='text-danger font-monospace small'>{errors.pfiDate}</span>
+                </div>
+
+                <div className="form-check my-3">
+                  <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
+                  <label className="form-check-label" htmlFor="approved">
+                    Approved
+                  </label>
+                  <div className='form-text text-warning-emphasis'> Check this box to approve Pfi Request</div>
                 </div>
 
                 {(data?.locked) && <button className="btn btn-outline-primary" type='button' data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>}

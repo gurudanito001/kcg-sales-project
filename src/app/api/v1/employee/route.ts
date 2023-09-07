@@ -37,6 +37,9 @@ export async function GET(request: Request) {
       include: {
         company: true,
         branch: true
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

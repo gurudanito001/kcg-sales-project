@@ -21,6 +21,9 @@ export async function GET(request: Request) {
       include: {
         product: true,
         brand: true
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

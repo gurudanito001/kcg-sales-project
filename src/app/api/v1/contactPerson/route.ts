@@ -17,7 +17,10 @@ export async function GET(request: Request) {
         cursor: {
           id: myCursor,
         }
-      })
+      }),
+      orderBy: {
+        createdAt: "desc"
+      }
     })
     if(!data){
       return new NextResponse(JSON.stringify({ message: `Failed to fetch ${routeName} list`, data: null}), {

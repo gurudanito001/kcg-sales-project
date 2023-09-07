@@ -14,6 +14,13 @@ export async function GET(request: Request) {
     const contactPersonId = searchParams.get('contactPersonId');
   
     let myCursor = "";
+    const allCustomers = prisma.customer.findMany({
+      where: {
+        ...(employeeId && { employeeId }),
+        ...(customerId && { customerId }),
+        ...(contactPersonId && { contactPersonId }),
+      }
+    })
     const data = await prisma.visitReport.findMany({
       where: {
         ...(employeeId && { employeeId }),
@@ -31,6 +38,9 @@ export async function GET(request: Request) {
         employee: true,
         customer: true,
         contactPerson: true
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

@@ -36,6 +36,9 @@ export async function GET(request: Request) {
       }),
       include: {
         employee: true
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

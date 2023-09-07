@@ -52,6 +52,9 @@ export async function GET(request: Request) {
         product: true,
         customer: true,
         contactPerson: true
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

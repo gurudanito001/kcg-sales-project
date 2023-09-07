@@ -104,10 +104,10 @@ const VisitReports = () => {
     if (userData?.staffCadre?.includes("salesPerson")) {
       setFormData(prevState => ({
         ...prevState,
-        employeeId: userData.id
+        employeeId: userData?.id
       }))
     }
-  }, [])
+  }, [userData])
 
   const generateQueryString = () => {
     let queryString = ""

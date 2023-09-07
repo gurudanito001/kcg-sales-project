@@ -29,6 +29,9 @@ export async function GET(request: Request) {
             name: true
           }
         }
+      },
+      orderBy: {
+        createdAt: "desc"
       }
     })
     if(!data){

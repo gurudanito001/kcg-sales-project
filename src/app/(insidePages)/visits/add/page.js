@@ -37,27 +37,6 @@ const AddCustomerVisit = () => {
     pfiRequest: false
   })
 
-  const clearState = () =>{
-    setFormData( prevState => ({
-      ...prevState,
-      customerId: "",
-      contactPersonId: "",
-      callType: "",
-      status: "",
-      productsDiscussed: [],
-      quantity: "",
-      durationOfMeeting: "",
-      meetingOutcome: "",
-      visitDate: "",
-      followUpVisits: [],
-      pfiRequest: false
-    }))
-  }
-
-  const [followUpData, setFollowUpData] = useState({
-    visitDate: "",
-    meetingOutcome: ""
-  })
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
@@ -133,13 +112,6 @@ const AddCustomerVisit = () => {
     }))
   }
 
-  const handleChangeFollowUp = (prop) => (event) => {
-    setFollowUpData(prevState => ({
-      ...prevState,
-      [prop]: event.target.value
-    }))
-  }
-
   const handleCheckProducts = (product) => (event) => {
     if (event.target.checked) {
       let productData;
@@ -203,25 +175,8 @@ const AddCustomerVisit = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    return console.log(formData)
+    // return console.log(formData)
     mutate()
-  }
-
-  const handleSubmitFollowUp = (event) => {
-    event.preventDefault();
-    let id = new Date().getTime();
-    let tempFollowUpVisits = formData.followUpVisits;
-    tempFollowUpVisits.push({ id, ...followUpData })
-    setFormData(prevState => ({
-      ...prevState,
-      followUpVisits: tempFollowUpVisits
-    }))
-    setFollowUpData(prevState => ({
-      ...prevState,
-      visitDate: "",
-      meetingOutcome: ""
-    }))
-    return console.log(followUpData)
   }
 
   return (
@@ -311,12 +266,12 @@ const AddCustomerVisit = () => {
 
                 <div className="mb-3">
                   <label htmlFor="visitDate" className="form-label">Visit Date</label>
-                  <input type="datetime-local" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                  <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
-                  <input type="datetime-local" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
+                  <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
                 </div>
 
                 <div className="form-check mb-3">
@@ -336,21 +291,6 @@ const AddCustomerVisit = () => {
                 <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
               </form>
             </div>
-
-            
-            
-            {/* <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Add Follow Up Visit</h5>
-              <div className="mb-3">
-                <label htmlFor="visitDate" className="form-label">Visit Date</label>
-                <input type="datetime-local" className="form-control" id="visitDate" value={followUpData.visitDate} onChange={handleChangeFollowUp("visitDate")} />
-              </div>
-              <div className="mb-3">
-                <label htmlFor="meetingOutcome" className="form-label">Meeting Outcome</label>
-                <textarea rows={4} className="form-control" id="meetingOutcome" value={followUpData.meetingOutcome} onChange={handleChangeFollowUp("meetingOutcome")}></textarea>
-              </div>
-              <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmitFollowUp}>Add Follow Up Visit</button>
-            </div> */}
           </div>
         </div>
       </div>
