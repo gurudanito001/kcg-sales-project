@@ -48,7 +48,6 @@ const NotificationItem = ({ title, message, onClose, onClick, createdAt }) => {
 
 const AppNotifications = () => {
   const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData)
   const {data, refetch} = useGetNotifications();
   const closeOffCanvas = useRef();
   const router = useRouter()

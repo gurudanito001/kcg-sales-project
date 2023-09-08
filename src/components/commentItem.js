@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
 
 
 
@@ -11,10 +12,9 @@ const styles = {
 }
 
 const CommentItem = ({message, sender, date }) =>{
-  const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   return (
-    <li style={styles.item} className={`${sender?.id === tokenData?.user_id ? "bg-primary ms-auto rounded-start rounded-top" : "bg-secondary me-auto rounded-end rounded-top"} p-3 text-white my-2`}>
+    <li style={styles.item} className={`${sender?.id === userData?.id ? "bg-primary ms-auto rounded-start rounded-top" : "bg-secondary me-auto rounded-end rounded-top"} p-3 text-white my-2`}>
       
       <span className="d-flex small">
         <span className="me-auto">{sender.firstName} {sender.lastName}</span>
