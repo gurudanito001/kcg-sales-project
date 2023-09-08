@@ -8,11 +8,13 @@ import Compress from "react-image-file-resizer";
 import { useSelector } from "react-redux";
 //import formValidator from '../../../services/validation';
 import { useRouter } from "next/navigation";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const AddMarketingActivity = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   const [formData, setFormData] = useState({
     employeeId: "",
     activityName: "",

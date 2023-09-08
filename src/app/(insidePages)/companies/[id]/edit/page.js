@@ -25,6 +25,7 @@ const EditCompany = () =>{
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     }),
     staleTime: Infinity
   }) 
@@ -50,7 +51,7 @@ const EditCompany = () =>{
   })
 
   const brandsQuery = useQuery({
-    queryKey: ["allBrands" ],
+    queryKey: ["allBrands"],
     queryFn:  ()=> apiGet({ url: "/brand"})
     .then(res => {
       console.log(res)
@@ -59,6 +60,7 @@ const EditCompany = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

@@ -15,6 +15,7 @@ import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
 
 
 const DataListItem = ({title, value}) => {
@@ -95,7 +96,7 @@ const CustomerDetails = () => {
   const { id } = params;
   const pathName = usePathname()
   //const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData)
+  const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
   const {refetch, comments, listComments} = useGetComments(id);
   
@@ -112,6 +113,7 @@ const CustomerDetails = () => {
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
+        return {}
       })
   })
 

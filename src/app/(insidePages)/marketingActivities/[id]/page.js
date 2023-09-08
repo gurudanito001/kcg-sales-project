@@ -12,6 +12,8 @@ import { apiGet, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import { useSelector } from "react-redux";
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -60,7 +62,7 @@ const MarketingActivityDetails = () => {
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   // const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
@@ -75,6 +77,7 @@ const MarketingActivityDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 
@@ -133,7 +136,7 @@ const MarketingActivityDetails = () => {
   useEffect(()=>{
     setCommentData( prevState =>({
       ...prevState,
-      senderId: userData?.user_id,
+      senderId: userData?.id,
       receiverId: data?.employeeId,
       resourceId: id,
       resourceUrl: pathName

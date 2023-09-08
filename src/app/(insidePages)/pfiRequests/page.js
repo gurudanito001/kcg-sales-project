@@ -10,6 +10,8 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const LoadingFallBack = () =>{
   return (
@@ -57,7 +59,7 @@ const PfiRequests = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
   // const tokenData = getDecodedToken()
   const [page, setPage] = useState(1);
 
@@ -148,6 +150,7 @@ const PfiRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -161,6 +164,7 @@ const PfiRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -174,6 +178,7 @@ const PfiRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -187,6 +192,7 @@ const PfiRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -200,6 +206,7 @@ const PfiRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -273,6 +280,7 @@ const PfiRequests = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     }),
     refetchOnWindowFocus: "always"
   })

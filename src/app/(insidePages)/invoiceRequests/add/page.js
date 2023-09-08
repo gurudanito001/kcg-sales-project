@@ -9,11 +9,13 @@ import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
 import formatAsCurrency from '@/services/formatAsCurrency';
 import { useRouter } from "next/navigation";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const AddInvoiceRequest = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
   const [formData, setFormData] = useState({
     employeeId: "",
     customerId: "",
@@ -69,6 +71,7 @@ const AddInvoiceRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -82,6 +85,7 @@ const AddInvoiceRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -95,6 +99,7 @@ const AddInvoiceRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 

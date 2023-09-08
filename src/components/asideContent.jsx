@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import path from "path";
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
 
 
 const SidebarListItem = ({ route, title, active, iconClass, classes }) => {
@@ -21,7 +22,7 @@ const SidebarListItem = ({ route, title, active, iconClass, classes }) => {
 
 const AsideContent = () => {
   const pathname = usePathname();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   // let tokenData = getDecodedToken();
   return (
     <nav className="sidebar-nav scroll-sidebar h-100" data-simplebar="">

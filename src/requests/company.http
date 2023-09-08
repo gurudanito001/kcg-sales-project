@@ -12,10 +12,10 @@ POST {{baseUrl}}/company HTTP/1.1
 Content-Type: "application/json"
 
 {
-  "code": "test-code",
-  "name": "test-company-name",
-  "email": "test-email@gmail.com",
-  "address": "test-company address",
+  "code": "KVL-001",
+  "name": "Kelwaram Ventures Ltd",
+  "email": "kelwaram@gmail.com",
+  "address": "371 Borno way off Alagomeji Yaba lagos",
   "logo": ""
 }
 

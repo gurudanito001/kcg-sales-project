@@ -12,11 +12,13 @@ POST {{baseUrl}}/employee HTTP/1.1
 Content-Type: "application/json"
 
 {
-  "code": "test-code",
-  "name": "test-employee-name",
-  "email": "test-email@gmail.com",
-  "address": "test-employee address",
-  "logo": ""
+  "companyId": "e70d795d-dbca-422d-bb30-9953fb8aca78",
+  "branchId": "37845b4b-2d4f-4e89-ba8f-44c810365d58",
+  "staffCadre": ["admin"],
+  "firstName": "Daniel",
+  "lastName": "Nwokocha",
+  "email": "daniel@email.com",
+  "password": "password1234"
 }
 
 ###

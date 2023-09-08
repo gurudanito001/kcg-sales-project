@@ -40,6 +40,7 @@ const EditEmployee = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return {}
       }),
       staleTime: Infinity
   })
@@ -78,6 +79,7 @@ const EditEmployee = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -91,6 +93,7 @@ const EditEmployee = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -104,6 +107,7 @@ const EditEmployee = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -155,6 +159,7 @@ const EditEmployee = () => {
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

@@ -9,6 +9,8 @@ import clipLongText from "@/services/clipLongText";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const LoadingFallBack = () => {
   return (
@@ -50,7 +52,7 @@ const MarketingActivity = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
   // const tokenData = getDecodedToken();
   const [page, setPage] = useState(1);
 
@@ -131,6 +133,7 @@ const MarketingActivity = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -160,6 +163,7 @@ const MarketingActivity = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 

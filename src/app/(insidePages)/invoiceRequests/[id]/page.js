@@ -12,6 +12,8 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -58,7 +60,7 @@ const InvoiceRequestDetails = () => {
   const params = useParams();
   const {id} = params;
   const dispatchMessage = useDispatchMessage();
-  const {userData} = useSelector( state => state.userData)
+  const {userData} = useGetUserData();
   // const tokenData = getDecodedToken();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
@@ -74,6 +76,7 @@ const InvoiceRequestDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 

@@ -9,6 +9,8 @@ import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 
 const DataListItem = ({title, value}) => {
@@ -56,7 +58,7 @@ const ProductDetails = () => {
   const params = useParams();
   const {id} = params;
   console.log(id);
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   // const tokenData = getDecodedToken();
   const dispatchMessage = useDispatchMessage();
 
@@ -71,6 +73,7 @@ const ProductDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 

@@ -66,6 +66,7 @@ const PriceMasterDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 

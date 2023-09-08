@@ -9,6 +9,8 @@ import clipLongText from "@/services/clipLongText";
 import formatMonth from '@/services/formatMonth';
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const LoadingFallBack = () =>{
   return (
@@ -40,7 +42,7 @@ const LoadingFallBack = () =>{
 const MonthlyTargets = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   // const tokenData = getDecodedToken()
 
 
@@ -55,6 +57,7 @@ const MonthlyTargets = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return {}
     })
   })
 

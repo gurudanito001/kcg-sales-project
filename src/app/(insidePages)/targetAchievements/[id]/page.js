@@ -7,6 +7,8 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -54,7 +56,7 @@ const MonthlyTargetDetails = () => {
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   const tokenData = getDecodedToken()
  
   const {data, isFetching} = useQuery({
@@ -68,6 +70,7 @@ const MonthlyTargetDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 

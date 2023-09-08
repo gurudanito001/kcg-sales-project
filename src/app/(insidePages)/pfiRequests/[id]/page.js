@@ -12,6 +12,8 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPost, apiPatch } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const DataListItem = ({title, value}) => {
   return (
@@ -59,7 +61,7 @@ const PfiRequestDetails = () => {
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
-  const {userData} = useSelector( state => state.userData)
+  const {userData} = useGetUserData();
   // const tokenData = getDecodedToken();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
@@ -75,6 +77,7 @@ const PfiRequestDetails = () => {
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      return {}
     })
   }) 
 
@@ -319,12 +322,12 @@ const PfiRequestDetails = () => {
                 <div className="form-check my-3">
                   <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
                   <label className="form-check-label" htmlFor="approved">
-                    Approved
+                    Approve
                   </label>
                   <div className='form-text text-warning-emphasis'> Check this box to approve Pfi Request</div>
                 </div>
 
-                {(data?.locked) && <button className="btn btn-outline-primary" type='button' data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>}
+                {(data?.locked) && <button className="btn btn-outline-primary" type='button' data-bs-toggle="modal" data-bs-target="#approveModal">Update</button>}
               </form>
             </div>
           </div>}

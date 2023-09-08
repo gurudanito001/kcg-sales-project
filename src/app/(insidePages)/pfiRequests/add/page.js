@@ -9,11 +9,13 @@ import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
 import formatAsCurrency from '@/services/formatAsCurrency';
 import { useRouter } from "next/navigation";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const AddPfiRequest = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
   const [formData, setFormData] = useState({
     employeeId: "",
     customerId: "",
@@ -95,6 +97,7 @@ const AddPfiRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
   const productQuery = useQuery({
@@ -107,6 +110,7 @@ const AddPfiRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -120,6 +124,7 @@ const AddPfiRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -133,6 +138,7 @@ const AddPfiRequest = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -451,12 +457,12 @@ const AddPfiRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days)</label>
+                  <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days) (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" value={formData.estimatedOrderClosingTime} onChange={handleChange("estimatedOrderClosingTime")} id="estimatedOrderClosingTime" placeholder="Estimated Order Closing Time" />
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="paymentType" className="form-label">Payment Type (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="paymentType" className="form-label">Payment Type</label>
                   <select className="form-select shadow-none" id="paymentType" value={formData.paymentType} onChange={handleChange("paymentType")} aria-label="Default select example">
                     <option value="">Select Payment Type</option>
                     <option value="direct">Direct</option>
@@ -466,7 +472,7 @@ const AddPfiRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location </label>
                   <textarea className="form-control" value={formData.deliveryLocation} onChange={handleChange("deliveryLocation")} id="deliveryLocation"></textarea>
                   <span className='text-danger font-monospace small'>{errors.deliveryLocation}</span>
                 </div>

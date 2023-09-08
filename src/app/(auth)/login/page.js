@@ -8,20 +8,8 @@ import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { useState, useEffect } from "react";
 import useDispatchMessage from '@/hooks/useDispatchMessage';
-import {setUserData} from '@/store/slices/userDataSlice'
-
-/* const Login = () =>{
-
-  return (
-    <LoginTemplate />
-  )
-}
-
-export default Login */
-
-
-
-import { useQuery } from "@tanstack/react-query";
+import {setUserData} from '@/store/slices/userDataSlice';
+import useGetUserData from "@/hooks/useGetUserData";
 import React from "react";
 
 
@@ -30,15 +18,7 @@ export default function Login() {
   const router = useRouter();
   const dispatch = useDispatch();
   const dispatchMessage = useDispatchMessage();
-  const {userData} = useSelector((state) => state.userData);
-
-  useEffect(()=>{
-    if(userData.token){
-      router.push("/")
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[userData])
-
+  const {userData, setToken} = useGetUserData();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -57,8 +37,10 @@ export default function Login() {
       .then(res => {
         console.log(res)
         dispatchMessage({message: res.message})
-        localStorage.setItem("token", res.data.token);
-        dispatch(setUserData(res.data));
+        setToken(res.data.token)
+        /* localStorage.setItem("token", res.data.token);
+        setTokenUpdated(true);
+        dispatch(setUserData(res.data)); */
       })
       .catch(error => {
         console.log(error)

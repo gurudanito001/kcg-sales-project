@@ -26,6 +26,7 @@ const EditMarketingActivity = () => {
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
+        return {}
       }),
       staleTime: Infinity
   })

@@ -58,6 +58,7 @@ const AddProductPrice = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 
@@ -71,6 +72,7 @@ const AddProductPrice = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

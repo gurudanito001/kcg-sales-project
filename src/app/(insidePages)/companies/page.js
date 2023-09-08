@@ -50,7 +50,6 @@ const Companies = () =>{
   const router = useRouter();
 
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -127,6 +126,7 @@ const Companies = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

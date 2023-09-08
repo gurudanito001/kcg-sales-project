@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const LoadingFallBack = () =>{
   return (
@@ -44,9 +45,7 @@ const LoadingFallBack = () =>{
 const Brands = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
-
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -125,6 +124,7 @@ const Brands = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

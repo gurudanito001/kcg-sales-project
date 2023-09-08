@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import NaijaStates from 'naija-state-local-government';
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const LoadingFallBack = () => {
   return (
@@ -46,8 +48,7 @@ const Customers = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
-  //const tokenData = getDecodedToken()
+  const { userData } = useGetUserData();
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -131,6 +132,7 @@ const Customers = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -171,6 +173,7 @@ const Customers = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
   const { data, isFetching } = customerQuery;

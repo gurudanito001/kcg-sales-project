@@ -125,6 +125,7 @@ const EditPfiRequest = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
   const productQuery = useQuery({
@@ -137,6 +138,7 @@ const EditPfiRequest = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -150,6 +152,7 @@ const EditPfiRequest = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -163,6 +166,7 @@ const EditPfiRequest = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -476,12 +480,12 @@ const EditPfiRequest = () =>{
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days)</label>
+                  <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days) (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" value={formData.estimatedOrderClosingTime} onChange={handleChange("estimatedOrderClosingTime")} id="estimatedOrderClosingTime" placeholder="Estimated Order Closing Time" />
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="paymentType" className="form-label">Payment Type (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="paymentType" className="form-label">Payment Type </label>
                   <select className="form-select shadow-none" id="paymentType" value={formData.paymentType} onChange={handleChange("paymentType")} aria-label="Default select example">
                     <option value="">Select Payment Type</option>
                     <option value="direct">Direct</option>
@@ -491,7 +495,7 @@ const EditPfiRequest = () =>{
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location</label>
                   <textarea className="form-control" value={formData.deliveryLocation} onChange={handleChange("deliveryLocation")} id="deliveryLocation"></textarea>
                   <span className='text-danger font-monospace small'>{errors.deliveryLocation}</span>
                 </div>

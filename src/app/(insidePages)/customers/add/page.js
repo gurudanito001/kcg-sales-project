@@ -9,11 +9,13 @@ import Compress from "react-image-file-resizer";
 import NaijaStates from 'naija-state-local-government';
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const AddCustomer = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   const [formData, setFormData] = useState({
     employeeId: "",
     companyName: "",

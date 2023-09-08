@@ -1,16 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
-import { ReactNode, useEffect } from "react";
+import { useEffect, useState } from "react";
 import AsideContent from "../../components/asideContent";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { clearUserData, setUserData } from "@/store/slices/userDataSlice";
 import { useRouter } from "next/navigation";
 import { apiPost } from "@/services/apiService";
-import * as jwt from 'jsonwebtoken';
 import { getDecodedToken } from "@/services/localStorageService";
 import AppNotifications from "../../components/appNotifications";
 import useGetNotifications from "@/hooks/useGetNotifications";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const styles = {
   notificationIcon: {
@@ -24,57 +24,13 @@ const styles = {
 }
 
 const Layout = ({ children }) => {
-  const {userData} = useSelector((state) => state.userData);
-  const tokenData = getDecodedToken();
-  const dispatch = useDispatch();
-  const router = useRouter();
-  const {count} = useGetNotifications()
-
-  useEffect(()=>{
-    let token = localStorage.getItem("token")
-    if(!token && !userData.id){
-      return router.push("/login")
-    }
-    //let data = jwt.decode(token);
-    
-    //console.log(data)
-    
-    /* if(userData && tokenData?.user_id !== userData.id){
-      let {email, staffCadre, user_id} = userData;
-      console.log("setting data")
-      dispatch(setUserData({email, staffCadre, id: user_id}))
-    } */
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  })
-
-  useEffect(() => {
-    if (!userData.token) {
-      let localStorageToken = localStorage.getItem("token");
-      if(localStorageToken){
-        refreshUserData(localStorageToken)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData])
-
-  const refreshUserData = (token) => {
-    apiPost({ url: `/auth/refreshUserData/${token}` })
-      .then(res => {
-        console.log(res.data)
-        localStorage.setItem("token", res.data.token);
-        dispatch(setUserData(res.data));
-      })
-      .catch(error => {
-        console.log(error)
-        logout()
-      })
-  }
+  const {userData, setTokenUpdated} = useGetUserData();
+  const {count} = useGetNotifications();
 
   const logout = () =>{
-    dispatch(clearUserData());
     localStorage.removeItem("token");
+    setTokenUpdated(true);
   }
-
 
   return (
     <div className="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
@@ -118,13 +74,13 @@ const Layout = ({ children }) => {
                 <li className="nav-item dropdown">
                   <a className="nav-link nav-icon-hover" href="" id="drop2" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                    {userData?.staffCadre && <img src={`/images/profile/${userData?.staffCadre[0]}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />}
+                    {userData?.staffCadre?.length > 0 && <img src={`/images/profile/${userData?.staffCadre[0]}.jpeg`} alt="" width="35" height="35" className="rounded-circle" />}
                   </a>
                   <div className="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
                     <div className="message-body">
                       <div className="px-3">
                         <h6 className="text-capitalize m-0">{userData?.firstName} {userData?.lastName}</h6>
-                        {userData?.staffCadre && <p className="text-capitalize small">{userData?.staffCadre[0]}</p>}
+                        {userData?.staffCadre?.length > 0 && <p className="text-capitalize small">{userData?.staffCadre[0]}</p>}
                       </div>
                       
                       <a href="" className="d-flex align-items-center gap-2 dropdown-item">

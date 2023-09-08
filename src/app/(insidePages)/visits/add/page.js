@@ -7,11 +7,13 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useSelector } from "react-redux";
 //import formValidator from '../../../services/validation';
 import { useRouter } from "next/navigation";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const AddCustomerVisit = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
 
   useEffect(() => {
     setFormData(prevState => ({
@@ -48,6 +50,7 @@ const AddCustomerVisit = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -61,6 +64,7 @@ const AddCustomerVisit = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -74,6 +78,7 @@ const AddCustomerVisit = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 

@@ -10,6 +10,8 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import { getDecodedToken } from "@/services/localStorageService";
 import { useSelector } from "react-redux";
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 
 const LoadingFallBack = () =>{
@@ -55,7 +57,7 @@ const PriceMaster = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   // const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
 
 
 
@@ -69,6 +71,7 @@ const PriceMaster = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 

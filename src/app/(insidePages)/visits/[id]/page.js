@@ -14,6 +14,8 @@ import { useSelector } from 'react-redux';
 import ConfirmationModal from '@/components/confirmationModal';
 import DeleteFollowUpButton from '@/components/deleteFollowUpButton';
 import moment from 'moment';
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const DataListItem = ({ title, value }) => {
   return (
@@ -89,7 +91,7 @@ const VisitReportDetails = () => {
   const dispatchMessage = useDispatchMessage();
   const pathName = usePathname()
   // const tokenData = getDecodedToken();
-  const {userData} = useSelector( state => state.userData);
+  const {userData} = useGetUserData();
   const { refetch, comments, listComments } = useGetComments(id);
 
   const { data, isFetching, refetch: refetchVisitReport } = useQuery({
@@ -103,6 +105,7 @@ const VisitReportDetails = () => {
       .catch(error => {
         console.log(error.message)
         dispatchMessage({ severity: "error", message: error.message })
+        return {}
       })
   })
 

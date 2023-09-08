@@ -10,6 +10,8 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
+import useGetUserData from "@/hooks/useGetUserData";
+
 
 const LoadingFallBack = () =>{
   return (
@@ -54,7 +56,7 @@ const Products = () =>{
 
 
   const [showFilters, setShowFilters] = useState(false);
-  const { userData } = useSelector(state => state.userData);
+  const { userData } = useGetUserData();
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -129,6 +131,7 @@ const Products = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        return []
       })
   })
 
@@ -157,6 +160,7 @@ const Products = () =>{
     .catch(error =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
+      return []
     })
   })
 
