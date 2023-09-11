@@ -17,7 +17,7 @@ const EditVisitReport = () => {
 
   const { data, isFetching } = useQuery({
     queryKey: ["allVisitReports", id],
-    queryFn: () => apiGet({ url: `/visitReport/${id}` })
+    queryFn: () => apiGet({ url: `/visitReport/${id}?singleReport=${true}` })
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
@@ -53,6 +53,7 @@ const EditVisitReport = () => {
     durationOfMeeting: "",
     meetingOutcome: "",
     visitDate: "",
+    nextVisitDate: "",
     followUpVisits: [],
     pfiRequest: false
   })
@@ -183,7 +184,7 @@ const EditVisitReport = () => {
 
   const isChecked = (prop) => {
     let checked = false;
-    formData.productsDiscussed.forEach(item => {
+    formData?.productsDiscussed?.forEach(item => {
       if (item === prop) {
         checked = true
       }
@@ -198,7 +199,6 @@ const EditVisitReport = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allVisitReport", id])
-        router.push(`/visits/${id}`)
       })
       .catch(error => {
         console.log(error)
@@ -300,7 +300,7 @@ const EditVisitReport = () => {
 
                 <div className="mb-3">
                   <label htmlFor="visitDate" className="form-label">Visit Date</label>
-                  <input type="datetime-local" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                  <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
                 </div>
 
                 <div className="form-check mb-3">
@@ -308,6 +308,11 @@ const EditVisitReport = () => {
                   <label className="form-check-label fw-bold" htmlFor="pfiRequest">
                     Pfi Request
                   </label>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
+                  <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
                 </div>
 
                 <div className="mb-3">

@@ -10,6 +10,10 @@ import Compress from "react-image-file-resizer";
 import formatAsCurrency from '@/services/formatAsCurrency';
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+
+
 
 
 const AddInvoiceRequest = () => {
@@ -59,6 +63,11 @@ const AddInvoiceRequest = () => {
     additionalInformation: ""
   })
 
+  const [options, setOptions] = useState([]);
+  const [value, setValue] = useState(options[0]);
+  const [inputValue, setInputValue] = useState('');
+
+
   const [errors, setErrors] = useState({})
 
   const brandsQuery = useQuery({
@@ -94,6 +103,7 @@ const AddInvoiceRequest = () => {
     queryFn: () => apiGet({ url: `/pfiRequestForm` })
       .then(res => {
         console.log(res)
+        generatePfiOptions(res.data)
         return res.data
       })
       .catch(error => {
@@ -102,6 +112,18 @@ const AddInvoiceRequest = () => {
         return []
       })
   })
+
+  const generatePfiOptions = (data = []) =>{
+    let options = []
+    if(data.length > 0){
+      console.log(data)
+      data.forEach( pfi =>{
+        options.push(`${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`)
+      })
+    } 
+    console.log(options)
+    setOptions(options)
+  }
 
   const listBrandOptions = () => {
     if (brandsQuery?.data?.length) {
@@ -209,9 +231,16 @@ const AddInvoiceRequest = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    return console.log(formData)
     mutate()
   }
+
+  const handleChangePfiReferenceId = (value) =>{
+    if(value){
+      let pfiReferenceNumber = value.split("--")[0] ;
+    }
+  }
+
 
   return (
     <div className="container-fluid">
@@ -228,7 +257,34 @@ const AddInvoiceRequest = () => {
               <h5 className="card-title fw-semibold mb-4 opacity-75">Add Invoice Request</h5>
               <form>
 
-                <div className="mb-3">
+                <div className="pb-3">
+                  <Autocomplete
+                    value={value}
+                    size="small"
+                    onChange={(event, newValue) => {
+                      if(newValue === null){newValue = ""}
+                      let pfiReferenceNumber = newValue.split("--")[0];
+                      let pfi = pfiRequestQuery.data.filter(item => item.pfiReferenceNumber === pfiReferenceNumber)
+                      setFormData(prevState => ({
+                        ...prevState,
+                        pfiRequestFormId: pfi[0]?.id || ""
+                      }))
+                      setValue(newValue);
+                    }}
+                    inputValue={inputValue}
+                    onInputChange={(event, newInputValue) => {
+                      console.log(newInputValue)
+                      setInputValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={options}
+                    sx={{ width: "100%" }}
+                    style={{fontSize: "14px"}}
+                    renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
+                  />
+                </div>
+
+                {/* <div className="mb-3">
                   <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference No (<span className='fst-italic text-warning'>required</span>)</label>
                   <div className='d-flex align-items-center'>
                     <select className="form-select" id="pfiRequestFormId" onChange={handleChange("pfiRequestFormId")} value={formData.pfiRequestFormId} aria-label="Default select example">
@@ -237,7 +293,7 @@ const AddInvoiceRequest = () => {
                     </select>
                   </div>
                   <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
-                </div>
+                </div> */}
 
                 <div className="mb-3">
                   <label htmlFor="customerType" className="form-label">Customer Type (<span className='fst-italic text-warning'>required</span>)</label>

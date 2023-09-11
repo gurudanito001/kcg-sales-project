@@ -107,3 +107,12 @@ tr.hover:hover {
 td, th {
   padding: 10px !important;
 }
+
+.accordion-button:not(.collapsed) {
+  background-color: transparent !important;
+  color: inherit;
+}
+
+button.accordion-button:focus{
+  box-shadow: inherit;
+}

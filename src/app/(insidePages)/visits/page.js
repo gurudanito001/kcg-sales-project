@@ -5,11 +5,10 @@ import { apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter } from "next/navigation";
-import clipLongText from "@/services/clipLongText";
-import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import NaijaStates from 'naija-state-local-government';
 
 
 const LoadingFallBack = () => {
@@ -52,13 +51,14 @@ const VisitReports = () => {
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
   const { userData } = useGetUserData();
-  // const tokenData = getDecodedToken();
   const [page, setPage] = useState(1);
+
 
   const [formData, setFormData] = useState({
     employeeId: "",
-    customerId: "",
-    contactPersonId: "",
+    companyName: "",
+    approved: "",
+    state: "",
   })
 
   const [listMetaData, setListMetaData] = useState({
@@ -67,9 +67,8 @@ const VisitReports = () => {
     take: 0
   })
 
-
-  const clearState = () => {
-    setFormData(prevState => ({
+  const clearState = () =>{
+    setFormData( prevState =>({
       ...prevState,
       employeeId: "",
       companyName: "",
@@ -140,34 +139,6 @@ const VisitReports = () => {
       })
   })
 
-  const customerQuery = useQuery({
-    queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer` })
-      .then(res => {
-        console.log(res)
-        return res.data
-      })
-      .catch(error => {
-        console.log(error)
-        dispatchMessage({ severity: "error", message: error.message })
-        return []
-      })
-  })
-
-  const contactPersonQuery = useQuery({
-    queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: `/contactPerson` })
-      .then(res => {
-        console.log(res)
-        return res.data
-      })
-      .catch(error => {
-        console.log(error)
-        dispatchMessage({ severity: "error", message: error.message })
-        return []
-      })
-  })
-
   const listEmployeeOptions = () => {
     if (employeeQuery?.data?.length) {
       return employeeQuery.data.map(employee =>
@@ -176,30 +147,15 @@ const VisitReports = () => {
     }
   }
 
-  const listCustomerOptions = () => {
-    let customers = customerQuery?.data;
-    if (formData.employeeId) {
-      customers = customers.filter(item => item.employeeId === formData.employeeId)
+  const listStateOptions = () => {
+    return NaijaStates.states().map(state =>{
+      if(state === "Federal Capital Territory"){
+        return <option key="Abuja" value={`Abuja`}>Abuja</option>
+      }
+      return <option key={state} value={state}>{state}</option>
     }
-    if (customers.length) {
-      return customers.map(customer =>
-        <option key={customer.id} value={customer.id}>{customer.companyName}</option>
-      )
-    }
+    )
   }
-
-  const listContactPersonOptions = () => {
-    let contactPersons = contactPersonQuery?.data;
-    if (formData.customerId) {
-      contactPersons = contactPersons.filter(item => item.customerId === formData.customerId)
-    }
-    if (contactPersons.length) {
-      return contactPersons.map(contactPerson =>
-        <option key={contactPerson.id} value={contactPerson.id}>{contactPerson.name}</option>
-      )
-    }
-  }
-
 
 
 
@@ -223,7 +179,7 @@ const VisitReports = () => {
       })
   })
 
-  const { data, isFetching } = visitReportQuery;
+  
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -236,39 +192,29 @@ const VisitReports = () => {
     visitReportQuery.refetch()
   }, [queryUrlString, page])
 
+  const { data, isFetching } = visitReportQuery;
   const listVisitReports = () => {
     return data.map((item, index) => {
-      const { id, customer, contactPerson, employee } = item;
       return (
-        <tr key={id} className="hover">
+        <tr key={item.id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0 link-style" onClick={() => {
-            router.push(`/visits/${id}`)
+            router.push(`/visits/${item.id}`)
           }}>
-            <h6 className="fw-semibold mb-1 text-primary">{customer.companyName}</h6>
-            <span>{contactPerson.name}</span>
+            <h6 className="fw-semibold mb-1 text-primary">{item.companyName}</h6>
           </td>
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal">{customer.industry}</p>
+            <p className="mb-0 fw-normal">{item.state}</p>
           </td>
           <td className="border-bottom-0">
-            <p className="mb-0 fw-normal">{contactPerson.phoneNumber}</p>
+            <p className="mb-0 fw-normal">{item.industry}</p>
           </td>
           <td className="border-bottom-0">
-            <div className="d-flex align-items-center gap-2">
-              <p className="fw-semibold m-0">{contactPerson.email}</p>
-            </div>
+            <p className="small mb-0 d-flex flex-wrap" style={{ maxWidth: "200px" }}>{new Date(item.lastVisited).toDateString()}</p>
           </td>
+          {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0">
-            <p className="small mb-0 d-flex flex-wrap" style={{ maxWidth: "200px" }}>{new Date(customer.lastVisited).toDateString()}</p>
-          </td>
-          {userData?.staffCadre?.includes("admin") &&
-            <td className="border-bottom-0">
-              <p className="small mb-0 d-flex flex-wrap">{employee.firstName} {employee.lastName}</p>
-            </td>}
-          {userData?.staffCadre?.includes("salesPerson") && 
-          <td className="border-bottom-0">
-            <a className="btn btn-link text-primary ms-auto" href={`/visits/${id}/edit`}>Edit</a>
+            <p className="mb-0 fw-normal">{item.employee.firstName} {item.employee.lastName}</p>
           </td>}
         </tr>
       )
@@ -288,8 +234,8 @@ const VisitReports = () => {
         <div className="container-fluid card p-3">
           <form className="row">
             <h6 className="col-12 mb-3 text-muted">Filter Visit List</h6>
-            {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&
-              <div className="mb-3 col-6">
+            {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&  
+              <div className="mb-3 col-lg-6">
                 <label htmlFor="employeeId" className="form-label">Employee</label>
                 <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">
                   <option value="">Select Employee</option>
@@ -298,19 +244,25 @@ const VisitReports = () => {
               </div>
             }
 
-            <div className="mb-3 col-6">
-              <label htmlFor="customerId" className="form-label">Customer</label>
-              <select className="form-select shadow-none" value={formData.customerId} onChange={handleChange("customerId")} id="customerId" aria-label="Default select example">
-                <option value="">Select Customer</option>
-                {listCustomerOptions()}
+            <div className="mb-3 col-lg-6">
+              <label htmlFor="companyName" className="form-label">Company Name</label>
+              <input type="text" className="form-control shadow-none" id="companyName" value={formData.companyName} onChange={handleChange("companyName")} placeholder="Name of Company" />
+            </div>
+
+            <div className="mb-3 col-lg-6">
+              <label htmlFor="approved" className="form-label">Approved</label>
+              <select className="form-select shadow-none" value={formData.approved} onChange={handleChange("approved")} id="approved" aria-label="Default select example">
+                <option value="">All</option>
+                <option value="approved"> Approved</option>
+                <option value="unApproved">Not Approved</option>
               </select>
             </div>
 
-            <div className="mb-3 col-6">
-              <label htmlFor="contactPersonId" className="form-label">Contact Person</label>
-              <select className="form-select shadow-none" value={formData.contactPersonId} onChange={handleChange("contactPersonId")} id="contactPersonId" aria-label="Default select example">
-                <option value="">Select Contact Person</option>
-                {listContactPersonOptions()}
+            <div className="mb-3 col-lg-6">
+              <label htmlFor="state" className="form-label">State</label>
+              <select className="form-select shadow-none" value={formData.state} onChange={handleChange("state")} id="state" aria-label="Default select example">
+                <option value="">Select State</option>
+                {listStateOptions()}
               </select>
             </div>
 
@@ -328,7 +280,7 @@ const VisitReports = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4">
-              <h5 className="card-title fw-semibold mb-4 opacity-75">All Visit Reports</h5>
+              <h5 className="card-title fw-semibold mb-4 opacity-75">All Customers</h5>
               <div className="table-responsive">
                 <table className="table text-nowrap mb-0 align-middle">
                   <caption className='p-3'><span className="fw-bold">Current Page: </span>{listMetaData.currentPage}  <span className="fw-bold ms-2">Total Pages: </span>{Math.ceil(listMetaData.totalCount / listMetaData.take)} <span className="fw-bold ms-2"> Total Count: </span> {listMetaData.totalCount}</caption>
@@ -341,13 +293,10 @@ const VisitReports = () => {
                         <h6 className="fw-semibold mb-0">Customer</h6>
                       </th>
                       <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">State</h6>
+                      </th>
+                      <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Industry</h6>
-                      </th>
-                      <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Phone</h6>
-                      </th>
-                      <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Email</h6>
                       </th>
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Last Visited</h6>
@@ -356,10 +305,6 @@ const VisitReports = () => {
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Employee</h6>
                         </th>}
-                      {userData?.staffCadre?.includes("salesPerson") && 
-                      <th className="border-bottom-0">
-                        <h6 className="fw-semibold mb-0">Actions</h6>
-                      </th>}
                     </tr>
                   </thead>
                   <tbody>

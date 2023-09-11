@@ -10,6 +10,7 @@ import formatMonth from '@/services/formatMonth';
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import { useEffect, useState } from "react";
 
 
 const LoadingFallBack = () =>{
@@ -49,7 +50,7 @@ const MonthlyTargets = () =>{
 
   const {data, isFetching} = useQuery({
     queryKey: ["allMonthlyTargets" ],
-    queryFn:  ()=>apiGet({ url: "/monthlyTarget"})
+    queryFn: ()=>apiGet({ url: `/monthlyTarget`})
     .then(res => {
       console.log(res)
       return res.data
@@ -60,24 +61,72 @@ const MonthlyTargets = () =>{
       return {}
     })
   })
+  const [salesInvoices, setSalesInvoices] = useState([])
+  const fetchInvoiceRequests = () =>{
+    apiGet({ url: `/invoiceRequestForm?employeeId=${userData.id}&approved=approved&take=5000`})
+    .then(res => {
+      console.log(res)
+      setSalesInvoices(res.data)
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+    })
+  }
+
+  const getAchievementForTheYear = () =>{
+    let achievement = 0
+    salesInvoices.forEach( item =>{
+      let invoiceYear = new Date(item.createdAt).getFullYear();
+      let currentYear = new Date().getFullYear();
+      console.log(item)
+      if(invoiceYear === currentYear){
+        achievement += parseInt(item.quantity);
+      }
+    })
+    return achievement;
+  }
+
+  const getAchievementForTheMonth = (month) =>{
+    let achievement = 0
+    salesInvoices.forEach( item =>{
+      let invoiceMonth = new Date(item.createdAt).getMonth();
+      let targetMonth = new Date(month).getMonth();
+      console.log(invoiceMonth, targetMonth)
+      if(invoiceMonth === targetMonth){
+        achievement += parseInt(item.quantity);
+      }
+    })
+    return achievement;
+  }
+
+  useEffect(()=>{
+    if(userData.id){
+      fetchInvoiceRequests()
+    }
+  },[userData])
+
 
   const listMonthlyTargets = () =>{
-    return data.map( (item, index) => {
+    return data.data.map( (item, index) => {
       const {id, month, target} = item;
       return( 
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
-          <td className="border-bottom-0 link-style" onClick={()=>{
-            router.push(`/targetAchievements/${id}`)
-          }}>
-            <h6 className="fw-semibold mb-1 text-primary">{formatMonth(new Date(month).getMonth())} {new Date(month).getFullYear()}</h6>
+          <td className="border-bottom-0 link-style111" >
+            <h6 className="fw-semibold mb-1 text-primary111">{formatMonth(new Date(month).getMonth())} {new Date(month).getFullYear()}</h6>
           </td>
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{target}</p>
           </td>
+          {userData?.staffCadre?.includes("salesPerson") && 
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>}
-          </td>
+            <p className="mb-0 fw-normal">{getAchievementForTheMonth(month)}</p>
+          </td>}
+          {userData?.staffCadre?.includes("admin") && 
+          <td className="border-bottom-0">
+            <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>
+          </td>}
         </tr>
     )
     })
@@ -86,7 +135,10 @@ const MonthlyTargets = () =>{
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Monthly Target</h4>
+        <h4 className="m-0">{new Date().getFullYear()} Target: {data?.targetForCurrentYearCount}</h4>
+        {userData?.staffCadre?.includes("salesPerson") && 
+        <h4 className="m-0 ms-auto">Achievement Till Date: {getAchievementForTheYear()}</h4>
+        }
         {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href="/targetAchievements/add">Add</a>}
       </header>
 
@@ -108,9 +160,14 @@ const MonthlyTargets = () =>{
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Sales Target</h6>
                         </th>
+                        {userData?.staffCadre?.includes("salesPerson") && 
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Achievement</h6>
+                        </th>}
+                        {userData?.staffCadre?.includes("admin") && 
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
+                        </th>}
                       </tr>
                     </thead>
                     <tbody>

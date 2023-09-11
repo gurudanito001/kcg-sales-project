@@ -10,22 +10,25 @@ export async function GET(request: Request) {
     const take = parseInt(searchParams.get('take') || "10");
     
     const employeeId = searchParams.get('employeeId');
-    const customerId = searchParams.get('customerId');
-    const contactPersonId = searchParams.get('contactPersonId');
+    let approved: any = searchParams.get('approved');
+    const state = searchParams.get('state');
+    const companyName = searchParams.get('companyName');
+
+    if(approved === "approved"){
+      approved = true
+    }else if(approved === "unApproved"){
+      approved = false
+    }else{
+      approved === null
+    }
   
     let myCursor = "";
-    const allCustomers = prisma.customer.findMany({
+    const data = await prisma.customer.findMany({
       where: {
         ...(employeeId && { employeeId }),
-        ...(customerId && { customerId }),
-        ...(contactPersonId && { contactPersonId }),
-      }
-    })
-    const data = await prisma.visitReport.findMany({
-      where: {
-        ...(employeeId && { employeeId }),
-        ...(customerId && { customerId }),
-        ...(contactPersonId && { contactPersonId }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+        ...(state && { state }),
+        ...(companyName && { companyName: { contains: companyName, mode: 'insensitive' } }),
       },
       take: take,
       skip: (page - 1) * take,
@@ -36,8 +39,6 @@ export async function GET(request: Request) {
       }),
       include: {
         employee: true,
-        customer: true,
-        contactPerson: true
       },
       orderBy: {
         createdAt: "desc"
@@ -49,11 +50,12 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.visitReport.count({
+    const totalCount = await prisma.customer.count({
       where: {
         ...(employeeId && { employeeId }),
-        ...(customerId && { customerId }),
-        ...(contactPersonId && { contactPersonId }),
+        ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
+        ...(state && { state }),
+        ...(companyName && { companyName: { contains: companyName, mode: 'insensitive' } }),
       }
     })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
@@ -78,6 +80,12 @@ export async function POST(request: Request) {
     const data = await prisma.visitReport.create({
       data: json,
     });
+    await prisma.customer.update({
+      where: {
+        id: json.customerId
+      },
+      data: {lastVisited: json.visitDate}
+    })
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

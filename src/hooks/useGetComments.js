@@ -15,6 +15,7 @@ const useGetComments = (id) =>{
       })
       .catch(error => {
         console.log(error)
+        return []
       }),
       refetchInterval: 5000,
       refetchIntervalInBackground: true

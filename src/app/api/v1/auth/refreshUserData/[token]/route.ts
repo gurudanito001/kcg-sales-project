@@ -14,6 +14,11 @@ export async function GET(
   try {
     const token = params.token;
     if(process.env.TOKEN_KEY){
+      jwt.verify(token, process.env.TOKEN_KEY, function(err, decoded) {
+        if (err) {
+          return new NextResponse(JSON.stringify({message: decoded}), { status: 503 });
+        }
+      });
       let {id} = await jwt.verify(token, process.env.TOKEN_KEY) as TokenData;
       
       const user: any = await prisma.employee.findUnique({
@@ -32,7 +37,7 @@ export async function GET(
         { id: user.id, email: user.email, staffCadre: user.staffCadre, firstName: user.firstName, lastName: user.lastName },
         process.env.TOKEN_KEY as string,
         {
-          expiresIn: "2h",
+          expiresIn: "40 days",
         }
       );
       // add token to user object
@@ -45,7 +50,8 @@ export async function GET(
       }); 
     }
     
-  } catch (error) {
-    return new NextResponse(JSON.stringify(error), { status: 500 });
+  } catch (error: any) {
+    console.log(JSON.stringify(error));
+    return new NextResponse(JSON.stringify({message: error.message}), { status: 500 });
   }
 }

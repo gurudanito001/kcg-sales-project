@@ -361,7 +361,7 @@ const InvoiceRequestDetails = () => {
                 </div>
 
                 {/* <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoadingInvoiceUpdate} onClick={handleUpdateInvoice}>{isLoadingInvoiceUpdate ? "Loading..." : "Approve"}</button> */}
-                <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveModal">Approve</button>
+                <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveModal">Update</button>
               </form>
             </div>
           </div>}

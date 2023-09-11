@@ -136,7 +136,7 @@ model Customer {
   enquirySource       String?              @db.VarChar(50)
   status              String?              @default("cold") @db.VarChar(50)
   approved            Boolean              @default(false)
-  lastVisited         DateTime             @default(now())
+  lastVisited         String               @default("No Visit")
   contactPersons      ContactPerson[]
   visitReports        VisitReport[]
   pfiRequestForms     PfiRequestForm[]
@@ -283,7 +283,6 @@ model InvoiceRequestForm {
   lpoNumber                   String?        @db.VarChar(50)
   paymentDueDate              String?
   otherPaymentDetails         String?        @db.VarChar(1000)
-
   invoiceNumber               String?        @db.VarChar(50)
   invoiceDate                 String?
   deliveryNoteNumber          String?        @db.VarChar(2000)

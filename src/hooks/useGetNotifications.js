@@ -23,6 +23,7 @@ const useGetNotifications = () =>{
       })
       .catch(error => {
         console.log(error)
+        return []
       }),
       refetchInterval: 10000,
       refetchIntervalInBackground: true

@@ -300,11 +300,12 @@ const InvoiceRequests = () =>{
       return( 
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
+          {userData?.staffCadre?.includes("admin") &&
           <td className="border-bottom-0 link-style" onClick={()=>router.push(`/invoiceRequests/${id}`)}>
             <h6 className="fw-semibold mb-1 text-primary">{employee.firstName} {employee.lastName}</h6>
             <span className="fw-normal">{employee.email}</span>
-          </td>
-          <td className="border-bottom-0">
+          </td>}
+          <td className="border-bottom-0 link-style" onClick={()=>router.push(`/invoiceRequests/${id}`)}>
             <p className="mb-0 fw-normal">{invoiceName}</p>
           </td>
           <td className="border-bottom-0">
@@ -329,9 +330,10 @@ const InvoiceRequests = () =>{
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{payment}</p>
           </td>
+          {userData?.staffCadre?.includes("salesPerson") &&
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
-          </td>
+            <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>
+          </td>}
         </tr>
     )
     })
@@ -421,9 +423,10 @@ const InvoiceRequests = () =>{
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">#</h6>
                         </th>
+                        {userData?.staffCadre?.includes("admin") &&
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Sales Rep</h6>
-                        </th>
+                        </th>}
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Invoice Name</h6>
                         </th>
@@ -448,9 +451,10 @@ const InvoiceRequests = () =>{
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Payment</h6>
                         </th>
+                        {userData?.staffCadre?.includes("salesPerson") &&
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>
+                        </th>}
                       </tr>
                     </thead>
                     <tbody>
