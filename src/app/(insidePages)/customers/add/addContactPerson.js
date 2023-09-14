@@ -6,7 +6,7 @@ import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 
-const AddContactPerson = ({ employeeId, customerId, onClose }) => {
+const AddContactPerson = ({ employeeId, customerId, onClose, refetchCustomer }) => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
   const [formData, setFormData] = useState({
@@ -44,7 +44,7 @@ const AddContactPerson = ({ employeeId, customerId, onClose }) => {
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
-        queryClient.invalidateQueries(["allCustomers", customerId])
+        refetchCustomer()
         onClose()
       })
       .catch(error => {

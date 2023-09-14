@@ -42,7 +42,7 @@ const EditEmployee = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
   })
   useEffect(()=>{
     if(employeeDetailsQuery.data){
@@ -56,18 +56,23 @@ const EditEmployee = () => {
   }, [employeeDetailsQuery.data])
 
   useEffect(() => {
-    if (formData.staffCadre === "salesPerson") {
+    if (formData?.staffCadre === "salesPerson") {
       setFormData(prevState => ({
         ...prevState,
         staffCadre: ["salesPerson"]
       }))
-    } else if (formData.staffCadre === "supervisor") {
+    } else if (formData?.staffCadre === "supervisor") {
       setFormData(prevState => ({
         ...prevState,
         staffCadre: ["supervisor", "salesPerson"]
       }))
+    }else if (formData?.staffCadre === "admin") {
+      setFormData(prevState => ({
+        ...prevState,
+        staffCadre: ["admin"]
+      }))
     }
-  }, [formData.staffCadre])
+  }, [formData?.staffCadre])
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
@@ -120,9 +125,9 @@ const EditEmployee = () => {
     }
   }
 
-  const listEmployeeOptions = () => {
-    let eligibleEmployees = employeeQuery.data.filter(employee => employee.staffCadre !== "Sales Representative");
-    if (eligibleEmployees.length > 0) {
+  const listSupervisors = () =>{
+    let eligibleEmployees = employeeQuery.data.filter( employee => employee?.staffCadre.includes("supervisor"));
+    if(eligibleEmployees.length > 0){
       return eligibleEmployees.map(employee =>
         <option key={employee.id} value={employee.id}>{employee.firstName} {employee.middleName[0]} {employee.lastName}</option>
       )
@@ -189,7 +194,7 @@ const EditEmployee = () => {
 
   const isChecked = (prop) =>{
     let checked = false;
-    formData.brandsAssigned.forEach( item =>{
+    formData?.brandsAssigned?.forEach( item =>{
       if(item === prop){
         checked = true
       }
@@ -262,8 +267,9 @@ const EditEmployee = () => {
                 </div>
                 <div className="mb-3">
                   <label htmlFor="staffCadre" className="form-label">Staff Cadre (<span className='fst-italic text-warning'>required</span>)</label>
-                  <select className="form-select shadow-none" id="staffCadre" onChange={handleChange("staffCadre")} value={formData.staffCadre[0]} aria-label="Default select example">
+                  <select className="form-select shadow-none" id="staffCadre" onChange={handleChange("staffCadre")} value={formData?.staffCadre[0]} aria-label="Default select example">
                     <option value="">Select Staff Cadre</option>
+                    <option value="admin">Admin</option>
                     <option value="supervisor">Supervisor</option>
                     <option value="salesPerson">Sales Representative</option>
                   </select>
@@ -292,7 +298,7 @@ const EditEmployee = () => {
                   <label htmlFor="supervisorId" className="form-label">Supervisor</label>
                   <select className="form-select shadow-none" id="supervisorId" value={formData.supervisorId} onChange={handleChange("supervisorId")} aria-label="Default select example">
                     <option value="">Select Supervisor</option>
-                    {!employeeQuery.isLoading && listEmployeeOptions()}
+                    {!employeeQuery.isLoading && listSupervisors()}
                   </select>
                 </div>
                 <div className="mb-3">

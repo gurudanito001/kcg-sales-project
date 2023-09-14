@@ -237,10 +237,10 @@ const PfiRequestDetails = () => {
         <h4 className="m-0">Pfi Requests</h4>
         <span className="breadcrumb-item ms-3 me-auto"><a href="/pfiRequests"><i className="fa-solid fa-arrow-left"></i> Back</a></span>
         
-        {(!data?.locked && userData?.staffCadre?.includes("salesPerson")) && <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lockItModal">Lock It <i className="fa-solid fa-lock ms-1"></i></button>}
+        {(!data?.locked && userData?.id === data?.employeeId) && <button className="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#lockItModal">Lock It <i className="fa-solid fa-lock ms-1"></i></button>}
         {(data?.locked && userData?.staffCadre?.includes("admin")) && <button className="btn btn-outline-primary ms-2"  data-bs-toggle="modal" data-bs-target="#unlockItModal"> {isUnlockingPfi ? "Loading..." : "Unlock It"}<i className="fa-solid fa-lock-open ms-1"></i></button>}
-        {(userData?.staffCadre?.includes("salesPerson") && !data?.locked)&& <a className={`btn btn-link text-primary`} href={`/pfiRequests/${id}/edit`}>Edit</a>}
-        {(data?.locked  && userData?.staffCadre?.includes("salesPerson")) && <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestEditModal">Request Edit</button>}
+        {(!data?.locked && userData?.id === data?.employeeId) && <a className={`btn btn-link text-primary`} href={`/pfiRequests/${id}/edit`}>Edit</a>}
+        {(data?.locked  && userData?.id === data?.employeeId) && <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestEditModal">Request Edit</button>}
       </header>
 
 

@@ -15,6 +15,7 @@ const useGetUserData = () => {
         staffCadre: [],
         firstName: "",
         lastName: "",
+        accountType: "",
     })
     const [tokenUpdated, setTokenUpdated] = useState(false);
 
@@ -31,13 +32,18 @@ const useGetUserData = () => {
                 console.log(error)
                 return {}
             }),
-        refetchInterval: 600000,
+        refetchInterval: 3600000,
         refetchIntervalInBackground: true
     })
 
     const logout = ()=>{
         localStorage.removeItem("token");
+        localStorage.removeItem("accountType");
         setTokenUpdated(true)
+    }
+
+    const switchAccountType = (accountType) => {
+        localStorage.setItem("accountType", accountType);
     }
 
     const setToken = (token)=>{
@@ -48,9 +54,13 @@ const useGetUserData = () => {
     useEffect(() => {
         let token = localStorage.getItem('token')
         let data = jwt.decode(token)
-        console.log(data)
+        let accountType = localStorage.getItem("accountType");
+        console.log(userData)
         if (data) {
-            setUserData(data)
+            setUserData(prevState =>({
+                ...prevState,
+                ...data,
+            }))
         }
         if (data && pathName === "/login") {
             router.push("/")
@@ -58,9 +68,17 @@ const useGetUserData = () => {
         if (!data && pathName !== ("/login" || "/forgotPassword" || "/resetPassword")) {
             return router.push("/login")
         }
+        console.log(accountType)
+        if(accountType){
+            setUserData(prevState =>({
+                ...prevState,
+                accountType: accountType
+            }))
+        }
+        
     }, [tokenUpdated])
 
-    return { userData, setTokenUpdated, logout, setToken }
+    return { userData, setTokenUpdated, logout, setToken, switchAccountType }
 }
 
 export default useGetUserData;

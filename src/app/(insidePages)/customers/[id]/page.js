@@ -228,7 +228,7 @@ const CustomerDetails = () => {
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
-          {userData?.staffCadre?.includes("salesPerson") &&
+          {userData?.id === item.employeeId &&
           <td className="border-bottom-0">
             <button className="btn btn-link text-primary ms-auto" onClick={()=>{
               setCurrentlyEditedContactPerson(item);
@@ -247,8 +247,8 @@ const CustomerDetails = () => {
         <h4 className="m-0">Customer</h4>
         
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {userData?.staffCadre?.includes("salesPerson") && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
+        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
+        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
       </header>
 
 
@@ -257,12 +257,12 @@ const CustomerDetails = () => {
           <div className="card w-100">
             {currentForm === "addContactPerson" &&
               <div className="card-body p-4"> 
-              <AddContactPerson employeeId={data?.employee?.id} customerId={data?.id} onClose = {()=>setCurrentForm("")} />
+              <AddContactPerson employeeId={data?.employee?.id} customerId={data?.id} refetchCustomer={refetchCustomerDetails} onClose={()=>setCurrentForm("")} />
             </div>}
 
             {currentForm === "editContactPerson" &&
               <div className="card-body p-4"> 
-              <EditContactPerson data={currentlyEditedContactPerson} onClose = {()=>setCurrentForm("")} />
+              <EditContactPerson data={currentlyEditedContactPerson} onClose = {()=>setCurrentForm("")} refetchCustomer={refetchCustomerDetails} />
             </div>}
 
 
@@ -298,15 +298,18 @@ const CustomerDetails = () => {
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
 
-                  <div className="form-check my-3">
-                    <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
-                    <label className="form-check-label" htmlFor="approved">
-                      Approved
-                    </label>
-                    <div className='form-text text-warning-emphasis'> Check this box to approve customer</div>
-                  </div>
-
-                  <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveCustomer">Update</button>
+                  {userData?.staffCadre?.includes("admin") &&
+                    <>
+                      <div className="form-check my-3">
+                        <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
+                        <label className="form-check-label" htmlFor="approved">
+                          Approved
+                        </label>
+                        <div className='form-text text-warning-emphasis'> Check this box to approve customer</div>
+                      </div>
+                      <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveCustomer">Update</button>
+                    </>
+                  }
                 </> :
                 <LoadingFallBack />
               }
@@ -333,7 +336,7 @@ const CustomerDetails = () => {
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Phone Number</h6>
                       </th>
-                      {userData?.staffCadre?.includes("salesPerson") &&
+                      {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) &&
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Actions</h6>
                       </th>}

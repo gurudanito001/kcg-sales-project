@@ -208,7 +208,7 @@ const InvoiceRequestDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Invoice Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
+        {userData?.id === data?.employeeId && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
       </header>
 
 

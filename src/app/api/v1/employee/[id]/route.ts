@@ -20,7 +20,7 @@ export async function GET(
     });
     const supervisor =  await prisma.employee.findUnique({
       where: {
-        id: data?.supervisorId as UUID 
+        id: (data?.supervisorId === null ? "" : data?.supervisorId) as string 
       },
     });
     const subordinates = await prisma.employee.findMany({

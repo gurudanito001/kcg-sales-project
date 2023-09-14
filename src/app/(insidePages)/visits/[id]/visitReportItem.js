@@ -231,8 +231,9 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
       <div id={item.id} className="accordion-collapse collapse" data-bs-parent="#accordionExample">
         <div className="accordion-body">
           <div className="d-flex">
-            {userData?.staffCadre?.includes("salesPerson") && <button className="btn btn-link text-primary ms-auto" onClick={() => setShowFollowUpVisitForm(prevState => !prevState)} >Add Follow-up visit</button>}
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-2" href={`/visits/${item.id}/edit`}>Edit</a>}
+            {(userData?.id === item?.employeeId ) && 
+            <button className="btn btn-link text-primary ms-auto" onClick={() => setShowFollowUpVisitForm(prevState => !prevState)} >Add Follow-up visit</button>}
+            {userData?.id === item.employeeId && <a className="btn btn-link text-primary ms-2" href={`/visits/${item.id}/edit`}>Edit</a>}
           </div>
 
           {showFollowUpVisitForm && <div className="card w-100">
@@ -280,7 +281,7 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
                     e.preventDefault();
                     setShowFollowUpVisitForm(false);
                   }}>Cancel</button>
-                  <button className="btn btn-primary" disabled={followUpVisitMutation.isLoading} onClick={handleSubmitFollowUp}>Add Follow-up Visit</button>
+                  {(userData?.id === item?.employeeId ) && <button className="btn btn-primary" disabled={followUpVisitMutation.isLoading} onClick={handleSubmitFollowUp}>Add Follow-up Visit</button>}
                 </div>
 
               </form>

@@ -113,8 +113,8 @@ const AddEmployee = () => {
     }
   }
 
-  const listEmployeeOptions = () =>{
-    let eligibleEmployees = employeeQuery.data.filter( employee => employee.staffCadre !== "Sales Representative");
+  const listSupervisors = () =>{
+    let eligibleEmployees = employeeQuery.data.filter( employee => employee?.staffCadre.includes("supervisor"));
     if(eligibleEmployees.length > 0){
       return eligibleEmployees.map(employee =>
         <option key={employee.id} value={employee.id}>{employee.firstName} {employee.middleName[0]} {employee.lastName}</option>
@@ -286,7 +286,7 @@ const AddEmployee = () => {
                   <label htmlFor="supervisorId" className="form-label">Supervisor</label>
                   <select className="form-select shadow-none" id="supervisorId" value={formData.supervisorId} onChange={handleChange("supervisorId")} aria-label="Default select example">
                     <option value="">Select Supervisor</option>
-                    {!employeeQuery.isLoading && listEmployeeOptions()}
+                    {!employeeQuery.isLoading && listSupervisors()}
                   </select>
                 </div>
                 <div className="mb-3">

@@ -18,7 +18,7 @@ export default function Login() {
   const router = useRouter();
   const dispatch = useDispatch();
   const dispatchMessage = useDispatchMessage();
-  const {userData, setToken} = useGetUserData();
+  const {userData, setToken, switchAccountType} = useGetUserData();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -37,10 +37,10 @@ export default function Login() {
       .then(res => {
         console.log(res)
         dispatchMessage({message: res.message})
-        setToken(res.data.token)
-        /* localStorage.setItem("token", res.data.token);
-        setTokenUpdated(true);
-        dispatch(setUserData(res.data)); */
+        setToken(res.data.token);
+        if(res.data.staffCadre.includes("supervisor")){
+          switchAccountType("Sales Person");
+        }
       })
       .catch(error => {
         console.log(error)

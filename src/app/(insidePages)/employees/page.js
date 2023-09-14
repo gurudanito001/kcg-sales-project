@@ -64,17 +64,6 @@ const Employees = () =>{
     take: 0
   })
 
-  const clearState = () =>{
-    setFormData( prevState =>({
-      ...prevState,
-      companyId: "",
-      branchId: "",
-      staffCadre: "",
-      firstName: "",
-      lastName: ""
-    }))
-  }
-
   const setNextPage = () =>{
     let {currentPage, take, totalCount} = listMetaData;
     if((currentPage * take) < totalCount){
@@ -113,6 +102,25 @@ const Employees = () =>{
     })
     return queryString
   }
+
+  useEffect(() => {
+    if (formData?.staffCadre === "salesPerson") {
+      setFormData(prevState => ({
+        ...prevState,
+        staffCadre: ["salesPerson"]
+      }))
+    } else if (formData?.staffCadre === "supervisor") {
+      setFormData(prevState => ({
+        ...prevState,
+        staffCadre: ["supervisor", "salesPerson"]
+      }))
+    }else if (formData?.staffCadre === "admin") {
+      setFormData(prevState => ({
+        ...prevState,
+        staffCadre: ["admin"]
+      }))
+    }
+  }, [formData.staffCadre])
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
@@ -188,7 +196,7 @@ const Employees = () =>{
     e.preventDefault()
     let queryString = generateQueryString()
     setQueryUrlString(queryString)
-    //return console.log(formData, queryString)
+    console.log(formData, queryString)
   }
 
   useEffect(()=>{
@@ -257,8 +265,9 @@ const Employees = () =>{
 
             <div className="mb-3 col-6">
               <label htmlFor="staffCadre" className="form-label">Staff Cadre</label>
-              <select className="form-select shadow-none" value={formData.staffCadre} onChange={handleChange("staffCadre")} id="staffCadre" aria-label="Default select example">
+              <select className="form-select shadow-none" value={formData?.staffCadre[0] || formData?.staffCadre} onChange={handleChange("staffCadre")} id="staffCadre" aria-label="Default select example">
                 <option value="">Select Staff Cadre</option>
+                <option value="admin">Admin</option>
                 <option value="supervisor">Supervisor</option>
                 <option value="salesPerson">Sales Person</option>
               </select>

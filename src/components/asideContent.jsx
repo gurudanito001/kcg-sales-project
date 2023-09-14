@@ -23,12 +23,13 @@ const SidebarListItem = ({ route, title, active, iconClass, classes }) => {
 const AsideContent = () => {
   const pathname = usePathname();
   const {userData} = useGetUserData();
-  // let tokenData = getDecodedToken();
+
   return (
     <nav className="sidebar-nav scroll-sidebar h-100" data-simplebar="">
       <div className="brand-logo d-flex align-items-center mb-4 p-0">
         <a href="/" className="text-nowrap logo-img">
           <h4>KCG-Sales-Project</h4>
+          <h6 className="text-capitalize"><span className="text-muted">{userData?.firstName} {userData?.lastName}</span> - {`${userData?.accountType || (userData?.staffCadre[0] || "") }`}</h6>
         </a>
         <div className="close-btn d-xl-none d-block sidebartoggler cursor-pointer ms-auto" id="sidebarCollapse" data-bs-dismiss="offcanvas" aria-label="Close">
           <i className="ti ti-x fs-8"></i>

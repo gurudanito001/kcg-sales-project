@@ -293,7 +293,6 @@ const VisitReportDetails = () => {
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Visit Reports</h4>
         <span className="breadcrumb-item ms-3"><a href="/visits"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {/* <a className='btn btn-link' href="/visits/add">Add New Visit Report</a> */}
       </header>
 
       <div className="row">

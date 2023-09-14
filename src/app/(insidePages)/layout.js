@@ -24,13 +24,13 @@ const styles = {
 }
 
 const Layout = ({ children }) => {
-  const {userData, setTokenUpdated} = useGetUserData();
+  const [key, setKey] = useState("")
+  const {userData, logout, switchAccountType} = useGetUserData();
   const {count} = useGetNotifications();
 
-  const logout = () =>{
-    localStorage.removeItem("token");
-    setTokenUpdated(true);
-  }
+  useEffect(()=>{
+    let accountType = localStorage.getItem("accountType")
+  })
 
   return (
     <div className="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
@@ -54,17 +54,36 @@ const Layout = ({ children }) => {
                   <i className="ti ti-menu-2"></i>
                 </a>
               </li>
-              
             </ul>
             <div className="navbar-collapse justify-content-end px-0" id="navbarNav">
               <ul className="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+                {userData.staffCadre.includes("supervisor") &&
+                <li className="nav-item dropdown">
+                  <a className="nav-link nav-icon-hover" href="" id="drop2" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    <i className="fa-solid fa-repeat"></i>
+                  </a>
+                  
+                  <div className="dropdown-menu dropdown-menu-end dropdown-menu-animate-up" aria-labelledby="drop2">
+                    <h6 className="small m-0 m-3">Switch Account to:</h6>
+                    <div className="message-body">
+                      <a href="/" className="d-flex align-items-center gap-2 dropdown-item" onClick={()=>switchAccountType("Sales Person")}>
+                        <i className="fa-regular fa-user" style={{fontSize: "16px"}}></i>
+                        <p className="mb-0 fs-3">Sales Person</p>
+                      </a>
+                      <a href="/" className="d-flex align-items-center gap-2 dropdown-item" onClick={()=>switchAccountType("Supervisor")}>
+                        <i className="fa-solid fa-user-large" style={{fontSize: "16px"}}></i>
+                        <p className="mb-0 fs-3">Supervisor</p>
+                      </a>
+                    </div>
+                  </div>
+                </li>}
                 <li className="nav-item">
-                  <a className="nav-link p-2 nav-icon-hover" href="">
+                  <a className="nav-link p-2 nav-icon-hover" >
                     <i className="fa-regular fa-message fs-6"></i>
                     {/* <span className="badge bg-primary rounded-circle p-1 small d-flex align-items-center justify-content-center" style={styles.notificationIcon}>4</span> */}
                   </a>
                 </li>
-                
                 <li className="nav-item">
                   <a className="nav-link p-2 nav-icon-hover"  data-bs-toggle="offcanvas" href="#offcanvasExample22" role="button" aria-controls="offcanvasExample22">
                     <i className="ti ti-bell-ringing"></i>
@@ -80,20 +99,12 @@ const Layout = ({ children }) => {
                     <div className="message-body">
                       <div className="px-3">
                         <h6 className="text-capitalize m-0">{userData?.firstName} {userData?.lastName}</h6>
-                        {userData?.staffCadre?.length > 0 && <p className="text-capitalize small">{userData?.staffCadre[0]}</p>}
+                        <p className="text-capitalize small">{`${userData?.accountType || userData?.staffCadre[0]}`}</p>
                       </div>
                       
                       <a href="" className="d-flex align-items-center gap-2 dropdown-item">
                         <i className="ti ti-user fs-6"></i>
                         <p className="mb-0 fs-3">My Profile</p>
-                      </a>
-                      <a href="" className="d-flex align-items-center gap-2 dropdown-item">
-                        <i className="ti ti-mail fs-6"></i>
-                        <p className="mb-0 fs-3">My Account</p>
-                      </a>
-                      <a href="" className="d-flex align-items-center gap-2 dropdown-item">
-                        <i className="ti ti-list-check fs-6"></i>
-                        <p className="mb-0 fs-3">My Task</p>
                       </a>
                       <a onClick={logout} className="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                     </div>

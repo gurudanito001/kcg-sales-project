@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import ListOfSubordinates from "@/components/listOfSubordinates";
 
 
 const LoadingFallBack = () =>{
@@ -59,8 +60,10 @@ const PfiRequests = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false);
+  const pathname = usePathname();
   const { userData } = useGetUserData();
-  // const tokenData = getDecodedToken()
+  const searchParams = useSearchParams();
+  const employeeId = searchParams.get("employeeId");
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
@@ -79,19 +82,6 @@ const PfiRequests = () =>{
     take: 0
   })
 
-  const clearState = () =>{
-    setFormData( prevState =>({
-      ...prevState,
-      employeeId: "",
-      customerId: "",
-      contactPersonId: "",
-      brandId: "",
-      productId: "",
-      pfiReferenceNumber: "",
-      approved: ""
-    }))
-  }
-
   const setNextPage = () =>{
     let {currentPage, take, totalCount} = listMetaData;
     if((currentPage * take) < totalCount){
@@ -106,7 +96,20 @@ const PfiRequests = () =>{
     }
   }
 
-  const [queryUrlString, setQueryUrlString] = useState("")
+  const generateQueryString = (data) => {
+    let queryString = ""
+    let dataKeys = Object.keys(data);
+    dataKeys.forEach(key => {
+      if (data[key]) {
+        if (queryString === "") {
+          queryString += `${key}=${data[key]}`
+        } else {
+          queryString += `&${key}=${data[key]}`
+        }
+      }
+    })
+    return queryString
+  }
 
   const handleChange = (props) => (event) => {
     setFormData(prevState => ({
@@ -124,21 +127,6 @@ const PfiRequests = () =>{
     }
   }, [])
 
-  const generateQueryString = () =>{
-    let queryString = ""
-    let data = formData;
-    let dataKeys = Object.keys(data);
-    dataKeys.forEach( key => {
-      if(data[key]){
-        if(queryString === ""){
-          queryString += `${key}=${data[key]}`
-        }else{
-          queryString += `&${key}=${data[key]}`
-        }
-      }
-    })
-    return queryString
-  }
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
@@ -262,42 +250,56 @@ const PfiRequests = () =>{
     }
   }
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [allPfiRequests, setAllPfiRequests] = useState([]);
 
-
-  const {data, isFetching, refetch} = useQuery({
-    queryKey: ["allPfiRequests" ],
-    queryFn:  ()=>apiGet({ url: `/pfiRequestForm?${userData?.staffCadre?.includes("admin") && "locked=true"}${queryUrlString}&page=${page}&take=${20}`})
+  const fetchPfiRequests = (queryString) =>{
+    setIsLoading(true)
+    apiGet({ url: `/pfiRequestForm?${userData?.staffCadre?.includes("admin") && "locked=true"}&${queryString}&page=${page}&take=${20}` })
     .then(res => {
       console.log(res)
-      setListMetaData( prevState => ({
+      setListMetaData(prevState => ({
         ...prevState,
         totalCount: res.totalCount,
         currentPage: res.page,
         take: res.take
       }))
-      return res.data
+      setAllPfiRequests(res.data)
+      setIsLoading(false)
     })
-    .catch(error =>{
+    .catch(error => {
       console.log(error)
-      dispatchMessage({severity: "error", message: error.message})
-      return []
-    }),
-    refetchOnWindowFocus: "always"
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    let queryString = generateQueryString()
-    setQueryUrlString(queryString)
-    //return console.log(formData, queryString)
+      dispatchMessage({ severity: "error", message: error.message })
+      setIsLoading(false)
+    })
   }
 
   useEffect(()=>{
-    refetch()
-  }, [queryUrlString, page])
+    if(userData?.id){
+      let data = {...formData};
+      if(userData?.staffCadre?.includes("salesPerson")){
+        data.employeeId = employeeId || userData?.id
+        setFormData(data);
+      }
+      let queryString = generateQueryString(data)
+      fetchPfiRequests(queryString);
+    }
+  }, [userData, page])
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if(userData?.id){
+      let data = {...formData};
+      if(userData?.staffCadre?.includes("salesPerson")){
+        data.employeeId = employeeId || userData?.id
+      }
+      let queryString = generateQueryString(data)
+      fetchPfiRequests(queryString);
+    }
+  }
 
   const listPfiRequests = () =>{
-    return data.map( (item, index) => {
+    return allPfiRequests.map( (item, index) => {
       const {id, pfiReferenceNumber, pfiDate, customer, contactPerson, brand, product, quantity, pricePerVehicle, employee} = item;
       return( 
         <tr key={id} className="hover">
@@ -339,83 +341,98 @@ const PfiRequests = () =>{
     })
   }
 
-  return (
-    <div className="container-fluid">
-      <header className="d-flex align-items-center mb-4">
-        <h4 className="m-0">Pfi Request</h4>
-        <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
-        {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-3" href="/pfiRequests/add">Add</a>}
-      </header>
+  const canShowTable = () => {
+    let result = false;
+    if(userData?.staffCadre?.includes("admin")){
+      result = true
+    }else if(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor"){
+      result = true
+    }else if (userData?.accountType === "Supervisor" && employeeId) {
+      result = true
+    }
+    return result
+  }
 
-      {showFilters &&
-        <div className="container-fluid card p-3">
-          <form className="row">
-            <h6 className="col-12 mb-3 text-muted">Filter Pfi Request List</h6>
-            {(userData?.staffCadre?.includes("admin") || userData?.staffCadre?.includes("supervisor")) &&
+  return (
+    <>
+      {(userData?.accountType === "Supervisor" && !employeeId) && <ListOfSubordinates title="Pfi Requests" pathname={pathname} />}
+      {canShowTable() &&  
+      <div className="container-fluid">
+        <header className="d-flex align-items-center mb-4">
+          <h4 className="m-0">Pfi Request</h4>
+          <button className="btn btn-link text-primary ms-auto border border-primary" onClick={() => setShowFilters(prevState => !prevState)}><i className="fa-solid fa-arrow-down-short-wide"></i></button>
+          {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor")&& <a className="btn btn-link text-primary ms-3" href="/pfiRequests/add">Add</a>}
+        </header>
+
+        {showFilters &&
+          <div className="container-fluid card p-3">
+            <form className="row">
+              <h6 className="col-12 mb-3 text-muted">Filter Pfi Request List</h6>
+              {(userData?.staffCadre?.includes("admin")) &&
+                <div className="mb-3 col-6">
+                  <label htmlFor="employeeId" className="form-label">Employee</label>
+                  <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">
+                    <option value="">Select Employee</option>
+                    {listEmployeeOptions()}
+                  </select>
+                </div>
+              }
+
               <div className="mb-3 col-6">
-                <label htmlFor="employeeId" className="form-label">Employee</label>
-                <select className="form-select shadow-none" value={formData.employeeId} onChange={handleChange("employeeId")} id="employeeId" aria-label="Default select example">
-                  <option value="">Select Employee</option>
-                  {listEmployeeOptions()}
+                <label htmlFor="customerId" className="form-label">Customer</label>
+                <select className="form-select shadow-none" value={formData.customerId} onChange={handleChange("customerId")} id="customerId" aria-label="Default select example">
+                  <option value="">Select Customer</option>
+                  {listCustomerOptions()}
                 </select>
               </div>
-            }
 
-            <div className="mb-3 col-6">
-              <label htmlFor="customerId" className="form-label">Customer</label>
-              <select className="form-select shadow-none" value={formData.customerId} onChange={handleChange("customerId")} id="customerId" aria-label="Default select example">
-                <option value="">Select Customer</option>
-                {listCustomerOptions()}
-              </select>
-            </div>
+              <div className="mb-3 col-6">
+                <label htmlFor="contactPersonId" className="form-label">Contact Person</label>
+                <select className="form-select shadow-none" value={formData.contactPersonId} onChange={handleChange("contactPersonId")} id="contactPersonId" aria-label="Default select example">
+                  <option value="">Select Contact Person</option>
+                  {listContactPersonOptions()}
+                </select>
+              </div>
 
-            <div className="mb-3 col-6">
-              <label htmlFor="contactPersonId" className="form-label">Contact Person</label>
-              <select className="form-select shadow-none" value={formData.contactPersonId} onChange={handleChange("contactPersonId")} id="contactPersonId" aria-label="Default select example">
-                <option value="">Select Contact Person</option>
-                {listContactPersonOptions()}
-              </select>
-            </div>
+              <div className="mb-3 col-6">
+                <label htmlFor="brandId" className="form-label">Brand</label>
+                <select className="form-select shadow-none" value={formData.brandId} onChange={handleChange("brandId")} id="brandId" aria-label="Default select example">
+                  <option value="">Select Brand</option>
+                  {listBrandOptions()}
+                </select>
+              </div>
 
-            <div className="mb-3 col-6">
-              <label htmlFor="brandId" className="form-label">Brand</label>
-              <select className="form-select shadow-none" value={formData.brandId} onChange={handleChange("brandId")} id="brandId" aria-label="Default select example">
-                <option value="">Select Brand</option>
-                {listBrandOptions()}
-              </select>
-            </div>
+              <div className="mb-3 col-6">
+                <label htmlFor="productId" className="form-label">Product</label>
+                <select className="form-select shadow-none" value={formData.productId} onChange={handleChange("productId")} id="productId" aria-label="Default select example">
+                  <option value="">Select Product</option>
+                  {listProductOptions()}
+                </select>
+              </div>
 
-            <div className="mb-3 col-6">
-              <label htmlFor="productId" className="form-label">Product</label>
-              <select className="form-select shadow-none" value={formData.productId} onChange={handleChange("productId")} id="productId" aria-label="Default select example">
-                <option value="">Select Product</option>
-                {listProductOptions()}
-              </select>
-            </div>
+              <div className="mb-3 col-lg-6">
+                <label htmlFor="pfiReferenceNumber" className="form-label">Pfi Reference Number</label>
+                <input type="text" className="form-control shadow-none" id="pfiReferenceNumber" value={formData.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} />
+              </div>
 
-            <div className="mb-3 col-lg-6">
-              <label htmlFor="pfiReferenceNumber" className="form-label">Pfi Reference Number</label>
-              <input type="text" className="form-control shadow-none" id="pfiReferenceNumber" value={formData.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} />
-            </div>
+              <div className="mb-3 col-lg-6">
+                <label htmlFor="approved" className="form-label">Approved</label>
+                <select className="form-select shadow-none" value={formData.approved} onChange={handleChange("approved")} id="approved" aria-label="Default select example">
+                  <option value="">All</option>
+                  <option value="approved"> Approved</option>
+                  <option value="unApproved">Not Approved</option>
+                </select>
+              </div>
 
-            <div className="mb-3 col-lg-6">
-              <label htmlFor="approved" className="form-label">Approved</label>
-              <select className="form-select shadow-none" value={formData.approved} onChange={handleChange("approved")} id="approved" aria-label="Default select example">
-                <option value="">All</option>
-                <option value="approved"> Approved</option>
-                <option value="unApproved">Not Approved</option>
-              </select>
-             name</div>
+              <div className="d-flex col-12 align-items-center mt-5">
+                <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Filtering..." : "Filter"}</button>
+                <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
+              </div>
+            </form>
+          </div>
+        }
 
-            <div className="d-flex col-12 align-items-center mt-5">
-              <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
-              <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
-            </div>
-          </form>
-        </div>
-      }
-
-      <div className="row">
+        <div className="row">
           <div className="col-12 d-flex align-items-stretch">
             <div className="card w-100">
               <div className="card-body p-4">
@@ -447,26 +464,26 @@ const PfiRequests = () =>{
                           <h6 className="fw-semibold mb-0">Price</h6>
                         </th>
                         {userData?.staffCadre?.includes("admin") &&
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Employee</h6>
-                        </th>}
+                          <th className="border-bottom-0">
+                            <h6 className="fw-semibold mb-0">Employee</h6>
+                          </th>}
                         {userData?.staffCadre?.includes("salesPerson") &&
-                        <th className="border-bottom-0">
-                          <h6 className="fw-semibold mb-0">Actions</h6>
-                        </th>}
+                          <th className="border-bottom-0">
+                            <h6 className="fw-semibold mb-0">Actions</h6>
+                          </th>}
                       </tr>
                     </thead>
                     <tbody>
-                        {data ? listPfiRequests() : <LoadingFallBack />}                 
+                      {isLoading ? <LoadingFallBack /> : listPfiRequests() }
                     </tbody>
                   </table>
                 </div>
 
                 <div className="px-3">
-                  <button className="btn btn-outline-primary py-1 px-2" disabled={isFetching} type="button" onClick={setPrevPage}>
+                  <button className="btn btn-outline-primary py-1 px-2" disabled={isLoading} type="button" onClick={setPrevPage}>
                     <i className="fa-solid fa-angle-left text-primary"></i>
                   </button>
-                  <button className="btn btn-outline-primary py-1 px-2 ms-3" disabled={isFetching} type="button" onClick={setNextPage}>
+                  <button className="btn btn-outline-primary py-1 px-2 ms-3" disabled={isLoading} type="button" onClick={setNextPage}>
                     <i className="fa-solid fa-angle-right text-primary"></i>
                   </button>
                 </div>
@@ -474,7 +491,10 @@ const PfiRequests = () =>{
             </div>
           </div>
         </div>
-    </div>
+      </div>
+      }
+    </>
+    
   )
 }
 

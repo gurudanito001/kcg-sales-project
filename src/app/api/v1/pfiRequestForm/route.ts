@@ -36,7 +36,7 @@ export async function GET(request: Request) {
         ...(contactPersonId && { contactPersonId }),
         ...(brandId && { brandId }),
         ...(productId && { productId }),
-        ...(pfiReferenceNumber && { pfiReferenceNumber }),
+        ...(pfiReferenceNumber && { pfiReferenceNumber: { contains: pfiReferenceNumber, mode: 'insensitive' } }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },
       take: take,

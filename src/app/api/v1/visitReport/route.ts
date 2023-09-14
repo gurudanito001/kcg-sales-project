@@ -39,6 +39,9 @@ export async function GET(request: Request) {
       }),
       include: {
         employee: true,
+        _count: {
+          select: {visitReports: true}
+        }
       },
       orderBy: {
         createdAt: "desc"

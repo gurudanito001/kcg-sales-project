@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import sendEmail from "@/services/sendEmail";
 
 
 let routeName = "Employee"
@@ -14,9 +13,17 @@ export async function GET(request: Request) {
   
     const companyId = searchParams.get('companyId');
     const branchId = searchParams.get('branchId');
-    const staffCadre = searchParams.get('staffCadre');
+    let staffCadre : any = searchParams.get('staffCadre');
     const firstName = searchParams.get('firstName');
     const lastName = searchParams.get('lastName');
+
+    if(staffCadre === "admin"){
+      staffCadre = {equals: ["admin"]}
+    }else if (staffCadre === "supervisor,salesPerson"){
+      staffCadre = {equals: ["supervisor", "salesPerson"]}
+    }else if(staffCadre === "salesPerson") {
+      staffCadre = {equals: ["salesPerson"]}
+    }
   
     let myCursor = "";
     const data = await prisma.employee.findMany({
@@ -25,7 +32,7 @@ export async function GET(request: Request) {
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
         ...(lastName && { lastName: { contains: lastName, mode: 'insensitive' } }),
-        ...(staffCadre && {staffCadre: {has: staffCadre}})
+        ...(staffCadre && {staffCadre})
       },
       take: take,
       skip: (page - 1) * take,
@@ -54,7 +61,7 @@ export async function GET(request: Request) {
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
         ...(lastName && { lastName: { contains: lastName, mode: 'insensitive' } }),
-        ...(staffCadre && {staffCadre: {has: staffCadre}})
+        ...(staffCadre && {staffCadre})
       }
     })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
