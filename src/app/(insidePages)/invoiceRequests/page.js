@@ -318,7 +318,7 @@ const InvoiceRequests = () =>{
             <p className="mb-0 fw-normal">{invoiceName}</p>
           </td>
           <td className="border-bottom-0">
-            <h6 className="fw-semibold mb-1">{brand.name} {employee.lastName}</h6>
+            <h6 className="fw-semibold mb-1">{brand.name}</h6>
             <span className="fw-normal">{product.name}</span>
           </td>
           <td className="border-bottom-0">

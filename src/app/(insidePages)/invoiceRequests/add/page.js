@@ -110,7 +110,8 @@ const AddInvoiceRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity
   })
 
   const generatePfiOptions = (data = []) =>{
@@ -231,7 +232,7 @@ const AddInvoiceRequest = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    return console.log(formData)
+    //return console.log(formData)
     mutate()
   }
 
