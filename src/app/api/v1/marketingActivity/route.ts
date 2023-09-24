@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.markettingActivity.findMany({
       where: {
+        isActive: true,
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },
@@ -49,6 +50,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.markettingActivity.count({
       where: {
+        isActive: true,
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },

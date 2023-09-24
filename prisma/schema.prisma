@@ -18,13 +18,14 @@ model Company {
   extraData Json?
   branches  Branch[]
   employees Employee[]
+  isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
 
 model Branch {
   id           String     @id @default(uuid())
-  company      Company    @relation(fields: [companyId], references: [id])
+  company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId    String
   state        String     @db.VarChar(50)
   lga          String     @db.VarChar(50)
@@ -36,6 +37,7 @@ model Branch {
   email        String     @db.VarChar(50)
   employees    Employee[]
   extraData    Json?
+  isActive     Boolean    @default(true)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -51,6 +53,7 @@ model Brand {
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   extraData           Json?
+  isActive            Boolean                  @default(true)
   createdAt           DateTime                 @default(now())
   updatedAt           DateTime                 @updatedAt
 }
@@ -59,7 +62,7 @@ model Product {
   id                  String                @id @default(uuid())
   name                String                @db.VarChar(50)
   code                String?               @unique @db.VarChar(50)
-  brand               Brand                 @relation(fields: [brandId], references: [id])
+  brand               Brand                 @relation(fields: [brandId], references: [id], onDelete: Cascade)
   brandId             String
   description         String?               @db.VarChar(1000)
   specifications      String?               @db.VarChar(1000)
@@ -71,6 +74,7 @@ model Product {
   vatInclusive        Boolean?              @default(false)
   vatRate             String?               @db.VarChar(50)
   extraData           Json?
+  isActive            Boolean               @default(true)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 }
@@ -83,19 +87,20 @@ model PriceMaster {
   promoText  String?   @db.VarChar(1000)
   validFrom  String?
   validTill  String?
-  brand      Brand     @relation(fields: [brandId], references: [id])
+  brand      Brand     @relation(fields: [brandId], references: [id], onDelete: Cascade)
   brandId    String    
-  product    Product   @relation(fields: [productId], references: [id])
+  product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId  String    @unique
+  isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
 
 model Employee {
   id                    String                   @id @default(uuid())
-  company               Company                  @relation(fields: [companyId], references: [id])
+  company               Company                  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId             String
-  branch                Branch                   @relation(fields: [branchId], references: [id])
+  branch                Branch                   @relation(fields: [branchId], references: [id], onDelete: Cascade)
   branchId              String
   staffCadre            String[]                 @default(["salesPerson"])
   firstName             String                   @db.VarChar(50)
@@ -115,6 +120,7 @@ model Employee {
   sentComments          Comment[]               @relation("Sender")
   receivedComments      Comment[]               @relation("Receiver")
   extraData             Json?
+  isActive              Boolean                 @default(true)
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
 }
@@ -123,7 +129,7 @@ model Employee {
 
 model Customer {
   id                  String               @id @default(uuid())
-  employee            Employee             @relation(fields: [employeeId], references: [id])
+  employee            Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId          String
   companyName         String               @db.VarChar(50)
   state               String?              @db.VarChar(50)
@@ -142,15 +148,16 @@ model Customer {
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   extraData           Json?
+  isActive            Boolean              @default(true)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 }
 
 model ContactPerson {
   id                  String               @id @default(uuid())
-  employee            Employee             @relation(fields: [employeeId], references: [id])
+  employee            Employee             @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId          String
-  customer            Customer             @relation(fields: [customerId], references: [id])
+  customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId          String
   name                String               @db.VarChar(50)
   designation         String?              @db.VarChar(50)
@@ -160,17 +167,18 @@ model ContactPerson {
   pfiRequestForms     PfiRequestForm[]
   invoiceRequestForms InvoiceRequestForm[]
   extraData           Json?
+  isActive            Boolean              @default(true)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 }
 
 model VisitReport {
   id                  String                @id @default(uuid())
-  employee            Employee              @relation(fields: [employeeId], references: [id])
+  employee            Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId          String
-  customer            Customer              @relation(fields: [customerId], references: [id])
+  customer            Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId          String
-  contactPerson       ContactPerson         @relation(fields: [contactPersonId], references: [id])
+  contactPerson       ContactPerson         @relation(fields: [contactPersonId], references: [id], onDelete: Cascade)
   contactPersonId     String
   callType            String                @db.VarChar(50)
   status              String                @db.VarChar(50)
@@ -183,6 +191,7 @@ model VisitReport {
   followUpVisits      Json[]
   pfiRequest          Boolean?              @default(false)
   extraData           Json?
+  isActive            Boolean               @default(true)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
 }
@@ -191,11 +200,11 @@ model VisitReport {
 
 model PfiRequestForm {
   id                          String              @id @default(uuid())
-  employee                    Employee            @relation(fields: [employeeId], references: [id])
+  employee                    Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId                  String
-  customer                    Customer?           @relation(fields: [customerId], references: [id])
+  customer                    Customer?           @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId                  String?
-  contactPerson               ContactPerson?      @relation(fields: [contactPersonId], references: [id])
+  contactPerson               ContactPerson?      @relation(fields: [contactPersonId], references: [id], onDelete: Cascade)
   contactPersonId             String?
   customerType                String              
   companyName                 String?             @db.VarChar(50)
@@ -232,19 +241,20 @@ model PfiRequestForm {
   additionalInformation       String?             @db.VarChar(1000)
   extraData                   Json?
   invoiceRequestForm          InvoiceRequestForm?
+  isActive                    Boolean             @default(true)
   createdAt                   DateTime            @default(now())
   updatedAt                   DateTime            @updatedAt
 }
 
 model InvoiceRequestForm {
   id                          String         @id @default(uuid())
-  pfiRequestForm              PfiRequestForm @relation(fields: [pfiRequestFormId], references: [id])
+  pfiRequestForm              PfiRequestForm @relation(fields: [pfiRequestFormId], references: [id], onDelete: Cascade)
   pfiRequestFormId            String         @unique
-  employee                    Employee       @relation(fields: [employeeId], references: [id])
+  employee                    Employee       @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId                  String
-  customer                    Customer?      @relation(fields: [customerId], references: [id])
+  customer                    Customer?      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerId                  String?
-  contactPerson               ContactPerson? @relation(fields: [contactPersonId], references: [id])
+  contactPerson               ContactPerson? @relation(fields: [contactPersonId], references: [id], onDelete: Cascade)
   contactPersonId             String?
   customerType                String?
   invoiceName                 String?        @db.VarChar(50)
@@ -253,9 +263,9 @@ model InvoiceRequestForm {
   emailAddress                String?        @db.VarChar(50)
   salesThru                   String?        @db.VarChar(50)
   industry                    String?        @db.VarChar(50)
-  brand                       Brand          @relation(fields: [brandId], references: [id])
+  brand                       Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
   brandId                     String
-  product                     Product        @relation(fields: [productId], references: [id])
+  product                     Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId                   String
   vehicleModelDetails         String?        @db.VarChar(1000)
   quantity                    String?        @db.VarChar(50)
@@ -295,13 +305,14 @@ model InvoiceRequestForm {
   approvedByProductHead       Boolean        @default(false)
   additionalInformation       String?
   extraData                   Json?
+  isActive                    Boolean        @default(true)
   createdAt                   DateTime       @default(now())
   updatedAt                   DateTime       @updatedAt
 }
 
 model MarkettingActivity {
   id           String   @id @default(uuid())
-  employee     Employee @relation(fields: [employeeId], references: [id])
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   employeeId   String
   activityName String   @db.VarChar(50)
   activityDate String
@@ -315,6 +326,7 @@ model MarkettingActivity {
   pdfDetails   String?  @db.VarChar(1000)
   approved     Boolean? @default(false)
   extraData    Json?
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -324,21 +336,23 @@ model MonthlyTarget {
   month         String   @db.VarChar(50)
   target        String
   extraData     Json?
+  isActive      Boolean  @default(true)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
 model Comment {
   id          String   @id @default(uuid())
-  sender      Employee @relation("Sender", fields: [senderId], references: [id])
+  sender      Employee @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
   senderId    String
-  receiver    Employee @relation("Receiver", fields: [receiverId], references: [id])
+  receiver    Employee @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
   receiverId  String
   resourceId  String?
   resourceUrl String?
   message     String?
   viewed      Boolean? @default(false)
   extraData   Json?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -354,6 +368,7 @@ model Notification {
   viewed      Boolean? @default(false)
   viewedBy    String[] @default(["firstIdJustForTesting"])
   extraData   Json?
+  isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

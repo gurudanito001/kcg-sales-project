@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
@@ -58,6 +58,7 @@ const LoadingFallBack = () =>{
 
 const PfiRequestDetails = () => {
   const params = useParams();
+  const router = useRouter();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
@@ -78,6 +79,19 @@ const PfiRequestDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
+    })
+  }) 
+
+  const pfiRequestMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Pfi Request deleted successfully"})
+      router.push("/pfiRequests")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
 
@@ -241,6 +255,7 @@ const PfiRequestDetails = () => {
         {(data?.locked && userData?.staffCadre?.includes("admin")) && <button className="btn btn-outline-primary ms-2"  data-bs-toggle="modal" data-bs-target="#unlockItModal"> {isUnlockingPfi ? "Loading..." : "Unlock It"}<i className="fa-solid fa-lock-open ms-1"></i></button>}
         {(!data?.locked && userData?.id === data?.employeeId) && <a className={`btn btn-link text-primary`} href={`/pfiRequests/${id}/edit`}>Edit</a>}
         {(data?.locked  && userData?.id === data?.employeeId) && <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestEditModal">Request Edit</button>}
+        {(userData?.id === data?.employeeId) && (!data?.approved) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deletePfiRequest">Delete</a>}
       </header>
 
 
@@ -356,6 +371,8 @@ const PfiRequestDetails = () => {
 
       {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Request to Edit Pfi Request" message="A notification will be sent to the admin to unlock the Pfi 
       Request to enable editing. Do you still want to proceed?" isLoading={isRequestingEdit} onSubmit={requestForEdit} id="requestEditModal" />}
+
+      <ConfirmationModal title="Delete Pfi Request" message="Are you sure your want to delete this Pfi Request? This action cannot be reversed." isLoading={pfiRequestMutation.isLoading} onSubmit={pfiRequestMutation.mutate} id="deletePfiRequest" btnColor="danger" />
     </div>
   )
 }

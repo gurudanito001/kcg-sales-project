@@ -28,6 +28,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.employee.findMany({
       where: {
+        isActive: true,
         ...(companyId && { companyId }),
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
@@ -57,6 +58,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.employee.count({
       where: {
+        isActive: true,
         ...(companyId && { companyId }),
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),

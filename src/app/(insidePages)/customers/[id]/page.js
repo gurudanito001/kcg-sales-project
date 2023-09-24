@@ -2,15 +2,12 @@
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch, apiPost } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import AddContactPerson from '../add/addContactPerson';
 import EditContactPerson from "./edit/editContactPerson";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { getDecodedToken } from "@/services/localStorageService";
-import CommentItem from "@/components/commentItem";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import ConfirmationModal from '@/components/confirmationModal';
@@ -87,7 +84,6 @@ const ContactPersonLoadingFallBack = () =>{
         <td><Skeleton height={50} animation="wave" /></td>
       </tr>
     </>
-    
   );
 }
 
@@ -95,13 +91,14 @@ const CustomerDetails = () => {
   const params = useParams();
   const { id } = params;
   const pathName = usePathname()
-  //const tokenData = getDecodedToken();
+  const router = useRouter();
   const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
   const {refetch, comments, listComments} = useGetComments(id);
   
   const [currentForm, setCurrentForm] = useState("")
   const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
+  const [deleteContactPerson, setDeleteContactPerson] = useState(null);
 
   const { data, isFetching, refetch: refetchCustomerDetails } = useQuery({
     queryKey: ["allCustomers", id],
@@ -116,6 +113,32 @@ const CustomerDetails = () => {
         return {}
       })
   })
+
+  const customerMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/customer/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Customer deleted successfully"})
+      router.push("/customers")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const contactPersonMutation = useMutation({
+    mutationFn: (contactPersonId) => apiPatch({ url: `/contactPerson/${contactPersonId}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Contact Person deleted successfully"})
+      refetchCustomerDetails();
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
 
   const [formData, setFormData] = useState({
     approved: false,
@@ -234,6 +257,9 @@ const CustomerDetails = () => {
               setCurrentlyEditedContactPerson(item);
               setCurrentForm("editContactPerson")
             }}>Edit</button>
+            <a className="btn btn-link text-danger ms-2" onClick={() =>{
+              setDeleteContactPerson(id)
+            }} data-bs-toggle="modal" data-bs-target="#deleteContactPerson">Delete</a>
           </td>}
         </tr>
     )
@@ -247,8 +273,9 @@ const CustomerDetails = () => {
         <h4 className="m-0">Customer</h4>
         
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
-        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className={`btn btn-link text-primary ${data?.approved && "ms-auto"}`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
+        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className={`btn btn-link text-primary ms-auto`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
         {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
+        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteCustomer">Delete</a>}
       </header>
 
 
@@ -366,6 +393,10 @@ const CustomerDetails = () => {
       </div>
 
       <ConfirmationModal title="Update Approval Status" message="Are you sure you want to update this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} />
+
+      <ConfirmationModal title="Delete Customer" message="Are you sure your want to delete this customer? This action cannot be reversed." isLoading={customerMutation.isLoading} onSubmit={customerMutation.mutate} id="deleteCustomer" btnColor="danger" />
+
+      <ConfirmationModal title="Delete Contact Person" message="Are you sure your want to delete this contact person? This action cannot be reversed." isLoading={contactPersonMutation.isLoading} onSubmit={()=>contactPersonMutation.mutate(deleteContactPerson)} id="deleteContactPerson" btnColor="danger" />
     </div>
   )
 }

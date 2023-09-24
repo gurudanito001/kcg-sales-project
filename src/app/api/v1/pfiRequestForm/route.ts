@@ -30,6 +30,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.pfiRequestForm.findMany({
       where: {
+        isActive: true,
         ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
@@ -65,6 +66,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.pfiRequestForm.count({
       where: {
+        isActive: true,
         ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),

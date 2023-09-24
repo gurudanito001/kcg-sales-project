@@ -1,16 +1,14 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
-import { useSelector } from "react-redux";
-import { getDecodedToken } from "@/services/localStorageService";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
-
+import ConfirmationModal from "@/components/confirmationModal";
 
 
 const DataListItem = ({title, value}) => {
@@ -57,9 +55,9 @@ const LoadingFallBack = () =>{
 const ProductDetails = () => {
   const params = useParams();
   const {id} = params;
+  const router = useRouter();
   console.log(id);
   const {userData} = useGetUserData();
-  // const tokenData = getDecodedToken();
   const dispatchMessage = useDispatchMessage();
 
   const {data, isFetching} = useQuery({
@@ -74,6 +72,19 @@ const ProductDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
+    })
+  }) 
+
+  const productMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/product/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Product deleted successfully"})
+      router.push("/products")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
 
@@ -108,6 +119,7 @@ const ProductDetails = () => {
         <h4 className="m-0">Product</h4>
         <span className="breadcrumb-item ms-3"><a href="/products"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-primary ms-auto" href={`/products/${id}/edit`}>Edit</a>}
+        {userData?.staffCadre?.includes("admin") &&<a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteProduct">Delete</a>}
       </header>
 
 
@@ -141,6 +153,8 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
+
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Product" message="Are you sure your want to delete this product? This action cannot be reversed." isLoading={productMutation.isLoading} onSubmit={productMutation.mutate} id="deleteProduct" btnColor="danger" />}
     </div>
   )
 }

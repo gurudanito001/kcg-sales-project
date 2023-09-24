@@ -8,11 +8,11 @@ import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost } from "@/services/apiService";
-import { useParams } from 'next/navigation';
-import { useSelector } from "react-redux";
+import { apiGet, apiPost, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
+import ConfirmationModal from "@/components/confirmationModal";
 
 
 const DataListItem = ({title, value}) => {
@@ -59,6 +59,7 @@ const LoadingFallBack = () =>{
 const MarketingActivityDetails = () => {
   const params = useParams();
   const {id} = params;
+  const router = useRouter();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   // const tokenData = getDecodedToken();
@@ -71,13 +72,25 @@ const MarketingActivityDetails = () => {
     queryFn: () => apiGet({ url: `/marketingActivity/${id}`})
     .then(res =>{
       console.log(res.data)
-      //dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
+    })
+  }) 
+
+  const marketingActivityMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/marketingActivity/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Marketing Activity deleted successfully"})
+      router.push("/marketingActivities")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
 
@@ -150,6 +163,7 @@ const MarketingActivityDetails = () => {
         <h4 className="m-0">Marketing Activity</h4>
         <span className="breadcrumb-item ms-3"><a href="/marketingActivities"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         {userData?.id === data?.employeeId && <a className="btn btn-link text-primary ms-auto" href={`/marketingActivities/${id}/edit`}>Edit</a>}
+        {userData?.id === data?.employeeId && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteMarketingActivity">Delete</a>}
       </header>
 
 
@@ -200,6 +214,8 @@ const MarketingActivityDetails = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal title="Delete Marketing Activity" message="Are you sure your want to delete this marketing activity? This action cannot be reversed." isLoading={marketingActivityMutation.isLoading} onSubmit={marketingActivityMutation.mutate} id="deleteMarketingActivity" btnColor="danger" />
     </div>
   )
 }

@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.branch.findMany({
       where: {
+        isActive: true,
         ...(companyId && {companyId})
       },
       take: take,
@@ -40,7 +41,12 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.branch.count()
+    const totalCount = await prisma.branch.count({
+      where: {
+        isActive: true,
+        ...(companyId && {companyId})
+      }
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
 

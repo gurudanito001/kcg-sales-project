@@ -14,7 +14,9 @@ export async function GET(
         id,
       },
       include: {
-        branches: true
+        branches: { where: {
+          isActive: true
+        }}
       }
     });
 

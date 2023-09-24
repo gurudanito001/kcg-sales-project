@@ -25,7 +25,8 @@ export async function GET(
     }else {
       data = await prisma.visitReport.findMany({
         where: {
-          customerId: id
+          customerId: id,
+          isActive: true
         },
         include: {
           customer: true,
@@ -60,20 +61,29 @@ export async function PATCH(
       data: json,
     });
 
-    let lastVisit = json.followUpVisits[json.followUpVisits.length - 1];
-    await prisma.customer.update({
-      where: {
-        id: updatedData.customerId
-      },
-      data: {lastVisited: lastVisit.meetingDate}
-    })
+    if(json?.followUpVisits){
+      let lastVisit = json?.followUpVisits[json?.followUpVisits?.length - 1];
+      if(lastVisit){
+        await prisma.customer.update({
+          where: {
+            id: updatedData.customerId
+          },
+          data: {lastVisited: lastVisit.meetingDate}
+        })
+      }
 
-    await prisma.visitReport.update({
-      where: {
-        id: updatedData.id
-      },
-      data: {nextVisitDate: lastVisit.nextVisitDate}
-    })
+      if(lastVisit?.nextVisitDate){
+        await prisma.visitReport.update({
+          where: {
+            id: updatedData.id
+          },
+          data: {nextVisitDate: lastVisit.nextVisitDate}
+        })
+      }
+    }
+    
+    
+    
 
     //nextVisitDate: lastVisit.nextVisitDate
   

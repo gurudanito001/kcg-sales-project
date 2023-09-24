@@ -14,7 +14,11 @@ export async function GET(
       },
       include: {
         employee: true,
-        contactPersons: true
+        contactPersons: {
+          where: {
+            isActive: true
+          }
+        }
       }
     });
   

@@ -2,12 +2,6 @@
 "use client"
 import { useEffect, useState } from "react";
 import AsideContent from "../../components/asideContent";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { clearUserData, setUserData } from "@/store/slices/userDataSlice";
-import { useRouter } from "next/navigation";
-import { apiPost } from "@/services/apiService";
-import { getDecodedToken } from "@/services/localStorageService";
 import AppNotifications from "../../components/appNotifications";
 import useGetNotifications from "@/hooks/useGetNotifications";
 import useGetUserData from "@/hooks/useGetUserData";

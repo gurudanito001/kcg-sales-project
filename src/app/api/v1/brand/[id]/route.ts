@@ -44,7 +44,7 @@ export async function PATCH(
     const id = params.id;
     let json = await request.json();
 
-    if(json.logo.startsWith("data:image")){
+    if(json?.logo?.startsWith("data:image")){
       console.log(json.logo)
       result = await uploadImage({ data: json.logo });
       console.log(result)

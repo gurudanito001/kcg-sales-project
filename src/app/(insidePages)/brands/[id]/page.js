@@ -1,11 +1,13 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import moment from "moment";
+import ConfirmationModal from "@/components/confirmationModal";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -50,7 +52,9 @@ const LoadingFallBack = () =>{
 
 const BrandDetails = () => {
   const params = useParams();
+  const router = useRouter();
   const {id} = params;
+  const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
@@ -68,12 +72,26 @@ const BrandDetails = () => {
     })
   }) 
 
+  const brandMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/brand/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Brand deleted successfully"})
+      router.push("/brands")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Brand</h4>
         <span className="breadcrumb-item ms-3"><a href="/brands"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href={`/brands/${id}/edit`}>Edit</a>
+        <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteBrand">Delete</a>
       </header>
 
 
@@ -106,6 +124,7 @@ const BrandDetails = () => {
           </div>
         </div>
       </div>
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Brand" message="Are you sure your want to delete this brand? This action cannot be reversed." isLoading={brandMutation.isLoading} onSubmit={brandMutation.mutate} id="deleteBrand" btnColor="danger" />}
     </div>
   )
 }

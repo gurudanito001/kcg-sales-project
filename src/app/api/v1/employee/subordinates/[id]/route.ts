@@ -11,7 +11,8 @@ export async function GET(
     const id = params.id;
     const data = await prisma.employee.findMany({
       where: {
-        supervisorId: id
+        supervisorId: id,
+        isActive: true,
       },
       include: {
         company: true,

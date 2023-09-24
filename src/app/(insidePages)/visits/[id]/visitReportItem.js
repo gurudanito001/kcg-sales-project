@@ -72,6 +72,19 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
       }),
   })
 
+  const visitReportMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/visitReport/${item.id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Visit Report deleted successfully"})
+      refetchVisitReport();
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
   const handleChangeFollowUp = (prop) => (event) => {
     setFollowUpVisit(prevState => ({
       ...prevState,
@@ -134,7 +147,7 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
           </td>
           {(userData?.staffCadre?.includes("salesPerson") && !userData?.staffCadre?.includes("supervisor")) &&
           <td className="border-bottom-0">
-            <DeleteFollowUpButton isLoading={followUpVisitMutation.isLoading} deleteFunc={()=>deleteFollowUpVisit(id)} />
+            <DeleteFollowUpButton isLoading={followUpVisitMutation.isLoading} deleteFunc={()=>deleteFollowUpVisit(id)} id={id} />
           </td>}
         </tr>
       )
@@ -234,6 +247,7 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
             {(userData?.id === item?.employeeId ) && 
             <button className="btn btn-link text-primary ms-auto" onClick={() => setShowFollowUpVisitForm(prevState => !prevState)} >Add Follow-up visit</button>}
             {userData?.id === item.employeeId && <a className="btn btn-link text-primary ms-2" href={`/visits/${item.id}/edit`}>Edit</a>}
+            {userData?.id === item.employeeId && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteVisitReport">Delete</a>}
           </div>
 
           {showFollowUpVisitForm && <div className="card w-100">
@@ -354,6 +368,8 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
           </div> 
         </div>
       </div>
+
+      <ConfirmationModal title="Delete Visit Report" message="Are you sure your want to delete this visit report? This action cannot be reversed." isLoading={visitReportMutation.isLoading} onSubmit={visitReportMutation.mutate} id="deleteVisitReport" btnColor="danger" />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
@@ -61,7 +61,7 @@ const InvoiceRequestDetails = () => {
   const {id} = params;
   const dispatchMessage = useDispatchMessage();
   const {userData} = useGetUserData();
-  // const tokenData = getDecodedToken();
+  const router = useRouter();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
@@ -77,6 +77,19 @@ const InvoiceRequestDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
+    })
+  }) 
+
+  const invoiceRequestMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/invoiceRequestForm/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Invoice Request deleted successfully"})
+      router.push("/invoiceRequests")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
 
@@ -209,6 +222,7 @@ const InvoiceRequestDetails = () => {
         <h4 className="m-0">Invoice Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         {userData?.id === data?.employeeId && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
+        {userData?.id === data?.employeeId && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteInvoiceRequest">Delete</a>}
       </header>
 
 
@@ -382,6 +396,7 @@ const InvoiceRequestDetails = () => {
       </div>
 
       {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`Update Invoice Request`} message={`Are you sure your want to update this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" />}
+      <ConfirmationModal title="Delete Invoice Request" message="Are you sure your want to delete this invoice request? This action cannot be reversed." isLoading={invoiceRequestMutation.isLoading} onSubmit={invoiceRequestMutation.mutate} id="deleteInvoiceRequest" btnColor="danger" />
     </div>
   )
 }

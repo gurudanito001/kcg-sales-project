@@ -11,6 +11,9 @@ export async function GET(request: Request) {
   
     let myCursor = "";
     const data = await prisma.priceMaster.findMany({
+      where: {
+        isActive: true,
+      },
       take: take,
       skip: (page - 1) * take,
       ...(myCursor !== "" && {
@@ -32,7 +35,11 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.priceMaster.count()
+    const totalCount = await prisma.priceMaster.count({
+      where: {
+        isActive: true,
+      },
+    })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     myCursor = lastItemInData?.id // Example: 29
   

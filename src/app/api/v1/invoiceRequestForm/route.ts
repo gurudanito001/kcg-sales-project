@@ -27,6 +27,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.invoiceRequestForm.findMany({
       where: {
+        isActive: true,
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
         ...(contactPersonId && { contactPersonId }),
@@ -58,6 +59,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.invoiceRequestForm.count({
       where: {
+        isActive: true,
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
         ...(contactPersonId && { contactPersonId }),

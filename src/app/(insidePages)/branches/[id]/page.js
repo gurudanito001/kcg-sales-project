@@ -1,11 +1,13 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import moment from "moment";
+import ConfirmationModal from "@/components/confirmationModal";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -51,6 +53,8 @@ const LoadingFallBack = () =>{
 const BranchDetails = () => {
   const params = useParams();
   const {id} = params;
+  const router = useRouter();
+  const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
@@ -68,6 +72,19 @@ const BranchDetails = () => {
     })
   }) 
 
+  const branchMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/branch/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Branch deleted successfully"})
+      router.back()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
   
 
   return (
@@ -76,6 +93,7 @@ const BranchDetails = () => {
         <h4 className="m-0">Branch</h4>
         <span className="breadcrumb-item ms-3"><a href="/branches"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href={`/branches/${id}/edit`}>Edit</a>
+        <a className="btn btn-link text-danger" data-bs-toggle="modal" data-bs-target="#deleteBranch">Delete</a>
       </header>
 
 
@@ -106,6 +124,7 @@ const BranchDetails = () => {
           </div>
         </div>
       </div>
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Branch" message="Are you sure your want to delete this branch? This action cannot be reversed." isLoading={branchMutation.isLoading} onSubmit={branchMutation.mutate} id="deleteBranch" btnColor="danger" />}
     </div>
   )
 }

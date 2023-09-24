@@ -1,7 +1,7 @@
 
 import { useRef } from "react";
 
-const ConfirmationModal = ({title, message, onSubmit, isLoading, id}) => {
+const ConfirmationModal = ({title, message, onSubmit, isLoading, id, btnColor="primary"}) => {
 
   const closeButton = useRef();
   return (
@@ -17,7 +17,7 @@ const ConfirmationModal = ({title, message, onSubmit, isLoading, id}) => {
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" ref={closeButton} data-bs-dismiss="modal">Close</button>
-            <button type="button" className="btn btn-primary" disabled={isLoading} onClick={() => {
+            <button type="button" className={`btn btn-${btnColor}`} disabled={isLoading} onClick={() => {
               onSubmit();
               closeButton.current.click()
               }}>{isLoading ? "Loading..." : "Proceed"}</button>

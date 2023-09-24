@@ -1,12 +1,14 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import formatAsCurrency from "@/services/formatAsCurrency";
 import moment from "moment";
+import ConfirmationModal from "@/components/confirmationModal";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -52,6 +54,8 @@ const LoadingFallBack = () =>{
 const PriceMasterDetails = () => {
   const params = useParams();
   const {id} = params;
+  const router = useRouter();
+  const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
@@ -70,6 +74,19 @@ const PriceMasterDetails = () => {
     })
   }) 
 
+  const priceMasterMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/priceMaster/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Price Master deleted successfully"})
+      router.push("/priceMaster")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
   const deriveProductStatus = (unitPrice, promoPrice, validTill, anyPromo)=>{
     let validTillString = new Date(validTill).getTime();
     let currentDateString = new Date().getTime();
@@ -84,7 +101,6 @@ const PriceMasterDetails = () => {
       result.price = promoPrice
       result.promoActive = true;
     }
-
     return result
   }
 
@@ -95,6 +111,7 @@ const PriceMasterDetails = () => {
         <h4 className="m-0">Price Master</h4>
         <span className="breadcrumb-item ms-3"><a href="/priceMaster"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href={`/priceMaster/${id}/edit`}>Edit</a>
+        <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deletePriceMaster">Delete</a>
       </header>
 
 
@@ -123,6 +140,7 @@ const PriceMasterDetails = () => {
           </div>
         </div>
       </div>
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Price Master" message="Are you sure your want to delete product price? This action cannot be reversed." isLoading={priceMasterMutation.isLoading} onSubmit={priceMasterMutation.mutate} id="deletePriceMaster" btnColor="danger" />}
     </div>
   )
 }

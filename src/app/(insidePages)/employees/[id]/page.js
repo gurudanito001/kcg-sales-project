@@ -1,11 +1,13 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
-import { useParams } from 'next/navigation';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiPatch } from "@/services/apiService";
+import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import moment from "moment";
+import ConfirmationModal from "@/components/confirmationModal";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -51,6 +53,8 @@ const LoadingFallBack = () =>{
 const EmployeeDetails = () => {
   const params = useParams();
   const {id} = params;
+  const router = useRouter();
+  const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
@@ -67,6 +71,19 @@ const EmployeeDetails = () => {
       return {}
     })
   }) 
+
+  const employeeMutation = useMutation({
+    mutationFn: () => apiPatch({ url: `/employee/${id}`, data: {isActive: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Employee deleted successfully"})
+      router.push("/employees")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  })
 
   const listBrandsAssigned = () =>{
     let brands = ""
@@ -87,6 +104,7 @@ const EmployeeDetails = () => {
         <h4 className="m-0">Employee</h4>
         <span className="breadcrumb-item ms-3"><a href="/employees"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         <a className="btn btn-link text-primary ms-auto" href={`/employees/${id}/edit`}>Edit</a>
+        <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteEmployee">Delete</a>
       </header>
 
 
@@ -115,6 +133,8 @@ const EmployeeDetails = () => {
           </div>
         </div>
       </div>
+
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Employee" message="Are you sure your want to delete this employee? This action cannot be reversed." isLoading={employeeMutation.isLoading} onSubmit={employeeMutation.mutate} id="deleteEmployee" btnColor="danger" />}
     </div>
   )
 }

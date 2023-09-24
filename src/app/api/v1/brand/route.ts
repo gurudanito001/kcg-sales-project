@@ -16,6 +16,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.brand.findMany({
       where: {
+        isActive: true,
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
       },
@@ -28,7 +29,11 @@ export async function GET(request: Request) {
       }),
       include: {
         _count: { 
-          select: {products: true}
+          select: {products: {
+            where: {
+              isActive: true
+            }
+          }}
         }
       },
       orderBy: {
@@ -43,6 +48,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.brand.count({
       where: {
+        isActive: true,
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
       }
