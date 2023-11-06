@@ -5,7 +5,6 @@ import CommentItem from "@/components/commentItem";
 
 
 const useGetComments = (id) =>{
-  const tokenData = getDecodedToken();
   
   const commentQuery = useQuery({
     queryKey: ["allComments", id],

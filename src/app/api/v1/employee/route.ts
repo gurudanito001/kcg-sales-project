@@ -2,11 +2,21 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import authService from "@/services/authService";
 
 
 let routeName = "Employee"
 export async function GET(request: Request) {
   try {
+
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
@@ -83,6 +93,16 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const authToken = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(authToken, ["admin"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const data = await request.json();
     // encrypt password
     let encryptedPassword;

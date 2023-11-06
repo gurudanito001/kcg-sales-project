@@ -100,7 +100,7 @@ const AddInvoiceRequest = () => {
 
   const pfiRequestQuery = useQuery({
     queryKey: ["allPfiRequests"],
-    queryFn: () => apiGet({ url: `/pfiRequestForm` })
+    queryFn: () => apiGet({ url: `/pfiRequestForm?approved=approved` })
       .then(res => {
         console.log(res)
         generatePfiOptions(res.data)
@@ -146,13 +146,6 @@ const AddInvoiceRequest = () => {
     }
   }
 
-  const listPfiRequestOptions = () => {
-    if (pfiRequestQuery?.data?.length) {
-      return pfiRequestQuery.data.map(pfiRequest =>
-        <option key={pfiRequest.id} value={pfiRequest.id}>{pfiRequest.pfiReferenceNumber}-{pfiRequest.customer.companyName}-{pfiRequest.contactPerson.name}</option>
-      )
-    }
-  }
 
   useEffect(() => {
     if (formData.pfiRequestFormId) {
@@ -236,12 +229,6 @@ const AddInvoiceRequest = () => {
     mutate()
   }
 
-  const handleChangePfiReferenceId = (value) =>{
-    if(value){
-      let pfiReferenceNumber = value.split("--")[0] ;
-    }
-  }
-
 
   return (
     <div className="container-fluid">
@@ -284,17 +271,6 @@ const AddInvoiceRequest = () => {
                     renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
                   />
                 </div>
-
-                {/* <div className="mb-3">
-                  <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference No (<span className='fst-italic text-warning'>required</span>)</label>
-                  <div className='d-flex align-items-center'>
-                    <select className="form-select" id="pfiRequestFormId" onChange={handleChange("pfiRequestFormId")} value={formData.pfiRequestFormId} aria-label="Default select example">
-                      <option value="">Select Pfi Reference Number</option>
-                      {!pfiRequestQuery.isLoading && listPfiRequestOptions()}
-                    </select>
-                  </div>
-                  <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
-                </div> */}
 
                 <div className="mb-3">
                   <label htmlFor="customerType" className="form-label">Customer Type (<span className='fst-italic text-warning'>required</span>)</label>

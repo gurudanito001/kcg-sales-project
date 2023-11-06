@@ -233,6 +233,24 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
     return products;
   }
 
+  const nextVisitDateMutation = useMutation({
+    mutationFn: (data) => apiPatch({ url: `/visitReport/${item?.id}`, data: data })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: res.message })
+        refetchVisitReport()
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const handleChangeNextVisitDate = (event) => {
+    let data = {nextVisitDate: event.target.value}
+    nextVisitDateMutation.mutate(data)
+  }
+
 
   return (
     <div className="accordion-item my-3">
@@ -315,6 +333,11 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
             <DataListItem title="Next Visit Date" value={new Date(item?.nextVisitDate).toDateString()} />
             <DataListItem title="Created On" value={moment(item?.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
             <DataListItem title="Last Updated" value={moment(item?.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
+
+            <div className="mb-3">
+              <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
+              <input type="date" className="form-control" id="nextVisitDate" defaultValue={item?.nextVisitDate} onChange={handleChangeNextVisitDate} />
+            </div>
           </>
 
           <div className="card w-100">

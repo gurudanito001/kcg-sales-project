@@ -135,7 +135,9 @@ const Brands = () =>{
         <tr key={id} className="hover" >
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0">
-            <img src={logo} height={40} alt="Brand Logo" />
+            <div style={{ position: "relative", height: "40px", width: "100px", objectFit: "contain", borderRadius: "10px", overflow: "hidden" }}>
+              <img src={logo} className="h-100" alt="Product Image" />
+            </div>
           </td>
           <td className="border-bottom-0 link-style" onClick={()=>{
             router.push(`/brands/${id}`)

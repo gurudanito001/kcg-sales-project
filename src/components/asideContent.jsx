@@ -4,18 +4,19 @@ import path from "path";
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import Link from "next/link";
 
 
 const SidebarListItem = ({ route, title, active, iconClass, classes }) => {
   
   return (
     <li className="sidebar-item my-1">
-      <a className={`sidebar-link ${active && "active"} ${classes} d-flex align-items-center`} href={`${route}`} aria-expanded="false">
+      <Link className={`sidebar-link ${active && "active"} ${classes} d-flex align-items-center`} href={`${route}`} aria-expanded="false">
         <span>
           <i className={`${iconClass}`}></i>
         </span>
         <span className="hide-menu">{title}</span>
-      </a>
+      </Link>
     </li>
   )
 }

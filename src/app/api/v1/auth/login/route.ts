@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         { id: user.id, email: user.email, staffCadre: user.staffCadre, firstName: user.firstName, lastName: user.lastName },
         process.env.TOKEN_KEY as string,
         {
-          expiresIn: "40 days",
+          expiresIn: "60d",
         }
       );
       // add token to user object

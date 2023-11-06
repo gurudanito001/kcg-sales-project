@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import authService from "@/services/authService";
 
 let modelName = "Visit Report"
 export async function GET(
@@ -7,6 +8,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const { searchParams } = new URL(request.url);
     const singleReport = searchParams.get('singleReport');
 
@@ -53,6 +64,16 @@ export async function PATCH(
   { params }: { params: { id: string }}
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const id = params.id;
     let json = await request.json();
   
@@ -68,7 +89,7 @@ export async function PATCH(
           where: {
             id: updatedData.customerId
           },
-          data: {lastVisited: lastVisit.meetingDate}
+          data: {lastVisited: lastVisit?.meetingDate}
         })
       }
 
@@ -81,11 +102,15 @@ export async function PATCH(
         })
       }
     }
+    if(json?.visitDate){
+      await prisma.customer.update({
+        where: {
+          id: json?.customerId
+        },
+        data: {lastVisited: json.visitDate}
+      })
+    }
     
-    
-    
-
-    //nextVisitDate: lastVisit.nextVisitDate
   
     if (!updatedData) {
       return new NextResponse(JSON.stringify({message: `${modelName} with ID not found`}), {
@@ -111,6 +136,16 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const id = params.id;
     await prisma.visitReport.delete({
       where: { id },

@@ -300,7 +300,7 @@ const PfiRequests = () =>{
 
   const listPfiRequests = () =>{
     return allPfiRequests.map( (item, index) => {
-      const {id, pfiReferenceNumber, pfiDate, customer, contactPerson, brand, product, quantity, pricePerVehicle, employee} = item;
+      const {id, pfiReferenceNumber, pfiDate, customer, contactPerson, brand, product, quantity, pricePerVehicle, employee, locked} = item;
       return( 
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -334,7 +334,7 @@ const PfiRequests = () =>{
             <p className="fw-semibold m-0">{employee.email}</p>
           </td>}
           <td className="border-bottom-0">
-            {userData?.staffCadre?.includes("salesPerson") && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
+            {userData?.id === item?.employeeId && (!locked) && <a className="btn btn-link text-primary ms-auto" href={`/pfiRequests/${id}/edit`}>Edit</a>}
           </td>
         </tr>
     )

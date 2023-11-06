@@ -8,11 +8,13 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 import formatAsCurrency from "@/services/formatAsCurrency";
+import useGetUserData from "@/hooks/useGetUserData";
 
 
 const EditPfiRequest = () =>{
   const params = useParams();
   const {id} = params;
+  const { userData } = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
@@ -144,7 +146,7 @@ const EditPfiRequest = () =>{
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -153,12 +155,13 @@ const EditPfiRequest = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: `/contactPerson` })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -167,8 +170,16 @@ const EditPfiRequest = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(userData?.id){
+      customerQuery.refetch();
+      contactPersonQuery.refetch();
+    }
+  }, [userData?.id])
 
   const listBrandOptions = () => {
     if (brandsQuery?.data?.length) {

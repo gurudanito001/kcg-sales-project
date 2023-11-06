@@ -6,12 +6,17 @@ import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
-import Compress from "react-image-file-resizer";
 import formatAsCurrency from "@/services/formatAsCurrency";
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import useGetUserData from "@/hooks/useGetUserData";
+
+
 
 const EditInvoiceRequest = () => {
   const params = useParams();
   const { id } = params;
+  const { userData } = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
@@ -85,7 +90,11 @@ const EditInvoiceRequest = () => {
     additionalInformation: ""
   })
 
+  const [options, setOptions] = useState([]);
+  const [value, setValue] = useState(options[0]);
+  const [inputValue, setInputValue] = useState('');
   const [errors, setErrors] = useState({})
+  
 
 
   useEffect(()=>{
@@ -139,17 +148,43 @@ const EditInvoiceRequest = () => {
 
   const pfiRequestQuery = useQuery({
     queryKey: ["allPfiRequests"],
-    queryFn: () => apiGet({ url: `/pfiRequestForm` })
+    queryFn: () => apiGet({ url: `/pfiRequestForm?approved=approved` })
       .then(res => {
         console.log(res)
+        generatePfiOptions(res.data)
         return res.data
       })
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(formData?.pfiRequestFormId){
+      pfiRequestQuery.refetch();
+    }
+  }, [formData])
+
+  const generatePfiOptions = (data = []) =>{
+    let options = []
+    if(data.length > 0){
+      console.log(data)
+      data.forEach( pfi =>{
+        options.push(`${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`)
+        console.log(pfi?.id, formData?.pfiRequestFormId)
+        if(pfi?.id === formData?.pfiRequestFormId){
+          console.log(pfi?.id, formData?.pfiRequestFormId)
+          setValue(`${pfi?.pfiReferenceNumber}--${pfi?.customer?.companyName}--${pfi?.contactPersonName}`);
+        }
+      })
+    } 
+    console.log(options)
+    setOptions(options)
+  }
 
   const listBrandOptions = () => {
     if (brandsQuery?.data?.length) {
@@ -171,20 +206,65 @@ const EditInvoiceRequest = () => {
     }
   }
 
-  const listPfiRequestOptions = () => {
-    if (pfiRequestQuery?.data?.length) {
-      return pfiRequestQuery.data.map(pfiRequest =>
-        <option key={pfiRequest.id} value={pfiRequest.id}>{pfiRequest.pfiReferenceNumber}-{pfiRequest.customer.companyName}-{pfiRequest.contactPerson.name}</option>
-      )
+  useEffect(() => {
+    if (formData.pfiRequestFormId) {
+      let { employeeId, customerId, contactPersonId, companyName, companyAddress, phoneNumber, emailAddress, brandId, productId, vehicleDetails, quantity, pricePerVehicle, vatDeduction, whtDeduction, refundRebateAmount, refundRebateRecipient, relationshipWithTransaction, deliveryLocation } = getPfiRequestData();
+
+      setFormData(prevState => ({
+        ...prevState,
+        employeeId, customerId, contactPersonId, invoiceName: companyName, address: companyAddress, contactOfficeTelephone: phoneNumber, emailAddress, brandId, productId, vehicleModelDetails: vehicleDetails, quantity, totalInvoiceValuePerVehicle: pricePerVehicle, vatDeduction, whtDeduction, rebateAmount: refundRebateAmount, rebateReceiver: refundRebateRecipient, relationshipWithTransaction, deliveryLocation
+      }))
     }
-  }
+
+  }, [formData.pfiRequestFormId])
+
+  useEffect(()=>{
+    if(formData.paymentStatus === "Cash"){
+      setFormData( prevState => ({
+        ...prevState,
+        lpoNumber: "",
+        paymentDueDate: "",
+        otherPaymentDetails: ""
+      }))
+    }
+    if(formData.paymentStatus === "Credit"){
+      setFormData( prevState => ({
+        ...prevState,
+        bankName: "",
+        bankAccountName: "",
+        amountPaid: "",
+        accountNumber: "",
+        dateOfPayment: ""
+      }))
+    }
+  }, [formData.paymentStatus])
 
 
   const handleChange = (prop) => (event) => {
+    if ( prop === "vatDeduction" || prop === "whtDeduction") {
+      setFormData(prevState => ({
+        ...prevState,
+        [prop]: !prevState[prop]
+      }))
+      return
+    }
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value
     }))
+  }
+
+  const getPfiRequestData = () => {
+    let id = formData.pfiRequestFormId
+    let data = {}
+    if (!pfiRequestQuery.isLoading) {
+      pfiRequestQuery.data.forEach(pfiRequest => {
+        if (pfiRequest.id === id) {
+          data = pfiRequest
+        }
+      })
+    }
+    return data
   }
 
   const queryClient = useQueryClient();
@@ -204,7 +284,7 @@ const EditInvoiceRequest = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // console.log(formData)
+    //return console.log(formData)
     mutate()       
   }
 
@@ -224,15 +304,31 @@ const EditInvoiceRequest = () => {
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Invoice Request Details</h5>
               <form>
-                <div className="mb-3">
-                  <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference No (<span className='fst-italic text-warning'>required</span>)</label>
-                  <div className='d-flex align-items-center'>
-                    <select className="form-select" id="pfiRequestFormId" onChange={handleChange("pfiRequestFormId")} value={formData.pfiRequestFormId} aria-label="Default select example">
-                      <option value="">Select Pfi Reference Number</option>
-                      {!pfiRequestQuery.isLoading && listPfiRequestOptions()}
-                    </select>
-                  </div>
-                  <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
+              <div className="pb-3">
+                  <Autocomplete
+                    value={value}
+                    size="small"
+                    onChange={(event, newValue) => {
+                      if(newValue === null){newValue = ""}
+                      let pfiReferenceNumber = newValue.split("--")[0];
+                      let pfi = pfiRequestQuery.data.filter(item => item.pfiReferenceNumber === pfiReferenceNumber)
+                      setFormData(prevState => ({
+                        ...prevState,
+                        pfiRequestFormId: pfi[0]?.id || ""
+                      }))
+                      setValue(newValue);
+                    }}
+                    inputValue={inputValue}
+                    onInputChange={(event, newInputValue) => {
+                      console.log(newInputValue)
+                      setInputValue(newInputValue);
+                    }}
+                    id="controllable-states-demo"
+                    options={options}
+                    sx={{ width: "100%" }}
+                    style={{fontSize: "14px"}}
+                    renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
+                  />
                 </div>
 
                 <div className="mb-3">

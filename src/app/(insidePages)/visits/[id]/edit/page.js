@@ -7,9 +7,11 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const EditVisitReport = () => {
   const params = useParams();
+  const { userData } = useGetUserData();
   const { id } = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
@@ -33,10 +35,10 @@ const EditVisitReport = () => {
 
   useEffect(() => {
     if (data) {
-      let {employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest } = data;
+      let {employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate } = data;
       setFormData(prevState => ({
         ...prevState,
-        employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest
+        employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate
       }))
     }
   }, [data])
@@ -65,7 +67,7 @@ const EditVisitReport = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: "/customer" })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -74,12 +76,13 @@ const EditVisitReport = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: "/contactPerson" })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -88,8 +91,16 @@ const EditVisitReport = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(userData?.id){
+      customerQuery.refetch();
+      contactPersonQuery.refetch();
+    }
+  }, [userData?.id])
 
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
@@ -199,6 +210,7 @@ const EditVisitReport = () => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
         queryClient.invalidateQueries(["allVisitReport", id])
+        router.push(`/visits/${formData.customerId}`)
       })
       .catch(error => {
         console.log(error)

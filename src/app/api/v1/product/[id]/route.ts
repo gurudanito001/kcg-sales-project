@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { uploadImage } from "@/services/imageService";
+import authService from "@/services/authService";
 
 let modelName = "Product"
 export async function GET(
@@ -8,6 +9,16 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const id = params.id;
     const data = await prisma.product.findUnique({
       where: {
@@ -44,6 +55,16 @@ export async function PATCH(
   { params }: { params: { id: string }}
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["admin"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const id = params.id;
     let json = await request.json();
 
@@ -87,6 +108,16 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
+    let {isAuthorized} = authService(token, ["admin"])
+    if(!isAuthorized){
+      return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
+
+
     const id = params.id;
     await prisma.product.delete({
       where: { id },

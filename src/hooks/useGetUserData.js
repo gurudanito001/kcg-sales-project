@@ -1,9 +1,10 @@
 "use client"
 import * as jwt from 'jsonwebtoken';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiGet } from '@/services/apiService';
+import {prohibitedRoutes, viewOnlyRoutes} from "@/utils/consts";
 
 
 const useGetUserData = () => {
@@ -17,10 +18,12 @@ const useGetUserData = () => {
         lastName: "",
         accountType: "",
     })
-    const [tokenUpdated, setTokenUpdated] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isAllowed, setIsAllowed] = useState(false);
+    const [tokenUpdated, setTokenUpdated] = useState("");
 
 
-    const tokenQuery = useQuery({
+    /* const tokenQuery = useQuery({
         queryKey: ["token"],
         queryFn: () => apiGet({ url: `/auth/refreshUserData/${localStorage.getItem("token")}` })
             .then(res => {
@@ -32,36 +35,69 @@ const useGetUserData = () => {
                 console.log(error)
                 return {}
             }),
-        refetchInterval: 3600000,
-        refetchIntervalInBackground: true
-    })
+    }) */
 
     const logout = ()=>{
         localStorage.removeItem("token");
         localStorage.removeItem("accountType");
-        setTokenUpdated(true)
+        setTokenUpdated(new Date().getTime())
     }
 
     const switchAccountType = (accountType) => {
         localStorage.setItem("accountType", accountType);
+        setTokenUpdated(new Date().getTime())
     }
 
     const setToken = (token)=>{
         localStorage.setItem("token", token);
-        setTokenUpdated(true)
+        setTokenUpdated(new Date().getTime())
     }
 
     useEffect(() => {
         let token = localStorage.getItem('token')
         let data = jwt.decode(token)
         let accountType = localStorage.getItem("accountType");
-        console.log(userData)
+        if(token){
+            setIsLoggedIn(true)
+        }
         if (data) {
             setUserData(prevState =>({
                 ...prevState,
                 ...data,
             }))
         }
+        if(accountType){
+            setUserData(prevState =>({
+                ...prevState,
+                accountType: accountType
+            }))
+        }
+        let restrictedRoutes = prohibitedRoutes()[data?.staffCadre[0]]
+        let viewOnly = viewOnlyRoutes()[data?.staffCadre[0]]
+        console.log(viewOnly)
+        if(restrictedRoutes){
+            for (let i = 0; i < restrictedRoutes.length; i++) {
+                if(pathName.includes(restrictedRoutes[i])){
+                    setIsAllowed(false);
+                    return router.push("/")
+                }
+                if(i === restrictedRoutes.length - 1){
+                    setIsAllowed(true)
+                }
+            }
+        }
+        if(viewOnly){
+            for (let i = 0; i < viewOnly.length; i++) {
+                if(pathName.includes(viewOnly[i]) && (pathName.includes("add") || pathName.includes("edit"))){
+                    setIsAllowed(false);
+                    return router.push("/")
+                }
+                if(i === viewOnly.length - 1){
+                    setIsAllowed(true)
+                }
+            }
+        }
+        
         if (data && pathName === "/login") {
             router.push("/")
         }
@@ -69,16 +105,10 @@ const useGetUserData = () => {
             return router.push("/login")
         }
         console.log(accountType)
-        if(accountType){
-            setUserData(prevState =>({
-                ...prevState,
-                accountType: accountType
-            }))
-        }
         
-    }, [tokenUpdated])
+    }, [tokenUpdated, router, pathName])
 
-    return { userData, setTokenUpdated, logout, setToken, switchAccountType }
+    return { isLoggedIn, isAllowed, userData, setTokenUpdated, logout, setToken, switchAccountType }
 }
 
 export default useGetUserData;

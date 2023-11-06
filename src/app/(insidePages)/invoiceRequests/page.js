@@ -339,7 +339,7 @@ const InvoiceRequests = () =>{
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal">{payment}</p>
           </td>
-          {userData?.staffCadre?.includes("salesPerson") &&
+          {userData?.id === item?.employeeId && (!item?.approved) &&
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>
           </td>}

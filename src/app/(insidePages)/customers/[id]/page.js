@@ -173,7 +173,6 @@ const CustomerDetails = () => {
       .then(res => {
         clearComment();
         console.log(res.data)
-        //dispatchMessage({ message: res.message })
         refetch()
         
       })
@@ -189,6 +188,16 @@ const CustomerDetails = () => {
       message: event.target.value
     }))
   }
+
+  useEffect(()=>{
+    setCommentData( prevState =>({
+      ...prevState,
+      senderId: userData?.id,
+      receiverId: data?.employee?.id,
+      resourceId: id,
+      resourceUrl: pathName
+    }))
+  },[data, userData])
 
   const handleChange = (prop) => (event) => {
     if (prop === "approved") {
@@ -210,15 +219,7 @@ const CustomerDetails = () => {
     commentMutation.mutate()
   }
 
-  useEffect(()=>{
-    setCommentData( prevState =>({
-      ...prevState,
-      senderId: userData?.id,
-      receiverId: data?.employee?.id,
-      resourceId: id,
-      resourceUrl: pathName
-    }))
-  },[data, userData])
+
 
   const { isLoading, mutate: approveCustomer } = useMutation({
     mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: formData })

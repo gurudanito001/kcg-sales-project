@@ -42,7 +42,7 @@ const AddCustomerVisit = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: "/customer" })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -51,12 +51,13 @@ const AddCustomerVisit = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: "/contactPerson" })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -65,8 +66,16 @@ const AddCustomerVisit = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(userData?.id){
+      customerQuery.refetch();
+      contactPersonQuery.refetch();
+    }
+  }, [userData?.id])
 
   const productsQuery = useQuery({
     queryKey: ["allProducts"],

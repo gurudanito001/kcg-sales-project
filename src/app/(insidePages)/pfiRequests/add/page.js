@@ -51,41 +51,6 @@ const AddPfiRequest = () => {
 
   const [errors, setErrors] = useState({})
 
-  const clearState = () => {
-    setFormData(prevState => ({
-      ...prevState,
-      employeeId: "",
-      customerId: "",
-      contactPersonId: "",
-      customerType: "",
-      companyName: "",
-      companyAddress: "",
-      contactPersonName: "",
-      phoneNumber: "",
-      emailAddress: "",
-      brandId: "",
-      productId: "",
-      vehicleDetails: "",
-      quantity: "",
-      pricePerVehicle: "",
-      bodyTypeDescription: "",
-      vehicleServiceDetails: "",
-      specialFitmentDetails: "",
-      costForSpecialFitment: "",
-      discount: "",
-      vatDeduction: false,
-      whtDeduction: false,
-      registration: false,
-      refundRebateAmount: "",
-      refundRebateRecipient: "",
-      designation: "",
-      relationshipWithTransaction: "",
-      estimatedOrderClosingTime: "",
-      paymentType: "",
-      deliveryLocation: "",
-      additionalInformation: "",
-    }))
-  }
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
@@ -116,7 +81,7 @@ const AddPfiRequest = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -125,12 +90,13 @@ const AddPfiRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: `/contactPerson` })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -139,8 +105,16 @@ const AddPfiRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(userData?.id){
+      customerQuery.refetch();
+      contactPersonQuery.refetch();
+    }
+  }, [userData?.id])
 
   const listBrandOptions = () => {
     if (brandsQuery?.data?.length) {

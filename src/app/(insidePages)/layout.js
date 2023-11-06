@@ -1,10 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import AsideContent from "../../components/asideContent";
 import AppNotifications from "../../components/appNotifications";
 import useGetNotifications from "@/hooks/useGetNotifications";
 import useGetUserData from "@/hooks/useGetUserData";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const styles = {
   notificationIcon: {
@@ -19,12 +21,8 @@ const styles = {
 
 const Layout = ({ children }) => {
   const [key, setKey] = useState("")
-  const {userData, logout, switchAccountType} = useGetUserData();
+  const {isLoggedIn, isAllowed, userData, logout, switchAccountType} = useGetUserData();
   const {count} = useGetNotifications();
-
-  useEffect(()=>{
-    let accountType = localStorage.getItem("accountType")
-  })
 
   return (
     <div className="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
@@ -96,10 +94,10 @@ const Layout = ({ children }) => {
                         <p className="text-capitalize small">{`${userData?.accountType || userData?.staffCadre[0]}`}</p>
                       </div>
                       
-                      <a href="" className="d-flex align-items-center gap-2 dropdown-item">
+                      <Link href="/profile" className="d-flex align-items-center gap-2 dropdown-item">
                         <i className="ti ti-user fs-6"></i>
-                        <p className="mb-0 fs-3">My Profile</p>
-                      </a>
+                        <span className="mb-0 fs-3">My Profile</span>
+                      </Link>
                       <a onClick={logout} className="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
                     </div>
                   </div>
@@ -109,7 +107,7 @@ const Layout = ({ children }) => {
           </nav>
         </header>
 
-        {children}
+        {isLoggedIn && isAllowed && children}
       </main>
       <AppNotifications />
     </div>

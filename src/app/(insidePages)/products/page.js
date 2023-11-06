@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import Image from "next/image";
 
 
 const LoadingFallBack = () =>{
@@ -190,7 +191,9 @@ const Products = () =>{
         <tr key={id} className="hover">
           <td className="border-bottom-0 py-2"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
           <td className="border-bottom-0 py-2">
-            <img src={images[0]} height={40} alt="Product Image" />
+            <div style={{ position: "relative", height: "40px", width: "100px", objectFit: "contain", borderRadius: "10px", overflow: "hidden" }}>
+              <img src={images[0]} className="h-100" alt="Product Image" />
+            </div>
           </td>
           <td className="border-bottom-0 py-2 link-style" onClick={()=>{
             router.push(`/products/${id}`)
