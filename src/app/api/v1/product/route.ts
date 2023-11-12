@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { uploadImage } from "@/services/imageService";
+import { uploadImage, uploadToVercel } from "@/services/imageService";
 import authService from "@/services/authService";
+import ResetPassword from "@/app/(auth)/resetPassword/page";
 
 
 
@@ -84,6 +85,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const json = await request.json();
+
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
     let {isAuthorized} = authService(token, ["admin"])
     if(!isAuthorized){
@@ -92,19 +95,19 @@ export async function POST(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-
-
-    const json = await request.json();
+    
     // validate data here
-    if(json.images.length > 0){
+    /* if(json.images.length > 0){
       let productImagesUrls = await Promise.all(
         json.images.map(async (base64Img: any) => {
-          let image = await uploadImage({data: base64Img.uri});
-          return image.secure_url;
+          console.log(base64Img)
+          let image = await uploadToVercel(base64Img.fileName, base64Img.file);
+          return image;
         })
       )
       json.images = productImagesUrls;
-    }
+      return console.log(productImagesUrls)
+    } */
 
     let {code} = json;
     let codeExists = await prisma.product.findFirst({ where: {code}})

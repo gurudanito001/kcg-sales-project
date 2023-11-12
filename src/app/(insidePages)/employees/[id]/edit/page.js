@@ -6,6 +6,7 @@ import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
+import formValidator from "@/services/validation";
 
 
 
@@ -29,6 +30,7 @@ const EditEmployee = () => {
     employmentDate: "",
     brandsAssigned: []
   })
+  const [errors, setErrors] = useState({});
 
   const employeeDetailsQuery = useQuery({
     queryKey: ["allEmployees", id],
@@ -232,6 +234,10 @@ const EditEmployee = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(formData)
+    let errors = formValidator(["companyId", "branchId", "staffCadre", "firstName", "lastName", "email"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
 
@@ -255,7 +261,7 @@ const EditEmployee = () => {
                     <option value="">Select Company</option>
                     {!companyQuery.isLoading && listCompanyOptions()}
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.companyId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.companyId}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="branch" className="form-label">Branch (<span className='fst-italic text-warning'>required</span>)</label>
@@ -263,7 +269,7 @@ const EditEmployee = () => {
                     <option value="">Select Branch</option>
                     {!branchQuery.isLoading && listBranchOptions()}
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.branchId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.branchId}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="staffCadre" className="form-label">Staff Cadre (<span className='fst-italic text-warning'>required</span>)</label>
@@ -273,12 +279,12 @@ const EditEmployee = () => {
                     <option value="supervisor">Supervisor</option>
                     <option value="salesPerson">Sales Representative</option>
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.staffCadre}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.staffCadre}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="firstname" className="form-label">First Name (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control" id="firstname" onChange={handleChange("firstName")} value={formData.firstName} placeholder="Employee First Name" />
-                  {/* <span className='text-danger font-monospace small'>{errors.firstName}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.firstName}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="middlename" className="form-label">Middle Name</label>
@@ -287,12 +293,12 @@ const EditEmployee = () => {
                 <div className="mb-3">
                   <label htmlFor="lastname" className="form-label">Last Name (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" id="lastname" onChange={handleChange("lastName")} value={formData.lastName} placeholder="Employee Last Name" />
-                  {/* <span className='text-danger font-monospace small'>{errors.lastName}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.lastName}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="email" className="form-label">Email Address (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="email" className="form-control shadow-none" id="email" onChange={handleChange("email")} value={formData.email} placeholder="Enter your email address" />
-                  {/* <span className='text-danger font-monospace small'>{errors.email}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.email}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="supervisorId" className="form-label">Supervisor</label>
@@ -307,10 +313,9 @@ const EditEmployee = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="brands" className="form-label">Brands Assigned (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="brands" className="form-label">Brands Assigned </label>
                   {!brandsQuery.isLoading && !brandsQuery.isError &&
                     <div className='d-flex'> {listBrands()} </div>}
-                  {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
                 </div>
 
                 <div className="mt-5">

@@ -6,7 +6,7 @@ import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
-import Compress from "react-image-file-resizer";
+import formValidator from "@/services/validation";
 
 const EditMonthlyTarget = () =>{
   const params = useParams();
@@ -19,6 +19,8 @@ const EditMonthlyTarget = () =>{
     month: "",
     target: "",
   })
+
+  const [errors, setErrors] = useState({});
 
   const {data, isFetching} = useQuery({
     queryKey: ["allMonthlyTargets", id],
@@ -71,7 +73,11 @@ const EditMonthlyTarget = () =>{
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    console.log(formData);
+    let errors = formValidator(["month", "target"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
 
@@ -90,13 +96,15 @@ const EditMonthlyTarget = () =>{
                 <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Monthly Target Details</h5>
                 <form>
                   <div className="mb-3">
-                    <label htmlFor="month" className="form-label">Month</label>
+                    <label htmlFor="month" className="form-label">Month (<span className='fst-italic text-warning'>required</span>)</label>
                     <input type="month" className="form-control" id="month" value={formData.month} onChange={handleChange("month")} />
+                    <span className="text-danger font-monospace small">{errors?.month}</span>
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="target" className="form-label">Monthly Target</label>
+                    <label htmlFor="target" className="form-label">Monthly Target (<span className='fst-italic text-warning'>required</span>)</label>
                     <input type="text" className="form-control" id="target" value={formData.target} onChange={handleChange("target")} />
+                    <span className="text-danger font-monospace small">{errors?.target}</span>
                   </div>
                   <div className="mt-5">
                     <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>

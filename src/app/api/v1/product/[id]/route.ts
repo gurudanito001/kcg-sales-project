@@ -68,7 +68,7 @@ export async function PATCH(
     const id = params.id;
     let json = await request.json();
 
-    if(json?.newImages?.length > 0){
+    /* if(json?.newImages?.length > 0){
       let productImagesUrls = await Promise.all(
         json.newImages.map(async (base64Img: any) => {
           let image = await uploadImage({data: base64Img.uri});
@@ -77,7 +77,7 @@ export async function PATCH(
       )
       json.images = [...json.images, ...productImagesUrls];
     }
-    delete json.newImages;
+    delete json.newImages; */
     const updatedData = await prisma.product.update({
       where: { id },
       data: json,

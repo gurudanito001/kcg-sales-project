@@ -16,7 +16,7 @@ function setHeaders(extraHeaders: any) {
   let headerData = {
     Accept: "application/json",
     "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(token && { "authorization": `Bearer ${token}` }),
     ...(fingerprint && { "SHARED-DID": fingerprint }),
   };
   if (extraHeaders) {

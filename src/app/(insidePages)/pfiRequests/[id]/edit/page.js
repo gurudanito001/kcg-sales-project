@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 import formatAsCurrency from "@/services/formatAsCurrency";
 import useGetUserData from "@/hooks/useGetUserData";
+import formValidator from "@/services/validation";
 
 
 const EditPfiRequest = () =>{
@@ -304,7 +305,11 @@ const EditPfiRequest = () =>{
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData)
+    console.log(formData);
+    let errors = formValidator(["customerType", "companyName", "contactPersonName", "phoneNumber", "emailAddress", "brandId", "productId", "vehicleDetails", "quantity", "pricePerVehicle", "estimatedOrderClosingTime"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
 
@@ -325,11 +330,13 @@ const EditPfiRequest = () =>{
                 <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Pfi Request Details</h5>
                 <form>
                 <div className="mb-3">
+                  <label htmlFor="customerType" className="form-label">Customer Type (<span className='fst-italic text-warning'>required</span>)</label>
                   <select className="form-select shadow-none" id="customerType" onChange={handleChange("customerType")} value={formData.customerType} aria-label="Default select example">
                     <option value="">Select Customer Type</option>
                     <option value="existing customer">Existing Customer</option>
                     <option value="new customer">New Customer</option>
                   </select>
+                  <span className='text-danger font-monospace small'>{errors.customerType}</span>
                 </div>
 
                 <div className="mb-3">
@@ -347,7 +354,7 @@ const EditPfiRequest = () =>{
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="companyAddress" className="form-label">Company Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="companyAddress" className="form-label">Company Address </label>
                   <textarea className="form-control shadow-none" value={formData.companyAddress} onChange={handleChange("companyAddress")} id="companyAddress" rows={3}></textarea>
                   <span className='text-danger font-monospace small'>{errors.companyAddress}</span>
                 </div>
@@ -363,7 +370,7 @@ const EditPfiRequest = () =>{
                       <input type="text" className="form-control shadow-none" value={formData.contactPersonName} onChange={handleChange("contactPersonName")} id="contactPersonName" placeholder="Firstname Lastname" />
                     }
                   </div>
-                  <span className='text-danger font-monospace small'>{errors.contactPerson}</span>
+                  <span className='text-danger font-monospace small'>{errors.contactPersonName}</span>
                 </div>
 
                 <div className="mb-3">
@@ -493,6 +500,7 @@ const EditPfiRequest = () =>{
                 <div className="mb-3">
                   <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days) (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" value={formData.estimatedOrderClosingTime} onChange={handleChange("estimatedOrderClosingTime")} id="estimatedOrderClosingTime" placeholder="Estimated Order Closing Time" />
+                  <span className='text-danger font-monospace small'>{errors.estimatedOrderClosingTime}</span>
                 </div>
 
                 <div className="mb-3">

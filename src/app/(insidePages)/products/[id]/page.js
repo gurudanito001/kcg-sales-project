@@ -9,6 +9,8 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
 import ConfirmationModal from "@/components/confirmationModal";
+import { Modal, ClickAwayListener } from "@mui/material";
+import { useState } from "react";
 
 
 const DataListItem = ({title, value}) => {
@@ -60,6 +62,10 @@ const ProductDetails = () => {
   const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
 
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const {data, isFetching} = useQuery({
     queryKey: ["allProducts", id],
     queryFn: () => apiGet({ url: `/product/${id}`})
@@ -89,28 +95,68 @@ const ProductDetails = () => {
   }) 
 
   const listProductImages = () => {
-    return data.images.map(image => {
-      return <img key={image} src={image} height="150px" className="p-3 rounded-3" alt="Product Image" />
-    })
+    if(data?.images){
+      return data?.images.map(image => {
+        return <img key={image} src={image} onClick={handleOpen} style={{cursor: "pointer"}} height="150px" className="p-3 rounded-3" alt="Product Image" />
+      })
+    }
+  }
+
+  const listCarouselImages = () =>{
+    if(data?.images){
+      return data?.images.map ((image, index) =>{
+        return (
+          <div key={image} className={`carousel-item ${index === 0 && "active"}`}>
+            <img src={image} className="d-block w-100" alt="carousel image" />
+          </div>
+        )
+      })
+    }
+  }
+
+  const listCarouselButtons = () =>{
+    if(data?.images){
+      return data?.images.map ((image, index) =>{
+        return(
+          <button
+            key={image}
+            type="button"
+            data-bs-target="#carouselExampleIndicators"
+            data-bs-slide-to={index}
+            className={`${index === 0 && "active"}`}
+            aria-current={`${index === 0 && "true"}`}
+            aria-label={`Slide ${index}`}
+          />
+        )
+      })
+    }
   }
 
     const deriveProductStatus = (priceData)=>{
-    let {unitPrice, promoPrice, validTill, anyPromo} = priceData
-    let validTillString = new Date(validTill).getTime();
-    let currentDateString = new Date().getTime();
-    let result = {};
-    if(!anyPromo){
-      result.price = unitPrice
-      result.promoActive = false;
-    }else if(currentDateString >= validTillString){
-      result.price = unitPrice
-      result.promoActive = false;
-    }else if(currentDateString < validTillString){
-      result.price = promoPrice
-      result.promoActive = true;
-    }
+      if(priceData){
+        let {unitPrice, promoPrice, validTill, anyPromo} = priceData
+        let validTillString = new Date(validTill).getTime();
+        let currentDateString = new Date().getTime();
+        let result = {};
+        if(!anyPromo){
+          result.price = unitPrice
+          result.promoActive = false;
+        }else if(currentDateString >= validTillString){
+          result.price = unitPrice
+          result.promoActive = false;
+        }else if(currentDateString < validTillString){
+          result.price = promoPrice
+          result.promoActive = true;
+        }
+    
+        return result
+      }
+  }
 
-    return result
+  const listBrochures = () =>{
+    return data.brochures.map(file => {
+      return <li className=" my-3" key={file}> <span>{file.slice(56, file.length)}</span> <br /> <a className="btn btn-link px-0" href={file} target="_blank">download</a></li>
+    })
   }
 
   return (
@@ -134,7 +180,7 @@ const ProductDetails = () => {
                   <DataListItem title="Product Name" value={data.name} />
                   {userData?.staffCadre?.includes("admin") && <DataListItem title="Product Code" value={data.code} />}
                   <DataListItem title="Brand" value={data.brand.name} />
-                  <DataListItem title="Price" value={formatAsCurrency(deriveProductStatus(data.price).price)} />
+                  <DataListItem title="Price" value={formatAsCurrency(deriveProductStatus(data.price)?.price || "")} />
                   <DataListItem title="Description" value={data.description} />
                   <DataListItem title="Specifications" value={data.specifications} />
                   <DataListItem title="Vat Inclusive" value={data.vatInclusive ? "Yes" : "No"} />
@@ -143,6 +189,13 @@ const ProductDetails = () => {
                     <figure>
                       {listProductImages()}
                     </figure>
+                  </div>
+
+                  <div className="mb-3 d-flex flex-column">
+                    <h6 className="m-0 me-3 mb-2">Brochures</h6>
+                    <ul>
+                      {listBrochures()}
+                    </ul>
                   </div>
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
@@ -153,6 +206,49 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <div className="row d-flex h-100">
+          <ClickAwayListener onClickAway={handleClose}>
+            <div className="col-12 col-md-8 col-lg-6 m-auto">
+              <div id="carouselExampleIndicators" className="carousel slide">
+                <div className="carousel-indicators">
+                  {listCarouselButtons()}
+                </div>
+                <div className="carousel-inner">
+                  {listCarouselImages()}
+                </div>
+                <button
+                  className="carousel-control-prev"
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="prev"
+                >
+                  <span className="carousel-control-prev-icon" aria-hidden="true" />
+                  <span className="visually-hidden">Previous</span>
+                </button>
+                <button
+                  className="carousel-control-next"
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="next"
+                >
+                  <span className="carousel-control-next-icon" aria-hidden="true" />
+                  <span className="visually-hidden">Next</span>
+                </button>
+              </div>
+
+            </div>
+          </ClickAwayListener>
+          
+        </div>
+      </Modal>
+
 
       {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Product" message="Are you sure your want to delete this product? This action cannot be reversed." isLoading={productMutation.isLoading} onSubmit={productMutation.mutate} id="deleteProduct" btnColor="danger" />}
     </div>

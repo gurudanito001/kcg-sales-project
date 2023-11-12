@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
-import Compress from "react-image-file-resizer";
-//import formValidator from '../../../services/validation';
 import NaijaStates from 'naija-state-local-government';
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
+import formValidator from "@/services/validation";
 
 
 const AddCustomer = () => {
@@ -32,27 +31,8 @@ const AddCustomer = () => {
     email: "",
     phoneNumber: ""
   })
+  const [errors, setErrors] = useState({});
 
-  const clearState = () =>{
-    setFormData( prevState => ({
-      ...prevState,
-      companyName: "",
-      state: "",
-      lga: "",
-      city: "",
-      address: "",
-      companyWebsite: "",
-      industry: "",
-      customerType: "",
-      enquirySource: "",
-      name: "",
-      designation: "",
-      email: "",
-      phoneNumber: ""
-    }))
-  }
-
-  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     console.log(userData);
@@ -115,6 +95,10 @@ const AddCustomer = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(formData)
+    let errors = formValidator(["companyName", "industry", "customerType", "enquirySource"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
   return (
@@ -138,7 +122,7 @@ const AddCustomer = () => {
                 </div>
                 <div className="d-flex align-items-center">
                   <div className="mb-3 me-3 w-50">
-                    <label htmlFor="state" className="form-label">State (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="state" className="form-label">State </label>
                     <select className="form-select shadow-none" value={formData.state} onChange={handleChange("state")} id="state" aria-label="Default select example">
                       <option value="">Select State</option>
                       {listStateOptions()}
@@ -146,7 +130,7 @@ const AddCustomer = () => {
                     <span className='text-danger font-monospace small'>{errors.state}</span>
                   </div>
                   <div className="mb-3 w-50">
-                    <label htmlFor="lga" className="form-label">LGA (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="lga" className="form-label">LGA </label>
                     <select className="form-select shadow-none" value={formData.lga} onChange={handleChange("lga")} id="lga" aria-label="Default select example">
                       <option value="">Select LGA</option>
                       {listLgaOptions(formData.state)}
@@ -160,7 +144,7 @@ const AddCustomer = () => {
                   <input type="text" className="form-control shadow-none" id="companyWebsite" value={formData.city} onChange={handleChange("city")} placeholder="name of city" />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="address" className="form-label">Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="address" className="form-label">Address</label>
                   <textarea className="form-control shadow-none" id="address" value={formData.address} onChange={handleChange("address")} rows={3} placeholder="Building Name/Number/Street"></textarea>
                   <span className='text-danger font-monospace small'>{errors.address}</span>
                 </div>

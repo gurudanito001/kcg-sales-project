@@ -5,9 +5,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useSelector } from "react-redux";
-//import formValidator from '../../../services/validation';
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
+import formValidator from "@/services/validation";
 
 
 const AddCustomerVisit = () => {
@@ -38,6 +38,7 @@ const AddCustomerVisit = () => {
     followUpVisits: [],
     pfiRequest: false
   })
+  const [errors, setErrors] = useState({});
 
 
   const customerQuery = useQuery({
@@ -189,7 +190,11 @@ const AddCustomerVisit = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData)
+    console.log(formData)
+    let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
 
@@ -214,7 +219,7 @@ const AddCustomerVisit = () => {
                     <option value="">Select Customer</option>
                     {!customerQuery.isLoading && listCustomers()}
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.companyId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.customerId}</span>
                 </div>
                 <div className="mb-3">
                   <label htmlFor="contactPersonId" className="form-label">Contact Person (<span className='fst-italic text-warning'>required</span>)</label>
@@ -222,11 +227,11 @@ const AddCustomerVisit = () => {
                     <option value="">Select Contact Person</option>
                     {!contactPersonQuery.isLoading && listContactPersons()}
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.branchId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.contactPersonId}</span>
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="callType" className="form-label">Call Type (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="callType" className="form-label">Call Type </label>
                   <select className="form-select shadow-none" id="callType" onChange={handleChange("callType")} value={formData.callType} aria-label="Default select example">
                     <option value="">Select Call Type</option>
                     <option value="Telephone">Telephone</option>
@@ -246,7 +251,7 @@ const AddCustomerVisit = () => {
                     <option value="Follow-Up">Follow-Up</option>
                     <option value="Demo">Demo</option>
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.branchId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.status}</span>
                 </div>
 
 
@@ -269,8 +274,9 @@ const AddCustomerVisit = () => {
                     <option value="4hrs">4hrs</option>
                     <option value="4hrs 30 mins">4hrs 30 mins</option>
                     <option value="5 hrs">5 hrs</option>
+                    <option value="Above 5 hrs">5 hrs</option>
                   </select>
-                  {/* <span className='text-danger font-monospace small'>{errors.branchId}</span> */}
+                  <span className='text-danger font-monospace small'>{errors.durationOfMeeting}</span>
                 </div>
 
                 <div className="mb-3">
@@ -279,8 +285,9 @@ const AddCustomerVisit = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="visitDate" className="form-label">Visit Date</label>
+                  <label htmlFor="visitDate" className="form-label">Visit Date (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                  <span className='text-danger font-monospace small'>{errors.visitDate}</span>
                 </div>
 
                 <div className="mb-3">
@@ -298,8 +305,8 @@ const AddCustomerVisit = () => {
                 <div className="mb-3">
                   <label htmlFor="productsDiscussed" className="form-label">Products Discussed (<span className='fst-italic text-warning'>required</span>)</label>
                   {!productsQuery.isLoading && !productsQuery.isError &&
-                    <div className='d-flex'> {listProductOptions()} </div>}
-                  {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
+                    <div className=''> {listProductOptions()} </div>}
+                  <span className='text-danger font-monospace small'>{errors.productsDiscussed}</span>
                 </div>
 
                 <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>

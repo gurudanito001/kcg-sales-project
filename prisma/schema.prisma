@@ -12,7 +12,7 @@ model Company {
   code      String?    @unique @db.VarChar(50)
   name      String     @unique @db.VarChar(50)
   logo      String?    @db.VarChar(255)
-  email     String     @unique @db.VarChar(50)
+  email     String?     @unique @db.VarChar(50)
   address   String?    @db.VarChar(1000)
   brands    String[]
   extraData Json?
@@ -28,13 +28,13 @@ model Branch {
   company      Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId    String
   state        String     @db.VarChar(50)
-  lga          String     @db.VarChar(50)
+  lga          String?     @db.VarChar(50)
   name         String     @db.VarChar(50)
   code         String?    @unique @db.VarChar(255)
   address      String     @db.VarChar(1000)
   isHeadOffice Boolean    @default(false)
   phoneNumber  String?    @db.VarChar(50)
-  email        String     @db.VarChar(50)
+  email        String?     @db.VarChar(50)
   employees    Employee[]
   extraData    Json?
   isActive     Boolean    @default(true)
@@ -180,7 +180,7 @@ model VisitReport {
   customerId          String
   contactPerson       ContactPerson         @relation(fields: [contactPersonId], references: [id], onDelete: Cascade)
   contactPersonId     String
-  callType            String                @db.VarChar(50)
+  callType            String?                @db.VarChar(50)
   status              String                @db.VarChar(50)
   productsDiscussed   String[]
   quantity            String?               @db.VarChar(50)
@@ -317,12 +317,12 @@ model MarkettingActivity {
   activityName String   @db.VarChar(50)
   activityDate String
   participants String?  @db.VarChar(1000)
-  location     String
-  objective    String
-  targetResult String
-  briefReport  String   @db.VarChar(1000)
+  location     String?
+  objective    String?
+  targetResult String?
+  briefReport  String?   @db.VarChar(1000)
   images       String[]
-  costIncurred String   @db.VarChar(50)
+  costIncurred String?   @db.VarChar(50)
   pdfDetails   String?  @db.VarChar(1000)
   approved     Boolean? @default(false)
   extraData    Json?

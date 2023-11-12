@@ -96,13 +96,13 @@ export async function POST(request: Request) {
     let result;
     const json = await request.json();
     // validate data here
-    if(json.logo.startsWith("data:image")){
+    /* if(json.logo.startsWith("data:image")){
       console.log(json.logo)
       result = await uploadImage({ data: json.logo });
       console.log(result)
       json.logo = result.secure_url
     }
-
+ */
 
     let {code, name} = json;
     let codeExists = await prisma.brand.findFirst({ where: {code}})

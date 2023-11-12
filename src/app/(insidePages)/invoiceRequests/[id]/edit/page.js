@@ -10,8 +10,7 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import useGetUserData from "@/hooks/useGetUserData";
-
-
+import formValidator from "@/services/validation";
 
 const EditInvoiceRequest = () => {
   const params = useParams();
@@ -284,7 +283,11 @@ const EditInvoiceRequest = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    //return console.log(formData)
+    console.log(formData);
+    let errors = formValidator(["customerType", "pfiRequestFormId", "invoiceName", "contactOfficeTelephone", "emailAddress", "salesThru", "industry", "industry", "brandId", "productId", "vehicleModelDetails", "quantity", "color", "totalInvoiceValuePerVehicle", "deliveredBy", "paymentStatus"], formData);    
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()       
   }
 
@@ -305,6 +308,7 @@ const EditInvoiceRequest = () => {
               <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Invoice Request Details</h5>
               <form>
               <div className="pb-3">
+                  <label htmlFor="discount" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
                   <Autocomplete
                     value={value}
                     size="small"
@@ -329,6 +333,7 @@ const EditInvoiceRequest = () => {
                     style={{fontSize: "14px"}}
                     renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
                   />
+                  <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
                 </div>
 
                 <div className="mb-3">
@@ -338,6 +343,7 @@ const EditInvoiceRequest = () => {
                     <option value="existing customer">Existing Customer</option>
                     <option value="new customer">New Customer</option>
                   </select>
+                  <span className='text-danger font-monospace small'>{errors.customerType}</span>
                 </div>
 
                 <div className="mb-3">
@@ -347,7 +353,7 @@ const EditInvoiceRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="address" className="form-label">Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="address" className="form-label">Address</label>
                   <textarea className="form-control shadow-none" value={formData.address} onChange={handleChange("address")} id="address" rows={3}></textarea>
                   <span className='text-danger font-monospace small'>{errors.address}</span>
                 </div>
@@ -437,7 +443,7 @@ const EditInvoiceRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="color" className="form-label">Colour  (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="color" className="form-label">Colour (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" value={formData.color} onChange={handleChange("color")} id="color" placeholder="Color of Vehicles" />
                   <span className='text-danger font-monospace small'>{errors.color}</span>
                 </div>
@@ -461,7 +467,7 @@ const EditInvoiceRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="registration" className="form-label">Registration (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="registration" className="form-label">Registration</label>
                   <div className='d-flex align-items-center'>
                     <select className="form-select shadow-none" value={formData.registration} onChange={handleChange("registration")} id="registration" aria-label="Default select example">
                       <option value="">Select Registration Type</option>
@@ -497,7 +503,7 @@ const EditInvoiceRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="servicePackageDetails" className="form-label">Service Package Details (if given) (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="servicePackageDetails" className="form-label">Service Package Details (if given)</label>
                   <textarea className="form-control" value={formData.servicePackageDetails} onChange={handleChange("servicePackageDetails")} id="servicePackageDetails"></textarea>
                   <span className='text-danger font-monospace small'>{errors.servicePackageDetails}</span>
                 </div>
@@ -518,7 +524,7 @@ const EditInvoiceRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="deliveryLocation" className="form-label">Delivery Location</label>
                   <textarea className="form-control" value={formData.deliveryLocation} onChange={handleChange("deliveryLocation")} id="deliveryLocation"></textarea>
                   <span className='text-danger font-monospace small'>{errors.deliveryLocation}</span>
                 </div>

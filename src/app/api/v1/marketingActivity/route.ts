@@ -96,16 +96,6 @@ export async function POST(request: Request) {
 
 
     const json = await request.json();
-    // validate data here
-    if(json.images.length > 0){
-      let imagesUrls = await Promise.all(
-        json.images.map(async (base64Img: any) => {
-          let image = await uploadImage({data: base64Img.uri});
-          return image.secure_url;
-        })
-      )
-      json.images = imagesUrls;
-    }
     const data = await prisma.markettingActivity.create({
       data: json,
     });

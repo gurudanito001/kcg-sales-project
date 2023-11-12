@@ -7,6 +7,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 //import formValidator from '../../../services/validation';
 import { useRouter } from "next/navigation";
+import formValidator from "@/services/validation";
 
 const AddProductPrice = () =>{
   const dispatchMessage = useDispatchMessage();
@@ -21,20 +22,7 @@ const AddProductPrice = () =>{
     validFrom: "",
     validTill: ""
   })
-
-  const clearState = () =>{
-    setFormData( prevState => ({
-      ...prevState,
-      brandId: "",
-      productId: "",
-      unitPrice: "",
-      promoPrice: "",
-      anyPromo: false,
-      promoText: "",
-      validFrom: "",
-      validTill: ""
-    }))
-  }
+  const [errors, setErrors] = useState({});
 
   useEffect(()=>{
     if(!formData.anyPromo){
@@ -122,6 +110,10 @@ const AddProductPrice = () =>{
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(formData)
+    let errors = formValidator(["brandId", "productId", "unitPrice"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
   return (
@@ -144,7 +136,7 @@ const AddProductPrice = () =>{
                       <option value="">Select Brand</option>
                       {!brandsQuery.isLoading && listBrandOptions()}
                     </select>
-                    {/* <span className='text-danger font-monospace small'>{errors.brandId}</span> */}
+                    <span className='text-danger font-monospace small'>{errors.brandId}</span>
                   </div>
 
                   <div className="mb-3">
@@ -153,12 +145,13 @@ const AddProductPrice = () =>{
                       <option value="">Select Product</option>
                       {!productsQuery.isLoading && listProductOptions()}
                     </select>
-                    {/* <span className='text-danger font-monospace small'>{errors.brandId}</span> */}
+                    <span className='text-danger font-monospace small'>{errors.productId}</span>
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="unitPrice" className="form-label">Unit Price</label>
+                    <label htmlFor="unitPrice" className="form-label">Unit Price (<span className='fst-italic text-warning'>required</span>)</label>
                     <input type="text" className="form-control" id="unitPrice" value={formData.unitPrice} onChange={handleChange("unitPrice")}  />
+                    <span className='text-danger font-monospace small'>{errors.unitPrice}</span>
                   </div>
 
                   <div className="form-check form-switch mb-3">

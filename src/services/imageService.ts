@@ -1,4 +1,5 @@
 const cloudinary = require('cloudinary').v2;
+import { put } from "@vercel/blob";
 
 
 // Configuration 
@@ -65,6 +66,15 @@ export const getAssetInfo = async (publicId: string) => {
       console.error(error);
   }
 };
+
+export const uploadToVercel = async (filename: string, file: any) =>{
+ 
+  const blob = await put(filename, file, {
+    access: 'public',
+  });
+ 
+  return blob
+}
 
 
 

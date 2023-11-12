@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
+import formValidator from "@/services/validation";
 
 const EditCompany = () =>{
   const params = useParams();
@@ -49,6 +50,21 @@ const EditCompany = () =>{
     logo: "",
     brands: []
   })
+
+  const [errors, setErrors] = useState({});
+
+  const [ imageUrl, setImageUrl] = useState("");
+  const [isSendingImage, setIsSendingImage] = useState(false);
+  const inputFileRef = useRef(null);
+
+  const createImageUrl = () =>{
+    const file = inputFileRef.current.files[0];
+    if(file){
+      setImageUrl(URL.createObjectURL(file));
+    }else{
+      setImageUrl("")
+    }
+  }
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
@@ -103,43 +119,6 @@ const EditCompany = () =>{
     )
   }
 
-
-  const [ selectedFile, setSelectedFile] = useState("");
-  const [ imageUrl, setImageUrl] = useState("");
-  const [ base64Image, setBase64Image ] = useState("");
-
-  useEffect(()=>{
-    if(base64Image){
-      setFormData( prevState => ({
-        ...prevState,
-        logo: base64Image
-      }))
-    }
-  }, [base64Image])
-
-  
-
-  const uploadImage = (event) => {
-    const file = event.target.files[0];
-    if(file){
-      Compress.imageFileResizer(
-        file, // the file from input
-        120, // width
-        120, // height
-        "PNG", // compress format WEBP, JPEG, PNG
-        80, // quality
-        0, // rotation
-        (uri) => {
-          setBase64Image(uri)
-        },
-        "base64" // blob or base64 default base64
-      );
-      setSelectedFile(file);
-      setImageUrl(URL.createObjectURL(file));
-    }
-  }
-
-
   const handleChange = (prop) => (event) => {
     setFormData(prevState => ({
       ...prevState,
@@ -149,7 +128,7 @@ const EditCompany = () =>{
 
   const queryClient = useQueryClient();
   const {isLoading, mutate} = useMutation({
-    mutationFn: ()=>apiPatch({ url: `/company/${id}`, data: formData})
+    mutationFn: (data)=>apiPatch({ url: `/company/${id}`, data})
     .then( res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
@@ -162,10 +141,37 @@ const EditCompany = () =>{
     }),
   })
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    //console.log(formData)
-    mutate()
+    let errors = formValidator(["name", "logo"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
+    if (!inputFileRef.current?.files.length) {
+      return mutate(formData);
+    }
+    console.log(inputFileRef.current?.files)
+    const file = inputFileRef.current.files[0];
+    setIsSendingImage(true)
+    const image = await postImage(file.name, file)
+    setIsSendingImage(false)
+    let data = {...formData};
+    data.logo = image;
+    console.log(data)
+    mutate(data);
+  }
+
+  const postImage = async (filename, file) =>{
+    const response = await fetch(
+      `/api/v1/uploadImages?filename=${filename}`,
+      {
+        method: 'POST',
+        body: file,
+      },
+    );
+    const newBlob = await response.json();
+    console.log(newBlob.url);
+    return newBlob.url
   }
 
   
@@ -185,28 +191,33 @@ const EditCompany = () =>{
                 <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Company Details</h5>
                 <form>
                   <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Company Name</label>
+                    <label htmlFor="name" className="form-label">Company Name (<span className='fst-italic text-warning'>required</span>)</label>
                     <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange("name")}/>
+                    <span className="text-danger font-monospace small">{errors?.name}</span>
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="code" className="form-label">Company Code</label>
                     <input type="text" className="form-control" id="code" value={formData.code} onChange={handleChange("code")}  />
+                    <span className="text-danger font-monospace small">{errors?.code}</span>
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email</label>
                     <input type="email" className="form-control"  id="email" value={formData.email} onChange={handleChange("email")}  />
+                    <span className="text-danger font-monospace small">{errors?.email}</span>
                   </div>
 
                   <div className="mb-3">
                     <label htmlFor="address" className="form-label">Address</label>
                     <textarea className="form-control" id="address" rows={4} value={formData.address} onChange={handleChange("address")}></textarea>
+                    <span className="text-danger font-monospace small">{errors?.address}</span>
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="companyLogo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
-                    <input className="form-control" id="companyLogo" accept="image/*" type="file" onChange={uploadImage} />
+                    <label htmlFor="logo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
+                    <input className="form-control" id="companyLogo" accept="image/*" onChange={createImageUrl} ref={inputFileRef} type="file"/>
+                    <span className="text-danger font-monospace small">{errors?.logo}</span>
                     {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
                     {(imageUrl || formData.logo) &&
                       <div>
@@ -216,14 +227,14 @@ const EditCompany = () =>{
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="brands" className="form-label">Brands (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="brands" className="form-label">Brands</label>
                     {!brandsQuery.isLoading && !brandsQuery.isError &&
                       <div className='d-flex'> {listBrands()} </div>}
-                      {/* <span className='text-danger font-monospace small'>{errors.brands}</span> */}
+                      <span className="text-danger font-monospace small">{errors?.brands}</span>
                   </div>
 
                   <div className="mt-5">
-                    <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                    <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || isSendingImage} onClick={handleSubmit}>{(isLoading || isSendingImage) ? "Loading..." : "Submit"}</button>
                     <a className="btn btn-outline-primary px-5 py-2 ms-3" href="/companies">Cancel</a>
                   </div>
                 </form>

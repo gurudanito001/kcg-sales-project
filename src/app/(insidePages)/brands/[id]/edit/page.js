@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiPatch, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useParams } from 'next/navigation';
 import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
-//import formValidator from '../../../services/validation';
+import formValidator from "@/services/validation";
 
 const EditBrand = () =>{
   const params = useParams();
@@ -22,6 +22,11 @@ const EditBrand = () =>{
     description: "",
     logo: ""
   })
+  const [errors, setErrors] = useState({});
+
+  const [ imageUrl, setImageUrl] = useState("");
+  const [isSendingImage, setIsSendingImage] = useState(false);
+  const inputFileRef = useRef(null);
 
   const {data, isFetching} = useQuery({
     queryKey: ["allBrands", id],
@@ -48,22 +53,8 @@ const EditBrand = () =>{
     }
   }, [data])
 
-  const [ selectedFile, setSelectedFile] = useState("");
-  const [ imageUrl, setImageUrl] = useState("");
-  const [ base64Image, setBase64Image ] = useState("");
 
-  useEffect(()=>{
-    if(base64Image){
-      setFormData( prevState => ({
-        ...prevState,
-        logo: base64Image
-      }))
-    }
-  }, [base64Image])
-
-  
-
-  const uploadImage = (event) => {
+/*   const uploadImage = (event) => {
     const file = event.target.files[0];
     if(file){
       Compress.imageFileResizer(
@@ -81,16 +72,15 @@ const EditBrand = () =>{
       setSelectedFile(file);
       setImageUrl(URL.createObjectURL(file));
     }
-  }
-
-  useEffect(()=>{
-    if(base64Image){
-      setFormData( prevState => ({
-        ...prevState,
-        logo: base64Image
-      }))
+  } */
+  const createImageUrl = () =>{
+    const file = inputFileRef.current.files[0];
+    if(file){
+      setImageUrl(URL.createObjectURL(file));
+    }else{
+      setImageUrl("")
     }
-  }, [base64Image])
+  }
 
   const handleChange = (prop) => (event) => {
     setFormData(prevState => ({
@@ -102,7 +92,7 @@ const EditBrand = () =>{
 
   const queryClient = useQueryClient();
   const {isLoading, mutate} = useMutation({
-    mutationFn: ()=>apiPatch({ url: `/brand/${id}`, data: formData})
+    mutationFn: (data)=>apiPatch({ url: `/brand/${id}`, data})
     .then( res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
@@ -115,11 +105,40 @@ const EditBrand = () =>{
     }),
   })
 
-  const handleSubmit = (event) => {
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(formData, base64Image)
-    mutate()
+    let errors = formValidator(["name", "logo"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
+    if (!inputFileRef.current?.files.length) {
+      return mutate(formData);
+    }
+    console.log(inputFileRef.current?.files)
+    const file = inputFileRef.current.files[0];
+    setIsSendingImage(true)
+    const image = await postImage(file.name, file)
+    setIsSendingImage(false)
+    let data = {...formData};
+    data.logo = image;
+    console.log(data)
+    mutate(data);
   }
+
+  const postImage = async (filename, file) =>{
+    const response = await fetch(
+      `/api/v1/uploadImages?filename=${filename}`,
+      {
+        method: 'POST',
+        body: file,
+      },
+    );
+    const newBlob = await response.json();
+    console.log(newBlob.url);
+    return newBlob.url
+  }
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -137,6 +156,7 @@ const EditBrand = () =>{
                   <div className="mb-3">
                     <label htmlFor="name" className="form-label">Brand Name</label>
                     <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange("name")}/>
+                    <span className='text-danger font-monospace small'>{errors.name}</span>
                   </div>
 
                   <div className="mb-3">
@@ -151,16 +171,18 @@ const EditBrand = () =>{
 
                   <div className="mb-3">
                     <label htmlFor="logo" className="form-label">Brand Logo (<span className='fst-italic text-warning'>required</span>)</label>
-                    <input className="form-control" id="logo" accept="image/*" type="file" onChange={uploadImage} />
-                    {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
-                    {(formData.logo || imageUrl) &&
+                    <input className="form-control" id="logo" accept="image/*" onChange={createImageUrl} ref={inputFileRef} type="file"/>
+                    <span className='text-danger font-monospace small'>{errors.logo}</span>
+                    {(imageUrl || formData.logo) &&
                       <div>
                         <h6 className='small fw-bold mt-3'>Logo Preview</h6>
-                        <img src={formData.logo || imageUrl} alt="Logo Preview" className='border rounded' width="100px" />
+                        <img src={imageUrl || formData.logo} alt="Logo Preview" className='border rounded' width="100px" />
                       </div>}
                   </div>
 
-                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+                  
+
+                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={(isSendingImage || isLoading)} onClick={handleSubmit}>{(isSendingImage || isLoading) ? "Loading..." : "Submit"}</button>
                 </form>
               </div>
             </div>

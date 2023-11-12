@@ -13,6 +13,7 @@ import { useParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
 import ConfirmationModal from "@/components/confirmationModal";
+import { Modal, ClickAwayListener } from "@mui/material";
 
 
 const DataListItem = ({title, value}) => {
@@ -67,6 +68,10 @@ const MarketingActivityDetails = () => {
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
   const {data, isFetching} = useQuery({
     queryKey: ["allMarketingActivities", id],
     queryFn: () => apiGet({ url: `/marketingActivity/${id}`})
@@ -96,8 +101,39 @@ const MarketingActivityDetails = () => {
 
   const listImages = () => {
     return data.images.map(image => {
-      return <img key={image} src={image} height="150px" className="p-3 rounded-3" alt="Product Image" />
+      return <img key={image} src={image} onClick={handleOpen} style={{cursor: "pointer"}} height="150px" className="p-3 rounded-3" alt="Product Image" />
     })
+  }
+
+
+  const listCarouselImages = () =>{
+    if(data?.images){
+      return data?.images.map ((image, index) =>{
+        return (
+          <div key={image} className={`carousel-item ${index === 0 && "active"}`}>
+            <img src={image} className="d-block w-100" alt="carousel image" />
+          </div>
+        )
+      })
+    }
+  }
+
+  const listCarouselButtons = () =>{
+    if(data?.images){
+      return data?.images.map ((image, index) =>{
+        return(
+          <button
+            key={image}
+            type="button"
+            data-bs-target="#carouselExampleIndicators"
+            data-bs-slide-to={index}
+            className={`${index === 0 && "active"}`}
+            aria-current={`${index === 0 && "true"}`}
+            aria-label={`Slide ${index}`}
+          />
+        )
+      })
+    }
   }
 
 
@@ -214,6 +250,48 @@ const MarketingActivityDetails = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <div className="row d-flex h-100">
+          <ClickAwayListener onClickAway={handleClose}>
+            <div className="col-12 col-md-8 col-lg-6 m-auto">
+              <div id="carouselExampleIndicators" className="carousel slide">
+                <div className="carousel-indicators">
+                  {listCarouselButtons()}
+                </div>
+                <div className="carousel-inner">
+                  {listCarouselImages()}
+                </div>
+                <button
+                  className="carousel-control-prev"
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="prev"
+                >
+                  <span className="carousel-control-prev-icon" aria-hidden="true" />
+                  <span className="visually-hidden">Previous</span>
+                </button>
+                <button
+                  className="carousel-control-next"
+                  type="button"
+                  data-bs-target="#carouselExampleIndicators"
+                  data-bs-slide="next"
+                >
+                  <span className="carousel-control-next-icon" aria-hidden="true" />
+                  <span className="visually-hidden">Next</span>
+                </button>
+              </div>
+
+            </div>
+          </ClickAwayListener>
+          
+        </div>
+      </Modal>
 
       <ConfirmationModal title="Delete Marketing Activity" message="Are you sure your want to delete this marketing activity? This action cannot be reversed." isLoading={marketingActivityMutation.isLoading} onSubmit={marketingActivityMutation.mutate} id="deleteMarketingActivity" btnColor="danger" />
     </div>

@@ -5,11 +5,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
-import Compress from "react-image-file-resizer";
-//import formValidator from '../../../services/validation';
 import formatAsCurrency from '@/services/formatAsCurrency';
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
+import formValidator from "@/services/validation";
 
 
 const AddPfiRequest = () => {
@@ -244,7 +243,11 @@ const AddPfiRequest = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    // return console.log(formData)
+    console.log(formData)
+    let errors = formValidator(["customerType", "companyName", "contactPersonName", "phoneNumber", "emailAddress", "brandId", "productId", "vehicleDetails", "quantity", "pricePerVehicle", "estimatedOrderClosingTime"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
 
@@ -263,11 +266,13 @@ const AddPfiRequest = () => {
               <h5 className="card-title fw-semibold mb-4 opacity-75">Add Pfi Request</h5>
               <form>
                 <div className="mb-3">
+                  <label htmlFor="customerType" className="form-label">Customer Type (<span className='fst-italic text-warning'>required</span>)</label>
                   <select className="form-select shadow-none" id="customerType" onChange={handleChange("customerType")} value={formData.customerType} aria-label="Default select example">
                     <option value="">Select Customer Type</option>
                     <option value="existing customer">Existing Customer</option>
                     <option value="new customer">New Customer</option>
                   </select>
+                  <span className='text-danger font-monospace small'>{errors.customerType}</span>
                 </div>
 
                 <div className="mb-3">
@@ -285,7 +290,7 @@ const AddPfiRequest = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="companyAddress" className="form-label">Company Address (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="companyAddress" className="form-label">Company Address</label>
                   <textarea className="form-control shadow-none" value={formData.companyAddress} onChange={handleChange("companyAddress")} id="companyAddress" rows={3}></textarea>
                   <span className='text-danger font-monospace small'>{errors.companyAddress}</span>
                 </div>
@@ -301,7 +306,7 @@ const AddPfiRequest = () => {
                       <input type="text" className="form-control shadow-none" value={formData.contactPersonName} onChange={handleChange("contactPersonName")} id="contactPersonName" placeholder="Firstname Lastname" />
                     }
                   </div>
-                  <span className='text-danger font-monospace small'>{errors.contactPerson}</span>
+                  <span className='text-danger font-monospace small'>{errors.contactPersonName}</span>
                 </div>
 
                 <div className="mb-3">
@@ -433,6 +438,7 @@ const AddPfiRequest = () => {
                 <div className="mb-3">
                   <label htmlFor="estimatedOrderClosingTime" className="form-label">Estimated Order Closing Time (No of Days) (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control shadow-none" value={formData.estimatedOrderClosingTime} onChange={handleChange("estimatedOrderClosingTime")} id="estimatedOrderClosingTime" placeholder="Estimated Order Closing Time" />
+                  <span className='text-danger font-monospace small'>{errors.estimatedOrderClosingTime}</span>
                 </div>
 
                 <div className="mb-3">

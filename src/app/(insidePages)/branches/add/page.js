@@ -7,6 +7,7 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import NaijaStates from 'naija-state-local-government';
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import formValidator from "@/services/validation";
 
 const AddBranch = () =>{
   const dispatchMessage = useDispatchMessage();
@@ -24,6 +25,7 @@ const AddBranch = () =>{
     phoneNumber: "",
     address: "",
   })
+  const [errors, setErrors] = useState({});
 
   useEffect(()=>{
     setFormData( prevState =>({
@@ -57,7 +59,6 @@ const AddBranch = () =>{
     }
   }
 
-  const [errors, setErrors] = useState({})
 
   const listCompanyOptions = () =>{
     if(companyQuery?.data?.length){
@@ -105,6 +106,10 @@ const AddBranch = () =>{
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log(formData)
+    let errors = formValidator(["companyId", "name"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
     mutate()
   }
   return (
@@ -127,12 +132,14 @@ const AddBranch = () =>{
                       <option value="">Select Company</option>
                       {!companyQuery.isLoading && listCompanyOptions()}
                     </select>
-                    {/* <span className='text-danger font-monospace small'>{errors.companyId}</span> */}
+                    <span className='text-danger font-monospace small'>{errors.companyId}</span>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Branch Name</label>
+                    <label htmlFor="name" className="form-label">Branch Name (<span className='fst-italic text-warning'>required</span>)</label>
                     <input type="text" className="form-control" id="name" value={formData.name} onChange={handleChange("name")}/>
+                    <span className='text-danger font-monospace small'>{errors.name}</span>
                   </div>
+
 
                   <div className="mb-3">
                     <label htmlFor="code" className="form-label">Branch Code</label>
@@ -155,14 +162,14 @@ const AddBranch = () =>{
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="state" className="form-label">State (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="state" className="form-label">State </label>
                     <select className="form-select shadow-none" value={formData.state} onChange={handleChange("state")} id="state" aria-label="Default select example">
                       <option value="">Select State</option>
                       {listStateOptions()}
                     </select>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="lgaId" className="form-label">Local Govt Area (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="lgaId" className="form-label">Local Govt Area</label>
                     <select className="form-select shadow-none" value={formData.lga} onChange={handleChange("lga")} id="lga" aria-label="Default select example">
                       <option value="">Select LGA</option>
                       {listLgaOptions(formData.state)}

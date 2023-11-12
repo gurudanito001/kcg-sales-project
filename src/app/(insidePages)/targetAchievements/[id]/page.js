@@ -8,6 +8,7 @@ import Skeleton from '@mui/material/Skeleton';
 import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
+import formatMonth from '@/services/formatMonth';
 
 
 const DataListItem = ({title, value}) => {
@@ -60,8 +61,8 @@ const MonthlyTargetDetails = () => {
   const tokenData = getDecodedToken()
  
   const {data, isFetching} = useQuery({
-    queryKey: ["allCompanies", id],
-    queryFn: () => apiGet({ url: `/company/${id}`})
+    queryKey: ["allTargets", id],
+    queryFn: () => apiGet({ url: `/monthlyTarget/${id}`})
     .then(res =>{
       console.log(res.data)
       //dispatchMessage({ message: res.message})
@@ -74,17 +75,6 @@ const MonthlyTargetDetails = () => {
     })
   }) 
 
-  const listCompanyBrands = () =>{
-    let brands = ""
-    data.brands.forEach( brand => {
-      if(brands === ""){
-        brands += `${brand}`
-      }else{
-        brands += ` | ${brand}`
-      }
-    })
-    return brands;
-  }
 
   return (
     <div className="container-fluid">
@@ -95,31 +85,22 @@ const MonthlyTargetDetails = () => {
       </header>
 
 
-      {/* <div className="row">
+      <div className="row">
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Company Details</h5>
-
+              <h5 className="card-title fw-semibold mb-4 opacity-75">Monthly Target Details</h5>
               {data ?
                 <>
-                  <div className="mb-3 d-flex flex-column flex-sm-row align-items-sm-center">
-                    <h6 className="m-0 me-3">Company Logo</h6>
-                    <img src={data.logo} height={40} alt="Company Logo" />
-                  </div>
-                  <DataListItem title="Company Name" value={data.name} />
-                  <DataListItem title="Company Code" value={data.code} />
-                  <DataListItem title="Email" value={data.email} />
-                  <DataListItem title="Address" value={data.address} />
-                  <DataListItem title="Brands" value={listCompanyBrands(data.brands)} />
+                  <DataListItem title="Month" value={`${formatMonth(new Date(data.month).getMonth())} ${new Date(data.month).getFullYear()}`} />
+                  <DataListItem title="Target" value={data.target} />
                 </> :
                 <LoadingFallBack />
-
               }
             </div>
           </div>
         </div>
-      </div> */}
+      </div>
     </div>
   )
 }

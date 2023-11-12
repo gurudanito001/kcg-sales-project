@@ -1,14 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiPost, apiGet } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Compress from "react-image-file-resizer";
 import { useSelector } from "react-redux";
-//import formValidator from '../../../services/validation';
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
+import generateRandomId from "@/services/generateRandomId";
+import formValidator from "@/services/validation";
 
 
 const AddMarketingActivity = () => {
@@ -29,34 +30,12 @@ const AddMarketingActivity = () => {
     pdfDetails: ""
   })
 
-  const clearState = () =>{
-    setFormData( prevState => ({
-      ...prevState,
-      activityName: "",
-      activityDate: "",
-      participants: "",
-      location: "",
-      objective: "",
-      targetResult: "",
-      briefReport: "",
-      images: [],
-      costIncurred: "",
-      pdfDetails: ""
-    }))
-  }
+  const [errors, setErrors] = useState({});
 
-  const [selectedFile, setSelectedFile] = useState("");
+  const [isSendingImage, setIsSendingImage] = useState(false);
+  const inputFileRef = useRef(null);
   const [imageUrls, setImageUrls] = useState([]);
-  const [base64Images, setBase64Images] = useState([]);
 
-  useEffect(() => {
-    if (base64Images) {
-      setFormData(prevState => ({
-        ...prevState,
-        images: base64Images
-      }))
-    }
-  }, [base64Images])
 
   useEffect(()=>{
     setFormData( prevState =>({
@@ -65,49 +44,24 @@ const AddMarketingActivity = () => {
     }))
   },[userData])
 
-
-  const uploadImage = (event) => {
-    let id = new Date().getTime();
-    const file = event.target.files[0];
-    if (file) {
-      Compress.imageFileResizer(
-        file, // the file from input
-        120, // width
-        120, // height
-        "PNG", // compress format WEBP, JPEG, PNG
-        80, // quality
-        0, // rotation
-        (uri) => {
-          let images = base64Images;
-          images.push({ id, uri })
-          setBase64Images(images)
-        },
-        "base64" // blob or base64 default base64
-      );
-      setSelectedFile(file);
-      let urls = imageUrls;
-      urls.push({ id, url: URL.createObjectURL(file) })
-      setImageUrls(urls);
+  const createImageUrls = () =>{
+    const files = inputFileRef.current.files;
+    if(files.length){
+      const filesArray = Array.from(files);
+      let urls = [];
+      filesArray.forEach( file =>{
+        urls.push({ id: generateRandomId(24), url: URL.createObjectURL(file) })
+        setImageUrls(urls);
+      })
+    }else{
+      setImageUrls([])
     }
   }
 
-  const deleteImage = (id) => (e) => {
-    e.preventDefault();
-    let base64ImageList = base64Images;
-    base64ImageList = base64ImageList.filter(function (item) { return id !== item.id });
-    setBase64Images(base64ImageList);
-
-    let imageUrlList = imageUrls;
-    imageUrlList = imageUrlList.filter(function (item) { return id !== item.id });
-    setImageUrls(imageUrlList);
-  }
-
-  const listImages = ()=>{
-    if(imageUrls.length > 0){
-      return imageUrls.map( (img) => <li key={img.id} className='m-2 d-flex align-items-start'>
+  const listImages = () => {
+    if (imageUrls.length > 0) {
+      return imageUrls.map((img) => <li key={img.id} className='m-2 d-flex align-items-start'>
         <img src={img.url} alt="Product Image" width="200px" />
-        <button onClick={deleteImage(img.id)} style={{ width: "20px", height: "20px", borderRadius: "14px", background: "rgba(0, 0, 0, 0.693)", position: "relative", top: "-15px", left: "-8px"}} 
-        className='btn d-flex align-items-center justify-content-center text-white'><i className="fa-solid fa-xmark"></i></button>
       </li>)
     }
   }
@@ -122,7 +76,7 @@ const AddMarketingActivity = () => {
 
   const queryClient = useQueryClient();
   const { isLoading, mutate } = useMutation({
-    mutationFn: () => apiPost({ url: "/marketingActivity", data: formData })
+    mutationFn: (data) => apiPost({ url: "/marketingActivity", data })
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
@@ -135,11 +89,43 @@ const AddMarketingActivity = () => {
       }),
   })
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log(formData)
-    mutate()
+    let errors = formValidator(["activityName", "activityDate", "participants"], formData);
+    if(Object.keys(errors).length){
+      return setErrors(errors);
+    }
+    if (!inputFileRef.current?.files.length) {
+      return dispatchMessage({ severity: "error", message: "No Images Selected" });
+    }
+    console.log(inputFileRef.current?.files);
+    const files = inputFileRef.current.files;
+    const filesArray = Array.from(files);
+    setIsSendingImage(true)
+    const allImages = await Promise.all(
+      filesArray.map( async file => await postImage(file.name, file))
+    )
+    
+    setIsSendingImage(false)
+    let data = {...formData};
+    data.images = allImages
+    mutate(data);
   }
+
+  const postImage = async (filename, file) =>{
+    const response = await fetch(
+      `/api/v1/uploadImages?filename=${filename}`,
+      {
+        method: 'POST',
+        body: file,
+      },
+    );
+    const newBlob = await response.json();
+    console.log(newBlob.url);
+    return newBlob.url
+  }
+
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
@@ -155,18 +141,21 @@ const AddMarketingActivity = () => {
               <h5 className="card-title fw-semibold mb-4 opacity-75">Add Marketing Activity</h5>
               <form>
                 <div className="mb-3">
-                  <label htmlFor="activityName" className="form-label">Activity Name</label>
+                  <label htmlFor="activityName" className="form-label">Activity Name (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="text" className="form-control" id="activityName" value={formData.activityName} onChange={handleChange("activityName")} />
+                  <span className='text-danger font-monospace small'>{errors.activityName}</span>
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="activityDate" className="form-label">Activity Date</label>
+                  <label htmlFor="activityDate" className="form-label">Activity Date (<span className='fst-italic text-warning'>required</span>)</label>
                   <input type="date" className="form-control" id="activityDate" value={formData.activityDate} onChange={handleChange("activityDate")} />
+                  <span className='text-danger font-monospace small'>{errors.activityDate}</span>
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="participants" className="form-label">Participants</label>
+                  <label htmlFor="participants" className="form-label">Participants (<span className='fst-italic text-warning'>required</span>)</label>
                   <textarea rows={4} className="form-control" id="participants" value={formData.participants} onChange={handleChange("participants")}></textarea>
+                  <span className='text-danger font-monospace small'>{errors.participants}</span>
                 </div>
 
                 <div className="mb-3">
@@ -195,9 +184,9 @@ const AddMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="images" className="form-label"> Images  (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input className="form-control" id="images" accept="image/*" type="file" onChange={uploadImage} />
-                  {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
+                  <label htmlFor="images" className="form-label"> Images (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple/>
+                  <span className='text-danger font-monospace small'>{errors.images}</span>
                   {imageUrls.length > 0 &&
                     <div>
                       <h6 className='small fw-bold mt-3'>Images</h6>
@@ -206,7 +195,8 @@ const AddMarketingActivity = () => {
                       </div>
                     </div>}
                 </div>
-                <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>
+
+                <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isSendingImage || isLoading} onClick={handleSubmit}>{(isSendingImage || isLoading) ? "Loading..." : "Submit"}</button>
               </form>
             </div>
           </div>
