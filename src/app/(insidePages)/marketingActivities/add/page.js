@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
 import generateRandomId from "@/services/generateRandomId";
 import formValidator from "@/services/validation";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 
 const AddMarketingActivity = () => {
@@ -26,6 +27,7 @@ const AddMarketingActivity = () => {
     targetResult: "",
     briefReport: "",
     images: [],
+    documents: [],
     costIncurred: "",
     pdfDetails: ""
   })
@@ -34,6 +36,7 @@ const AddMarketingActivity = () => {
 
   const [isSendingImage, setIsSendingImage] = useState(false);
   const inputFileRef = useRef(null);
+  const documentFileRef = useRef(null);
   const [imageUrls, setImageUrls] = useState([]);
 
 
@@ -67,6 +70,10 @@ const AddMarketingActivity = () => {
   }
 
   const handleChange = (prop) => (event) => {
+    const onlyNumbersRegex = new RegExp("^[0-9]*$");
+    if((prop === "costIncurred") && !onlyNumbersRegex.exec(event.target.value)){
+      return;
+    }
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value
@@ -103,12 +110,23 @@ const AddMarketingActivity = () => {
     const filesArray = Array.from(files);
     setIsSendingImage(true)
     const allImages = await Promise.all(
-      filesArray.map( async file => await postImage(file.name, file))
+      filesArray.map( async file => await postImage(file.name.replaceAll(" ", "-"), file))
     )
+
+    let allFiles = []
+    if (documentFileRef.current?.files.length) {
+      const files = documentFileRef.current.files;
+      const filesArray = Array.from(files);
+      allFiles = await Promise.all(
+        filesArray.map( async file => await postImage(file.name.replaceAll(" ", "-"), file))
+      )
+    }
     
     setIsSendingImage(false)
     let data = {...formData};
-    data.images = allImages
+    data.images = allImages;
+    data.documents = allFiles;
+    console.log(data);
     mutate(data);
   }
 
@@ -179,7 +197,7 @@ const AddMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="costIncurred" className="form-label">Cost Incurred</label>
+                  <label htmlFor="costIncurred" className="form-label">Cost Incurred <span className='ms-3 fw-bold'>{formatAsCurrency(formData.costIncurred)}</span></label>
                   <input type="text" className="form-control" id="costIncurred" value={formData.costIncurred} onChange={handleChange("costIncurred")} />
                 </div>
 
@@ -194,6 +212,11 @@ const AddMarketingActivity = () => {
                         {listImages()}
                       </div>
                     </div>}
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="documents" className="form-label">Brochures</label>
+                  <input className="form-control" id="brochures" accept=".pdf, .xlsx, .docx"  ref={documentFileRef} type="file" multiple/>
                 </div>
 
                 <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isSendingImage || isLoading} onClick={handleSubmit}>{(isSendingImage || isLoading) ? "Loading..." : "Submit"}</button>

@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const LoadingFallBack = () =>{
   return (
@@ -51,10 +52,12 @@ const Companies = () =>{
 
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
+  const { userData } = useGetUserData();
 
   const [formData, setFormData] = useState({
     code: "",
     name: "",
+    isActive: ""
   })
 
   const [listMetaData, setListMetaData] = useState({
@@ -88,6 +91,15 @@ const Companies = () =>{
   const [queryUrlString, setQueryUrlString] = useState("")
 
   const handleChange = (props) => (event) => {
+    if (props === "isActive") {
+      setFormData(prevState => ({
+        ...prevState,
+        [props]: !prevState[props]
+      }))
+      return
+    }
+
+
     setFormData(prevState => ({
       ...prevState,
       [props]: event.target.value
@@ -132,7 +144,7 @@ const Companies = () =>{
 
   const listCompanies = () =>{
     return data.map( (item, index) => {
-      const {id, name, code, address, logo, email, _count} = item;
+      const {id, name, code, address, logo, email, _count, isActive} = item;
       return( 
         <tr key={id} className="hover" >
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -155,6 +167,9 @@ const Companies = () =>{
           </td>
           <td className="border-bottom-0">
             <p className="small mb-0 d-flex flex-wrap" style={{maxWidth: "200px"}}>{clipLongText(address)}</p>
+          </td>
+          <td className="border-bottom-0">
+            <p className="small mb-0">{isActive ? "Yes" : "No"}</p>
           </td>
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/companies/${id}/edit`}>Edit</a>
@@ -199,6 +214,15 @@ const Companies = () =>{
               <input type="text" className="form-control shadow-none" id="name" value={formData.name} onChange={handleChange("name")}/>
             </div>
 
+            {(userData?.staffCadre?.includes("admin")) &&
+              <div className="form-check m-3">
+                <input className="form-check-input shadow-none" type="checkbox" checked={formData.isActive} onChange={handleChange("isActive")} id="isActive" />
+                <label className="form-check-label h6" htmlFor="isActive">
+                  Only Active
+                </label>
+              </div>
+            }
+
             <div className="d-flex col-12 align-items-center mt-5">
               <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
               <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
@@ -234,6 +258,9 @@ const Companies = () =>{
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Address</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">is Active?</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>

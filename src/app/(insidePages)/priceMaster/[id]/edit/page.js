@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import formValidator from "@/services/validation";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const EditPriceMaster = () => {
   const params = useParams();
@@ -33,12 +34,12 @@ const EditPriceMaster = () => {
 
   useEffect(() => {
     if (data) {
-      let { product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill } = data;
+      let { product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill, vatInclusive, vatRate } = data;
       setFormData(prevState => ({
         ...prevState,
         productId: product.id,
         brandId: brand.id,
-        unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill
+        unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill, vatInclusive, vatRate
       }))
     }
   }, [data])
@@ -52,7 +53,9 @@ const EditPriceMaster = () => {
     anyPromo: false,
     promoText: "",
     validFrom: "",
-    validTill: ""
+    validTill: "",
+    vatInclusive: false,
+    vatRate: ""
   })
   const [errors, setErrors] = useState({});
 
@@ -70,7 +73,7 @@ const EditPriceMaster = () => {
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
-    queryFn: () => apiGet({ url: "/brand" })
+    queryFn: () => apiGet({ url: "/brand?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -84,7 +87,7 @@ const EditPriceMaster = () => {
 
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
-    queryFn: () => apiGet({ url: "/product" })
+    queryFn: () => apiGet({ url: "/product?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -117,6 +120,10 @@ const EditPriceMaster = () => {
   }
 
   const handleChange = (prop) => (event) => {
+    const onlyNumbersRegex = new RegExp("^[0-9]*$");
+    if((prop === "unitPrice" || prop === "promoPrice") && !onlyNumbersRegex.exec(event.target.value)){
+      return;
+    }
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value
@@ -183,10 +190,25 @@ const EditPriceMaster = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="unitPrice" className="form-label">Unit Price (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="unitPrice" className="form-label">Unit Price (<span className='fst-italic text-warning'>required</span>)
+                  <span className='ms-3 fw-bold'>{formatAsCurrency(formData.unitPrice)}</span></label>
                   <input type="text" className="form-control" id="unitPrice" value={formData.unitPrice} onChange={handleChange("unitPrice")} />
-                  <span className='text-danger font-monospace small'>{errors.productId}</span>
+                  <span className='text-danger font-monospace small'>{errors.unitPrice}</span>
                 </div>
+
+                <div className="form-check form-switch mb-3">
+                  <input className="form-check-input" type="checkbox" role="switch" checked={formData.vatInclusive} onChange={(e) => setFormData(prevState => ({
+                    ...prevState,
+                    vatInclusive: !prevState.vatInclusive
+                  }))} id="vatInclusive" />
+                  <label className="form-check-label" htmlFor="vatInclusive">Vat Inclusive?</label>
+                </div>
+
+                {formData.vatInclusive &&
+                  <div className="mb-3">
+                    <label htmlFor="vatRate" className="form-label">VAT Rate</label>
+                    <input type="text" className="form-control shadow-none" value={formData.vatRate} onChange={handleChange("vatRate")} id="vatRate" placeholder="VAT Rate" />
+                  </div>} 
 
                 <div className="form-check form-switch mb-3">
                   <input className="form-check-input" type="checkbox" role="switch" checked={formData.anyPromo} onChange={(e) => setFormData(prevState => ({
@@ -199,7 +221,7 @@ const EditPriceMaster = () => {
                 {formData.anyPromo &&
                   <>
                     <div className="mb-3">
-                      <label htmlFor="promoPrice" className="form-label">Promo Price</label>
+                      <label htmlFor="promoPrice" className="form-label">Promo Price <span className='ms-3 fw-bold'>{formatAsCurrency(formData.promoPrice)}</span></label>
                       <input type="text" className="form-control" id="promoPrice" value={formData.promoPrice} onChange={handleChange("promoPrice")} />
                     </div>
 

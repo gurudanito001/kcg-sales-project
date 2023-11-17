@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { uploadImage } from "@/services/imageService";
 import authService from "@/services/authService";
+import generateDeleteResourceMsg from "@/services/generateDeleteResourceMsg";
 
 let modelName = "Product"
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -56,7 +57,7 @@ export async function PATCH(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -67,17 +68,6 @@ export async function PATCH(
 
     const id = params.id;
     let json = await request.json();
-
-    /* if(json?.newImages?.length > 0){
-      let productImagesUrls = await Promise.all(
-        json.newImages.map(async (base64Img: any) => {
-          let image = await uploadImage({data: base64Img.uri});
-          return image.secure_url;
-        })
-      )
-      json.images = [...json.images, ...productImagesUrls];
-    }
-    delete json.newImages; */
     const updatedData = await prisma.product.update({
       where: { id },
       data: json,
@@ -100,7 +90,6 @@ export async function PATCH(
       headers: { "Content-Type": "application/json" },
     });
   }
-
 }
 
 export async function DELETE(
@@ -109,7 +98,7 @@ export async function DELETE(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -119,6 +108,28 @@ export async function DELETE(
 
 
     const id = params.id;
+    const data = await prisma.product.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        _count: { 
+          select: {
+            pfiRequestForms: true,
+            invoiceRequestForms: true
+          }
+        }
+      },
+    });
+    let errorMsg = generateDeleteResourceMsg(data?._count)
+    if(errorMsg){
+      return new NextResponse(JSON.stringify({ message: `${modelName} cannot be deleted. ${errorMsg} are assigned to this ${modelName}`, data: data }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+
     await prisma.product.delete({
       where: { id },
     });

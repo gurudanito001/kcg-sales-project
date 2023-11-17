@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
 
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -26,6 +26,8 @@ export async function GET(request: Request) {
     let staffCadre : any = searchParams.get('staffCadre');
     const firstName = searchParams.get('firstName');
     const lastName = searchParams.get('lastName');
+    const isActive = searchParams.get("isActive");
+    
 
     if(staffCadre === "admin"){
       staffCadre = {equals: ["admin"]}
@@ -38,7 +40,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.employee.findMany({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(companyId && { companyId }),
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
@@ -68,7 +70,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.employee.count({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(companyId && { companyId }),
         ...(branchId && { branchId }),
         ...(firstName && { firstName: { contains: firstName, mode: 'insensitive' } }),
@@ -94,7 +96,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const authToken = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(authToken, ["admin"])
+    let {isAuthorized} = await authService(authToken, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { uploadImage } from "@/services/imageService";
 import authService from "@/services/authService";
+import generateDeleteResourceMsg from "@/services/generateDeleteResourceMsg";
 
 let modelName = "Brand"
 export async function GET(
@@ -10,7 +11,7 @@ export async function GET(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -52,7 +53,7 @@ export async function PATCH(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -102,7 +103,7 @@ export async function DELETE(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -112,6 +113,30 @@ export async function DELETE(
 
 
     const id = params.id;
+    const data = await prisma.brand.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        _count: { 
+          select: {
+            products: true,
+            prices: true,
+            pfiRequestForms: true,
+            invoiceRequestForms: true
+          }
+        }
+      },
+    });
+    let errorMsg = generateDeleteResourceMsg(data?._count)
+    if(errorMsg){
+      return new NextResponse(JSON.stringify({ message: `${modelName} cannot be deleted. ${errorMsg} are assigned to this ${modelName}`, data: data }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+
     await prisma.brand.delete({
       where: { id },
     });

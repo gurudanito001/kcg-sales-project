@@ -158,7 +158,7 @@ const AddBranch = () =>{
 
                   <div className="mb-3">
                     <label htmlFor="phone" className="form-label">Phone Number</label>
-                    <input type="text" className="form-control" id="phone" value={formData.phoneNumber} onChange={handleChange("phoneNumber")}/>
+                    <input type="tel" className="form-control" id="phone" value={formData.phoneNumber} onChange={handleChange("phoneNumber")}/>
                   </div>
 
                   <div className="mb-3">

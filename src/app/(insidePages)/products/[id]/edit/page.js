@@ -22,8 +22,6 @@ const EditProduct = () =>{
     specifications: "",
     images: [],
     brochures: [],
-    vatInclusive: false,
-    vatRate: ""
   })
   const [errors, setErrors] = useState({});
 
@@ -51,10 +49,10 @@ const EditProduct = () =>{
   
   useEffect(()=>{
     if(data){
-      let {name, code, brandId, description, specifications, images, brochures, vatInclusive, vatRate} = data;
+      let {name, code, brandId, description, specifications, images, brochures, } = data;
       setFormData( prevState =>({
         ...prevState,
-        name, code, brandId, description, specifications, images, brochures, vatInclusive, vatRate
+        name, code, brandId, description, specifications, images, brochures,
       }))
     }
   }, [data])
@@ -64,7 +62,7 @@ const EditProduct = () =>{
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands" ],
-    queryFn:  ()=> apiGet({ url: "/brand"})
+    queryFn:  ()=> apiGet({ url: "/brand?isActive=true"})
     .then(res => {
       console.log(res)
       return res.data
@@ -106,7 +104,7 @@ const EditProduct = () =>{
   }
 
   const listExistingBrochures = ()=>{
-    return formData.brochures.map( (file) => <li className="my-3" key={file}> <span>{file.slice(56, file.length)}</span> <br />
+    return formData.brochures.map( (file) => <li className="my-3" key={file}> <span>{file.slice(56, file.length).replaceAll("%20", "-")}</span> <br />
       <span> 
         <a className="btn btn-link px-0" href={file} target="_blank">download</a>
         <button className="btn btn-link text-danger ms-3" onClick={()=>deleteBrochure(file)}>delete</button>
@@ -262,20 +260,6 @@ const EditProduct = () =>{
                     <label htmlFor="specifications" className="form-label">Specifications</label>
                     <textarea className="form-control" id="specifications" rows={4} value={formData.specifications} onChange={handleChange("specifications")}></textarea>
                   </div>
-
-                  <div className="form-check form-switch mb-3">
-                    <input className="form-check-input" type="checkbox" role="switch" checked={formData.vatInclusive} onChange={(e) => setFormData(prevState => ({
-                      ...prevState,
-                      vatInclusive: !prevState.vatInclusive
-                    }))} id="vatInclusive" />
-                    <label className="form-check-label" htmlFor="vatInclusive">VAT Inclusive</label>
-                  </div>
-
-                  {formData.vatInclusive &&
-                    <div className="mb-3">
-                      <label htmlFor="vatRate" className="form-label">VAT Rate</label>
-                      <input type="text" className="form-control shadow-none" value={formData.vatRate} onChange={handleChange("vatRate")} id="vatRate" placeholder="VAT Rate" />
-                    </div>}
 
                   <div className="mb-3">
                     <label htmlFor="images" className="form-label">Product Images (<span className='fst-italic text-warning'>required</span>)</label>

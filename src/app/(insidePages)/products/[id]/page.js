@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/services/apiService";
+import { apiGet, apiPatch, apiDelete } from "@/services/apiService";
 import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
@@ -10,7 +10,7 @@ import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
 import ConfirmationModal from "@/components/confirmationModal";
 import { Modal, ClickAwayListener } from "@mui/material";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 
 const DataListItem = ({title, value}) => {
@@ -58,6 +58,7 @@ const ProductDetails = () => {
   const params = useParams();
   const {id} = params;
   const router = useRouter();
+  const closeDeleteProductModal = useRef();
   console.log(id);
   const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
@@ -66,12 +67,11 @@ const ProductDetails = () => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refetchProductData} = useQuery({
     queryKey: ["allProducts", id],
     queryFn: () => apiGet({ url: `/product/${id}`})
     .then(res =>{
       console.log(res.data)
-      // dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -81,16 +81,44 @@ const ProductDetails = () => {
     })
   }) 
 
-  const productMutation = useMutation({
+  const disableProduct = useMutation({
     mutationFn: () => apiPatch({ url: `/product/${id}`, data: {isActive: false}})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: "Product deleted successfully"})
-      router.push("/products")
+      dispatchMessage({ message: "Product disabled successfully"})
+      refetchProductData()
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const reActivateProduct = useMutation({
+    mutationFn: () => apiPatch({ url: `/product/${id}`, data: {isActive: true}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Product activated successfully"})
+      refetchProductData()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const deleteProduct = useMutation({
+    mutationFn: () => apiDelete({ url: `/product/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Product deleted successfully"})
+      closeDeleteProductModal.current.click();
+      router.push("/companies")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteProductModal.current.click();
     })
   }) 
 
@@ -155,7 +183,7 @@ const ProductDetails = () => {
 
   const listBrochures = () =>{
     return data.brochures.map(file => {
-      return <li className=" my-3" key={file}> <span>{file.slice(56, file.length)}</span> <br /> <a className="btn btn-link px-0" href={file} target="_blank">download</a></li>
+      return <li className=" my-3" key={file}> <span>{file.slice(56, file.length).replaceAll("%20", "-")}</span> <br /> <a className="btn btn-link px-0" href={file} target="_blank">download</a></li>
     })
   }
 
@@ -173,7 +201,17 @@ const ProductDetails = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Product Details</h5>
+              <header className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Product Details</h5>
+                {data?.isActive ?
+                  <button className="btn btn-muted ms-auto" disabled={disableProduct.isLoading} onClick={disableProduct.mutate}>
+                    {disableProduct?.isLoading ? "Loading..." : "Disable"}
+                  </button> :
+                  <button className="btn btn-success ms-auto" disabled={reActivateProduct.isLoading} onClick={reActivateProduct.mutate}>
+                    {reActivateProduct?.isLoading ? "Loading..." : "Activate"}
+                  </button>
+                }
+              </header>
 
               {data ?
                 <>
@@ -183,7 +221,7 @@ const ProductDetails = () => {
                   <DataListItem title="Price" value={formatAsCurrency(deriveProductStatus(data.price)?.price || "")} />
                   <DataListItem title="Description" value={data.description} />
                   <DataListItem title="Specifications" value={data.specifications} />
-                  <DataListItem title="Vat Inclusive" value={data.vatInclusive ? "Yes" : "No"} />
+                  <DataListItem title="Is Active?" value={data.isActive ? "Yes" : "No"} />
                   <div className="mb-3 d-flex flex-column">
                     <h6 className="m-0 me-3">Product Images</h6>
                     <figure>
@@ -250,7 +288,7 @@ const ProductDetails = () => {
       </Modal>
 
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Product" message="Are you sure your want to delete this product? This action cannot be reversed." isLoading={productMutation.isLoading} onSubmit={productMutation.mutate} id="deleteProduct" btnColor="danger" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Product" message="Are you sure your want to delete this product?" isLoading={deleteProduct.isLoading} onSubmit={deleteProduct.mutate} id="deleteProduct" btnColor="danger" closeButtonRef={closeDeleteProductModal} />}
     </div>
   )
 }

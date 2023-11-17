@@ -16,6 +16,12 @@ export async function POST(request: Request) {
     const user: any = await prisma.employee.findFirst({
       where: {email: data.email}
     });
+    if(user?.isActive === false){
+      return new NextResponse(JSON.stringify({message: "This account has been de-activated", data: user}), {
+        status: 403,
+        headers: { "Content-Type": "application/json" },
+      }); 
+    }
     if (user && (await bcrypt.compare(data.password as string, user.password as string))) {
       
       // Create token

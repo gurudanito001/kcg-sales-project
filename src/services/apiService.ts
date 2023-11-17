@@ -49,9 +49,12 @@ function callApi(paramsObject: any) {
       .catch((error: any) => {
         //console.log(error);
         if (error.response) {
-          if (error.response.status.toString() === "401" && failureCallback) {
-            deleteToken();
-            failureCallback();
+          console.log(error.response.status.toString())
+          if (error.response.status.toString() === "403" ||  error.response.status.toString() === "401") {
+            console.log("forbidden or unauthorized")
+            localStorage.removeItem("token");
+            localStorage.removeItem("accountType");
+            window.location.replace("/login");
           }
           reject({ statusCode: error.response.status, ...error.response.data });
         } else {

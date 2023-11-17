@@ -121,7 +121,7 @@ const VisitReports = () => {
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
-    queryFn: () => apiGet({ url: `/employee` })
+    queryFn: () => apiGet({ url: `/employee?isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -155,7 +155,7 @@ const VisitReports = () => {
 
   const fetchAllVisitReports = (queryString) =>{
     setIsLoading(true)
-    apiGet({ url: `/visitReport?${queryString}&page=${page}&take=${20}` })
+    apiGet({ url: `/visitReport?${queryString}&page=${page}&take=${20}&isActive=true` })
     .then(res => {
       console.log(res)
       setListMetaData(prevState => ({
@@ -241,6 +241,10 @@ const VisitReports = () => {
         </tr>
       )
     })
+  }
+
+  const countOfReports = ()=>{
+    
   }
 
   const canShowTable = () => {

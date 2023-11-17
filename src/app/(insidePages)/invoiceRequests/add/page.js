@@ -11,6 +11,7 @@ import useGetUserData from "@/hooks/useGetUserData";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import formValidator from "@/services/validation";
+import { setRef } from "@mui/material";
 
 
 
@@ -65,13 +66,14 @@ const AddInvoiceRequest = () => {
   const [options, setOptions] = useState([]);
   const [value, setValue] = useState(options[0]);
   const [inputValue, setInputValue] = useState('');
+  const [refund, setRefund] = useState(false);
 
 
   const [errors, setErrors] = useState({})
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
-    queryFn: () => apiGet({ url: "/brand" })
+    queryFn: () => apiGet({ url: "/brand?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -85,7 +87,7 @@ const AddInvoiceRequest = () => {
 
   const productQuery = useQuery({
     queryKey: ["allProducts"],
-    queryFn: () => apiGet({ url: `/product` })
+    queryFn: () => apiGet({ url: `/product?isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -99,7 +101,7 @@ const AddInvoiceRequest = () => {
 
   const pfiRequestQuery = useQuery({
     queryKey: ["allPfiRequests"],
-    queryFn: () => apiGet({ url: `/pfiRequestForm?approved=approved` })
+    queryFn: () => apiGet({ url: `/pfiRequestForm?approved=approved&employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         generatePfiOptions(res.data)
@@ -193,6 +195,12 @@ const AddInvoiceRequest = () => {
   }
 
   const handleChange = (prop) => (event) => {
+    const onlyNumbersRegex = new RegExp("^[0-9]*$");
+    let numberOnlyList = ["amountPaid", "accountNumber", "rebateAmount", "refundToCustomer", "totalInvoiceValuePerVehicle", "quantity" ]
+    if(numberOnlyList.includes(prop) && !onlyNumbersRegex.exec(event.target.value)){
+      return;
+    }
+
     if ( prop === "vatDeduction" || prop === "whtDeduction") {
       setFormData(prevState => ({
         ...prevState,
@@ -301,7 +309,7 @@ const AddInvoiceRequest = () => {
 
                 <div className="mb-3">
                   <label htmlFor="contactOfficeTelephone" className="form-label">Contact Office Telephone (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="text" className="form-control shadow-none" value={formData.contactOfficeTelephone} onChange={handleChange("contactOfficeTelephone")} id="contactOfficeTelephone" placeholder="Phone Number" />
+                  <input type="tel" className="form-control shadow-none" value={formData.contactOfficeTelephone} onChange={handleChange("contactOfficeTelephone")} id="contactOfficeTelephone" placeholder="Phone Number" />
                   <span className='text-danger font-monospace small'>{errors.contactOfficeTelephone}</span>
                 </div>
 
@@ -409,6 +417,7 @@ const AddInvoiceRequest = () => {
                   <div className='d-flex align-items-center'>
                     <select className="form-select shadow-none" value={formData.registration} onChange={handleChange("registration")} id="registration" aria-label="Default select example">
                       <option value="">Select Registration Type</option>
+                      <option value="None">None</option>
                       <option value="Private">Private</option>
                       <option value="Commercial">Commercial</option>
                     </select>
@@ -429,31 +438,45 @@ const AddInvoiceRequest = () => {
                     WHT Deduction
                   </label>
                 </div>
-
-                <div className="mb-3">
-                  <label htmlFor="rebateAmount" className="form-label">Rebate Amount <span className='ms-3 fw-bold'>{formatAsCurrency(formData.rebateAmount)}</span></label>
-                  <input type="text" className="form-control shadow-none" value={formData.rebateAmount} onChange={handleChange("rebateAmount")} id="rebateAmount" />
+                
+                <div className="form-check mb-3">
+                  <input className="form-check-input shadow-none" type="checkbox" checked={refund} onChange={()=>setRefund( prevState => !prevState)} id="refund" />
+                  <label className="form-check-label" htmlFor="refund">
+                    Refund
+                  </label>
                 </div>
 
-                <div className="mb-3">
-                  <label htmlFor="refundToCustomer" className="form-label">Refund to Customer <span className='ms-3 fw-bold'>{formatAsCurrency(formData.refundToCustomer)}</span></label>
-                  <input type="text" className="form-control shadow-none" value={formData.refundToCustomer} onChange={handleChange("refundToCustomer")} id="refundToCustomer" />
-                </div>
+
+                {refund &&
+                  <>
+                    <div className="mb-3">
+                      <label htmlFor="rebateAmount" className="form-label">Rebate Amount <span className='ms-3 fw-bold'>{formatAsCurrency(formData.rebateAmount)}</span></label>
+                      <input type="text" className="form-control shadow-none" value={formData.rebateAmount} onChange={handleChange("rebateAmount")} id="rebateAmount" />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="refundToCustomer" className="form-label">Refund to Customer <span className='ms-3 fw-bold'>{formatAsCurrency(formData.refundToCustomer)}</span></label>
+                      <input type="text" className="form-control shadow-none" value={formData.refundToCustomer} onChange={handleChange("refundToCustomer")} id="refundToCustomer" />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="rebateReceiver" className="form-label">Rebate Receiver</label>
+                      <input type="text" className="form-control shadow-none" value={formData.rebateReceiver} onChange={handleChange("rebateReceiver")} id="rebateReceiver" />
+                    </div>
+
+                    <div className="mb-3">
+                      <label htmlFor="relationshipWithTransaction" className="form-label">Relationship with transaction (if rebate receiver is not working in buying company)</label>
+                      <input type="text" className="form-control shadow-none" value={formData.relationshipWithTransaction} onChange={handleChange("relationshipWithTransaction")} id="relationshipWithTransaction" placeholder="Relationship with Transaction" />
+                    </div>
+                  </>
+
+                }
+                
 
                 <div className="mb-3">
                   <label htmlFor="servicePackageDetails" className="form-label">Service Package Details (if given)</label>
                   <textarea className="form-control" value={formData.servicePackageDetails} onChange={handleChange("servicePackageDetails")} id="servicePackageDetails"></textarea>
                   <span className='text-danger font-monospace small'>{errors.servicePackageDetails}</span>
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="rebateReceiver" className="form-label">Rebate Receiver</label>
-                  <input type="text" className="form-control shadow-none" value={formData.rebateReceiver} onChange={handleChange("rebateReceiver")} id="rebateReceiver" />
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="relationshipWithTransaction" className="form-label">Relationship with transaction (if rebate receiver is not working in buying company)</label>
-                  <input type="text" className="form-control shadow-none" value={formData.relationshipWithTransaction} onChange={handleChange("relationshipWithTransaction")} id="relationshipWithTransaction" placeholder="Relationship with Transaction" />
                 </div>
 
                 <div className="mb-3">
@@ -504,7 +527,7 @@ const AddInvoiceRequest = () => {
                       <input type="text" className="form-control shadow-none" value={formData.bankName} onChange={handleChange("bankName")} id="bankName" />
                     </div>
                     <div className="mb-3">
-                      <label htmlFor="bankAccountName" className="form-label">Bank Account Name </label>
+                      <label htmlFor="bankAccountName" className="form-label">Company Account Name (Payee Name) </label>
                       <input type="text" className="form-control shadow-none" value={formData.bankAccountName} onChange={handleChange("bankAccountName")} id="bankAccountName" />
                     </div>
                     <div className="mb-3">

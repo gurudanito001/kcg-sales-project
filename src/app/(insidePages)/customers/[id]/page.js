@@ -1,13 +1,13 @@
 "use client"
 
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPatch, apiPost } from "@/services/apiService";
+import { apiGet, apiPatch, apiPost, apiDelete } from "@/services/apiService";
 import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import AddContactPerson from '../add/addContactPerson';
 import EditContactPerson from "./edit/editContactPerson";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
 import ConfirmationModal from '@/components/confirmationModal';
@@ -92,13 +92,15 @@ const CustomerDetails = () => {
   const { id } = params;
   const pathName = usePathname()
   const router = useRouter();
+  const closeDeleteCustomerModal = useRef();
+  const closeDeleteContactPersonModal = useRef();
   const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
   const {refetch, comments, listComments} = useGetComments(id);
   
   const [currentForm, setCurrentForm] = useState("")
   const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
-  const [deleteContactPerson, setDeleteContactPerson] = useState(null);
+  const [deleteContactPersonId, setDeleteContactPersonId] = useState(null);
 
   const { data, isFetching, refetch: refetchCustomerDetails } = useQuery({
     queryKey: ["allCustomers", id],
@@ -114,7 +116,7 @@ const CustomerDetails = () => {
       })
   })
 
-  const customerMutation = useMutation({
+  /* const customerMutation = useMutation({
     mutationFn: () => apiPatch({ url: `/customer/${id}`, data: {isActive: false}})
     .then(res =>{
       console.log(res.data)
@@ -125,9 +127,38 @@ const CustomerDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
     })
+  })  */
+  const deleteCustomer = useMutation({
+    mutationFn: () => apiDelete({ url: `/customer/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Customer deleted successfully"})
+      closeDeleteContactPersonModal.current.click();
+      refetchCustomerDetails();
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteContactPersonModal.current.click();
+    })
   }) 
 
-  const contactPersonMutation = useMutation({
+  const deleteContactPerson = useMutation({
+    mutationFn: (contactPersonId) => apiDelete({ url: `/contactPerson/${contactPersonId}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Contact Person deleted successfully"})
+      closeDeleteContactPersonModal.current.click();
+      refetchCustomerDetails();
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteContactPersonModal.current.click();
+    })
+  }) 
+
+  /* const contactPersonMutation = useMutation({
     mutationFn: (contactPersonId) => apiPatch({ url: `/contactPerson/${contactPersonId}`, data: {isActive: false}})
     .then(res =>{
       console.log(res.data)
@@ -138,7 +169,48 @@ const CustomerDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
     })
+  })  */
+
+  const reActivateCompany = useMutation({
+    mutationFn: () => apiPatch({ url: `/company/${id}`, data: {isActive: true}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Company activated successfully"})
+      refetchCompanyData()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
   }) 
+
+  const approveCustomer = useMutation({
+    mutationFn: () => apiPatch({ url: `/customer/${id}`, data: {approved: true}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Customer approved successfully"})
+      refetchCustomerDetails()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const disApproveCustomer = useMutation({
+    mutationFn: () => apiPatch({ url: `/customer/${id}`, data: {approved: false}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Customer disapproved successfully"})
+      refetchCustomerDetails()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  
 
   const [formData, setFormData] = useState({
     approved: false,
@@ -213,7 +285,7 @@ const CustomerDetails = () => {
     }))
   }
 
-  const handleSubmit = (e)=>{
+  const postComment = (e)=>{
     e.preventDefault();
     // return console.log(commentData, userData)
     commentMutation.mutate()
@@ -221,7 +293,7 @@ const CustomerDetails = () => {
 
 
 
-  const { isLoading, mutate: approveCustomer } = useMutation({
+/*   const { isLoading, mutate: approveCustomer } = useMutation({
     mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: formData })
       .then(res => {
         console.log(res.data)
@@ -231,7 +303,7 @@ const CustomerDetails = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
       }),
-  })
+  }) */
  
 
   const listContactPersons = () =>{
@@ -252,14 +324,14 @@ const CustomerDetails = () => {
           <td className="border-bottom-0">
             <p className="mb-0 fw-normal text-capitalize">{phoneNumber}</p>
           </td>
-          {userData?.id === item.employeeId &&
+          {(userData?.id === item.employeeId && !data.approved) &&
           <td className="border-bottom-0">
             <button className="btn btn-link text-primary ms-auto" onClick={()=>{
               setCurrentlyEditedContactPerson(item);
               setCurrentForm("editContactPerson")
             }}>Edit</button>
             <a className="btn btn-link text-danger ms-2" onClick={() =>{
-              setDeleteContactPerson(id)
+              setDeleteContactPersonId(id)
             }} data-bs-toggle="modal" data-bs-target="#deleteContactPerson">Delete</a>
           </td>}
         </tr>
@@ -275,8 +347,8 @@ const CustomerDetails = () => {
         
         <span className="breadcrumb-item ms-3"><a href="/customers"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className={`btn btn-link text-primary ms-auto`} onClick={()=>setCurrentForm("addContactPerson")}>Add Contact Person</a>}
-        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
-        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" ) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteCustomer">Delete</a>}
+        {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor" && !data?.approved ) && <a className="btn btn-link text-primary" href={`/customers/${id}/edit`}>Edit</a>}
+        {userData?.staffCadre?.includes("admin")  && <a className="btn btn-link text-danger ms-auto" data-bs-toggle="modal" data-bs-target="#deleteCustomer">Delete</a>}
       </header>
 
 
@@ -295,14 +367,24 @@ const CustomerDetails = () => {
 
 
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <div className="d-flex align-items-center mb-4">
-                <h5 className="card-title fw-semibold mb-0 opacity-75">Customer Details</h5>
-                {
+                <header className="d-flex align-items-center mb-4">
+                  <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Customer Details</h5>
+                  {data?.approved ?
+                    <button className="btn btn-muted ms-auto" disabled={disApproveCustomer.isLoading} onClick={disApproveCustomer.mutate}>
+                      {disApproveCustomer?.isLoading ? "Loading..." : "Disapprove"}
+                    </button> :
+                    <button className="btn btn-success ms-auto" disabled={approveCustomer.isLoading} onClick={approveCustomer.mutate}>
+                      {approveCustomer?.isLoading ? "Loading..." : "Approve"}
+                    </button>
+                  }
+                </header>
+
+
+                {/* {
                   data?.approved ?
                     <span className="ms-auto border border-success text-success-emphasis px-3 py-2 rounded-3">Approved <i className="fa-regular fa-circle-check ms-1"></i></span> :
                     <span className="ms-auto border border-muted text-muted px-3 py-2 rounded-2">Pending Approval </span>
-                }
-              </div>
+                } */}
               
 
               {data ?
@@ -313,7 +395,7 @@ const CustomerDetails = () => {
                   <DataListItem title="Customer Type" value={data.customerType} />
                   <DataListItem title="Enquiry Source" value={data.enquirySource} />
                   <DataListItem title="Status" value={data.status} />
-                  <DataListItem title="Approved" value={data.approved ? "Yes" : "Pending"} />
+                  <DataListItem title="Approved" value={data.approved ? "Yes" : "Pending Approval"} />
                   <div className="row mb-3 d-flex align-items-center">
                     <div className="col-12 col-md-4">
                       <h6 className="m-0">Address</h6>
@@ -326,7 +408,7 @@ const CustomerDetails = () => {
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
 
-                  {userData?.staffCadre?.includes("admin") &&
+                  {/* {userData?.staffCadre?.includes("admin") &&
                     <>
                       <div className="form-check my-3">
                         <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
@@ -337,7 +419,7 @@ const CustomerDetails = () => {
                       </div>
                       <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveCustomer">Update</button>
                     </>
-                  }
+                  } */}
                 </> :
                 <LoadingFallBack />
               }
@@ -386,18 +468,18 @@ const CustomerDetails = () => {
             <div className="mb-3 d-flex">
               <textarea rows={3} className="form-control" id="location" value={commentData.message} placeholder="Make Your Comments here" onChange={handleChangeComment}></textarea>
               <div className="d-flex align-items-center">
-                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={handleSubmit}><i className="fa-solid fa-paper-plane h1"></i></button>
+                <button className="btn nav-icon-hover" disabled={commentMutation.isLoading} onClick={postComment}><i className="fa-solid fa-paper-plane h1"></i></button>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <ConfirmationModal title="Update Approval Status" message="Are you sure you want to update this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} />
+      {/* <ConfirmationModal title="Update Approval Status" message="Are you sure you want to approve this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} /> */}
 
-      <ConfirmationModal title="Delete Customer" message="Are you sure your want to delete this customer? This action cannot be reversed." isLoading={customerMutation.isLoading} onSubmit={customerMutation.mutate} id="deleteCustomer" btnColor="danger" />
+      <ConfirmationModal title="Delete Customer" message="Are you sure your want to delete this customer?" isLoading={deleteCustomer.isLoading} onSubmit={deleteCustomer.mutate} id="deleteCustomer" btnColor="danger" closeButtonRef={closeDeleteCustomerModal} />
 
-      <ConfirmationModal title="Delete Contact Person" message="Are you sure your want to delete this contact person? This action cannot be reversed." isLoading={contactPersonMutation.isLoading} onSubmit={()=>contactPersonMutation.mutate(deleteContactPerson)} id="deleteContactPerson" btnColor="danger" />
+      <ConfirmationModal title="Delete Contact Person" message="Are you sure your want to delete this contact person?" isLoading={deleteContactPerson.isLoading} onSubmit={()=>deleteContactPerson.mutate(deleteContactPersonId)} id="deleteContactPerson" btnColor="danger"  closeButtonRef={closeDeleteContactPersonModal}/>
     </div>
   )
 }

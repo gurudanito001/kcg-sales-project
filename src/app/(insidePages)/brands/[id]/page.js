@@ -1,13 +1,14 @@
 "use client"
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/services/apiService";
+import { apiGet, apiPatch, apiDelete } from "@/services/apiService";
 import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import moment from "moment";
 import ConfirmationModal from "@/components/confirmationModal";
 import useGetUserData from "@/hooks/useGetUserData";
+import { useRef } from "react";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -53,12 +54,13 @@ const LoadingFallBack = () =>{
 const BrandDetails = () => {
   const params = useParams();
   const router = useRouter();
+  const closeDeleteBrandModal = useRef();
   const {id} = params;
   const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refetchBrandData} = useQuery({
     queryKey: ["allBrands", id],
     queryFn: () => apiGet({ url: `/brand/${id}`})
     .then(res =>{
@@ -72,16 +74,44 @@ const BrandDetails = () => {
     })
   }) 
 
-  const brandMutation = useMutation({
+  const disableBrand = useMutation({
     mutationFn: () => apiPatch({ url: `/brand/${id}`, data: {isActive: false}})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: "Brand deleted successfully"})
-      router.push("/brands")
+      dispatchMessage({ message: "Brand disabled successfully"})
+      refetchBrandData()
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const reActivateBrand = useMutation({
+    mutationFn: () => apiPatch({ url: `/brand/${id}`, data: {isActive: true}})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Brand activated successfully"})
+      refetchBrandData()
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const deleteBrand = useMutation({
+    mutationFn: () => apiDelete({ url: `/brand/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Brand deleted successfully"})
+      closeDeleteBrandModal.current.click();
+      router.push("/brands")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message.replace("prices", "price-master")})
+      closeDeleteBrandModal.current.click();
     })
   }) 
 
@@ -99,7 +129,17 @@ const BrandDetails = () => {
         <div className="col-12 d-flex align-items-stretch">
           <div className="card w-100">
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Brand Details</h5>
+              <header className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Brand Details</h5>
+                {data?.isActive ?
+                  <button className="btn btn-muted ms-auto" disabled={disableBrand.isLoading} onClick={disableBrand.mutate}>
+                    {disableBrand?.isLoading ? "Loading..." : "Disable"}
+                  </button> :
+                  <button className="btn btn-success ms-auto" disabled={reActivateBrand.isLoading} onClick={reActivateBrand.mutate}>
+                    {reActivateBrand?.isLoading ? "Loading..." : "Activate"}
+                  </button>
+                }
+              </header>
 
               {data ?
                 <>
@@ -114,6 +154,7 @@ const BrandDetails = () => {
                   <DataListItem title="Brand Name" value={data.name} />
                   <DataListItem title="Brand Code" value={data.code} />
                   <DataListItem title="Description" value={data.description} />
+                  <DataListItem title="is Active?" value={data.isActive ? "Yes" : "No"} />
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
@@ -124,7 +165,7 @@ const BrandDetails = () => {
           </div>
         </div>
       </div>
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Brand" message="Are you sure your want to delete this brand? This action cannot be reversed." isLoading={brandMutation.isLoading} onSubmit={brandMutation.mutate} id="deleteBrand" btnColor="danger" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Brand" message="Are you sure your want to delete this brand?" isLoading={deleteBrand.isLoading} onSubmit={deleteBrand.mutate} id="deleteBrand" btnColor="danger" closeButtonRef={closeDeleteBrandModal} />}
     </div>
   )
 }

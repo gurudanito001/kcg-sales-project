@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
 import ListOfSubordinates from "@/components/listOfSubordinates";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 
 const LoadingFallBack = () => {
@@ -212,7 +213,7 @@ const MarketingActivity = () => {
             <p className="small mb-0 d-flex flex-wrap" style={{ maxWidth: "200px" }}>{clipLongText(location)}</p>
           </td>
           <td className="border-bottom-0">
-            <p className="fw-semibold m-0">{costIncurred}</p>
+            <p className="fw-semibold m-0">{formatAsCurrency(costIncurred)}</p>
           </td>
           {(userData?.staffCadre?.includes("salesPerson") && userData?.accountType !== "Supervisor") && 
           <td className="border-bottom-0">
@@ -251,7 +252,7 @@ const MarketingActivity = () => {
           {showFilters &&
             <div className="container-fluid card p-3">
               <form className="row">
-                <h6 className="col-12 mb-3 text-muted">Filter Customer List</h6>
+                <h6 className="col-12 mb-3 text-muted">Filter Marketing Activities List</h6>
                 {(userData?.staffCadre?.includes("admin")) &&
                   <div className="mb-3 col-lg-6">
                     <label htmlFor="employeeId" className="form-label">Employee</label>

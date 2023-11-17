@@ -63,7 +63,8 @@ const Products = () =>{
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    brandId: ""
+    brandId: "",
+    isActive: "",
   })
 
   const [listMetaData, setListMetaData] = useState({
@@ -100,6 +101,15 @@ const Products = () =>{
   const [queryUrlString, setQueryUrlString] = useState("")
 
   const handleChange = (props) => (event) => {
+    if (props === "isActive") {
+      setFormData(prevState => ({
+        ...prevState,
+        [props]: !prevState[props]
+      }))
+      return
+    }
+
+
     setFormData(prevState => ({
       ...prevState,
       [props]: event.target.value
@@ -186,7 +196,7 @@ const Products = () =>{
 
   const listProducts = () =>{
     return data.map( (item, index) => {
-      const {id,images, name, code, brand, price} = item;
+      const {id,images, name, code, brand, price, isActive} = item;
       return( 
         <tr key={id} className="hover">
           <td className="border-bottom-0 py-2"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -211,6 +221,9 @@ const Products = () =>{
           </td>
           <td className="border-bottom-0 py-2">
             <p className="small mb-0 d-flex flex-wrap">{price ? formatAsCurrency(deriveProductStatus(price).price) : ""}</p>
+          </td>
+          <td className="border-bottom-0">
+            <p className="small mb-0">{isActive ? "Yes" : "No"}</p>
           </td>
           {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0 py-2">
@@ -265,6 +278,15 @@ const Products = () =>{
               </select>
             </div>
 
+            {(userData?.staffCadre?.includes("admin")) &&
+              <div className="form-check m-3">
+                <input className="form-check-input shadow-none" type="checkbox" checked={formData.isActive} onChange={handleChange("isActive")} id="isActive" />
+                <label className="form-check-label h6" htmlFor="isActive">
+                  Only Active
+                </label>
+              </div>
+            }
+
             <div className="d-flex col-12 align-items-center mt-5">
               <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
               <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
@@ -301,6 +323,9 @@ const Products = () =>{
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Price</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">is Active?</h6>
                         </th>
                         {userData?.staffCadre?.includes("admin") && 
                         <th className="border-bottom-0">

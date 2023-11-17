@@ -95,7 +95,7 @@ const PriceMaster = () =>{
 
   const listProductPrices = () =>{
     return data.map( (item, index) => {
-      const {id, product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill} = item;
+      const {id, product, brand, unitPrice, promoPrice, anyPromo, promoText, validFrom, validTill, vatInclusive, vatRate} = item;
       return( 
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -109,6 +109,9 @@ const PriceMaster = () =>{
             <h6 className="fw-semibold m-0">{formatAsCurrency(deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).price)}</h6>
           </td>
           <td className="border-bottom-0">
+            <h6 className="fw-semibold m-0">{vatInclusive ? `Yes - ${vatRate}` : "No"}</h6>
+          </td>
+          <td className="border-bottom-0">
             <h6 className="fw-semibold mb-1">{deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive ? "Yes" : "No"}</h6>
           </td>
           <td className="border-bottom-0">
@@ -118,6 +121,9 @@ const PriceMaster = () =>{
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} /> */}
           <td className="border-bottom-0">
             <p className="small mb-0">{validTill ? `${moment(new Date(validTill)).format('lll')}` : "---"}</p>
+          </td>
+          <td className="border-bottom-0">
+            <p className="small mb-0">{product?.isActive ? "Yes" : "No"}</p>
           </td>
           <td className="border-bottom-0">
             <p className="fw-semibold mb-1" >{promoText ? clipLongText(promoText) : "---"}</p>
@@ -157,6 +163,9 @@ const PriceMaster = () =>{
                           <h6 className="fw-semibold mb-0">Unit Price</h6>
                         </th>
                         <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">Vat Inclusive?</h6>
+                        </th>
+                        <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Any Promo?</h6>
                         </th>
                         <th className="border-bottom-0">
@@ -164,6 +173,9 @@ const PriceMaster = () =>{
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Valid Till</h6>
+                        </th>
+                        <th className="border-bottom-0">
+                          <h6 className="fw-semibold mb-0">is Active?</h6>
                         </th>
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Promo Text</h6>

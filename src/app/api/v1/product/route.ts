@@ -12,7 +12,7 @@ let routeName = "Product"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-
+    const isActive = searchParams.get("isActive");
     const code = searchParams.get('code');
     const name = searchParams.get('name');
     const brandId = searchParams.get('brandId');
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.product.findMany({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(brandId && { brandId }),
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.product.count({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(brandId && { brandId }),
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     const json = await request.json();
 
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

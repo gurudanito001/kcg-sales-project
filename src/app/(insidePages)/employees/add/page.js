@@ -49,7 +49,7 @@ const AddEmployee = () => {
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
-    queryFn: () => apiGet({ url: "/company" })
+    queryFn: () => apiGet({ url: "/company?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -63,7 +63,7 @@ const AddEmployee = () => {
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
-    queryFn: () => apiGet({ url: "/employee" })
+    queryFn: () => apiGet({ url: "/employee?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -77,7 +77,7 @@ const AddEmployee = () => {
 
   const branchQuery = useQuery({
     queryKey: ["allBranches"],
-    queryFn: () => apiGet({ url: "/branch" })
+    queryFn: () => apiGet({ url: "/branch?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -128,7 +128,7 @@ const AddEmployee = () => {
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands" ],
-    queryFn:  ()=> apiGet({ url: "/brand"})
+    queryFn:  ()=> apiGet({ url: "/brand?isActive=true"})
     .then(res => {
       console.log(res)
       return res.data

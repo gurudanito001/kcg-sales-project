@@ -91,6 +91,8 @@ model PriceMaster {
   brandId    String    
   product    Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId  String    @unique
+  vatInclusive Boolean @default(false)
+  vatRate    String?  
   isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -324,6 +326,7 @@ model MarkettingActivity {
   images       String[]
   costIncurred String?   @db.VarChar(50)
   pdfDetails   String?  @db.VarChar(1000)
+  documents    String[]
   approved     Boolean? @default(false)
   extraData    Json?
   isActive     Boolean  @default(true)
@@ -372,3 +375,5 @@ model Notification {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+

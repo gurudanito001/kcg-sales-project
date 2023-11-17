@@ -18,24 +18,9 @@ const useGetUserData = () => {
         lastName: "",
         accountType: "",
     })
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAllowed, setIsAllowed] = useState(false);
     const [tokenUpdated, setTokenUpdated] = useState("");
-
-
-    /* const tokenQuery = useQuery({
-        queryKey: ["token"],
-        queryFn: () => apiGet({ url: `/auth/refreshUserData/${localStorage.getItem("token")}` })
-            .then(res => {
-                console.log(res)
-                localStorage.setItem("token", res.data.token);
-                return res.data.token
-            })
-            .catch(error => {
-                console.log(error)
-                return {}
-            }),
-    }) */
 
     const logout = ()=>{
         localStorage.removeItem("token");
@@ -57,10 +42,38 @@ const useGetUserData = () => {
         let token = localStorage.getItem('token')
         let data = jwt.decode(token)
         let accountType = localStorage.getItem("accountType");
-        if(token){
-            setIsLoggedIn(true)
+        if (data?.staffCadre?.length && pathName === "/login") {
+            return router.push("/")
         }
-        if (data) {
+        if (!data?.staffCadre?.length && pathName !== ("/login" || "/forgotPassword" || "/resetPassword")) {
+            return router.push("/login")
+        }
+        if (data?.staffCadre?.length) {
+            let restrictedRoutes = prohibitedRoutes()[data?.staffCadre[0]]
+            let viewOnly = viewOnlyRoutes()[data?.staffCadre[0]]
+            console.log(viewOnly)
+            if (restrictedRoutes) {
+                for (let i = 0; i < restrictedRoutes.length; i++) {
+                    if (pathName.includes(restrictedRoutes[i])) {
+                        setIsAllowed(false);
+                        return router.push("/")
+                    }
+                    if (i === restrictedRoutes.length - 1) {
+                        setIsAllowed(true)
+                    }
+                }
+            }
+            if (viewOnly) {
+                for (let i = 0; i < viewOnly.length; i++) {
+                    if (pathName.includes(viewOnly[i]) && (pathName.includes("add") || pathName.includes("edit"))) {
+                        setIsAllowed(false);
+                        return router.push("/")
+                    }
+                    if (i === viewOnly.length - 1) {
+                        setIsAllowed(true)
+                    }
+                }
+            } 
             setUserData(prevState =>({
                 ...prevState,
                 ...data,
@@ -72,43 +85,10 @@ const useGetUserData = () => {
                 accountType: accountType
             }))
         }
-        let restrictedRoutes = prohibitedRoutes()[data?.staffCadre[0]]
-        let viewOnly = viewOnlyRoutes()[data?.staffCadre[0]]
-        console.log(viewOnly)
-        if(restrictedRoutes){
-            for (let i = 0; i < restrictedRoutes.length; i++) {
-                if(pathName.includes(restrictedRoutes[i])){
-                    setIsAllowed(false);
-                    return router.push("/")
-                }
-                if(i === restrictedRoutes.length - 1){
-                    setIsAllowed(true)
-                }
-            }
-        }
-        if(viewOnly){
-            for (let i = 0; i < viewOnly.length; i++) {
-                if(pathName.includes(viewOnly[i]) && (pathName.includes("add") || pathName.includes("edit"))){
-                    setIsAllowed(false);
-                    return router.push("/")
-                }
-                if(i === viewOnly.length - 1){
-                    setIsAllowed(true)
-                }
-            }
-        }
-        
-        if (data && pathName === "/login") {
-            router.push("/")
-        }
-        if (!data && pathName !== ("/login" || "/forgotPassword" || "/resetPassword")) {
-            return router.push("/login")
-        }
-        console.log(accountType)
-        
-    }, [tokenUpdated, router, pathName])
+               
+    }, [tokenUpdated])
 
-    return { isLoggedIn, isAllowed, userData, setTokenUpdated, logout, setToken, switchAccountType }
+    return { isAllowed, userData, setTokenUpdated, logout, setToken, switchAccountType }
 }
 
 export default useGetUserData;

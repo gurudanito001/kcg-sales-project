@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

@@ -7,7 +7,7 @@ let routeName = "Pfi Request Form"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -41,7 +41,6 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.pfiRequestForm.findMany({
       where: {
-        isActive: true,
         ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
@@ -77,7 +76,6 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.pfiRequestForm.count({
       where: {
-        isActive: true,
         ...(locked && {locked: true}),
         ...(employeeId && { employeeId }),
         ...(customerId && { customerId }),
@@ -108,7 +106,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

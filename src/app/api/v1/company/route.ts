@@ -8,7 +8,7 @@ let routeName = "Company"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -20,16 +20,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-
+    const isActive = searchParams.get("isActive");
     const code = searchParams.get('code');
     const name = searchParams.get('name');
     
     let myCursor = "";
     const data = await prisma.company.findMany({
       where: {
-        isActive: true,
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
+        ...(isActive && {isActive: true})
       },
       take: take,
       skip: (page - 1) * take,
@@ -60,9 +60,9 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.company.count({
       where: {
-        isActive: true,
         ...(code && { code: { contains: code, mode: 'insensitive' } }),
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
+        ...(isActive && {isActive: true})
       }
     })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

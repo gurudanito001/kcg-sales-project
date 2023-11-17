@@ -7,7 +7,7 @@ let routeName = "Contact Person"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -19,11 +19,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
+    const employeeId = searchParams.get('employeeId');
+    const isActive = searchParams.get("isActive");
 
     let myCursor = "";
     const data = await prisma.contactPerson.findMany({
       where: {
-        isActive: true,
+        ...(employeeId && {employeeId}),
+        ...(isActive && {isActive: true})
       },
       take: take,
       skip: (page - 1) * take,
@@ -44,7 +47,8 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.contactPerson.count({
       where: {
-        isActive: true,
+        ...(employeeId && {employeeId}),
+        ...(isActive && {isActive: true})
       },
     })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
@@ -66,7 +70,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

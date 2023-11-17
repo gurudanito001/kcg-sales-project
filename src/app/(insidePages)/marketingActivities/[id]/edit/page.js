@@ -35,13 +35,21 @@ const EditMarketingActivity = () => {
 
   useEffect(() => {
     if (data) {
-      let { employeeId, activityName, activityDate, participants, location, objective, targetResult, briefReport, images, costIncurred, pdfDetails } = data;
+      let { employeeId, activityName, activityDate, participants, location, objective, targetResult, briefReport, images, costIncurred, pdfDetails, documents } = data;
       setFormData(prevState => ({
         ...prevState,
-        employeeId, activityName, activityDate, participants, location, objective, targetResult, briefReport, images, costIncurred, pdfDetails
+        employeeId, activityName, activityDate, participants, location, objective, targetResult, briefReport, images, costIncurred, pdfDetails, documents
       }))
     }
   }, [data])
+
+  useEffect(() => {
+    if (userData?.id && data) {
+      if ((userData?.id !== data.employeeId) || data.approved) {
+        router.push(`/marketingActivities/${id}`)
+      }
+    }
+  }, [userData, data])
 
 
   const [formData, setFormData] = useState({
@@ -54,6 +62,7 @@ const EditMarketingActivity = () => {
     targetResult: "",
     briefReport: "",
     images: [],
+    documents: [],
     costIncurred: "",
     pdfDetails: ""
   })
@@ -62,6 +71,7 @@ const EditMarketingActivity = () => {
 
   const [isSendingImage, setIsSendingImage] = useState(false);
   const inputFileRef = useRef(null);
+  const documentFileRef = useRef(null);
   const [ imageUrls, setImageUrls] = useState([]);
 
 
@@ -85,6 +95,24 @@ const EditMarketingActivity = () => {
       </li>)
     }
   }
+
+  const listExistingDocuments = ()=>{
+    return formData.documents.map( (file) => <li className="my-3" key={file}> <span>{file.slice(56, file.length).replaceAll("%20", "-")}</span> <br />
+      <span> 
+        <a className="btn btn-link px-0" href={file} target="_blank">download</a>
+        <button className="btn btn-link text-danger ms-3" onClick={()=>deleteBrochure(file)}>delete</button>
+      </span> 
+    </li>)
+  }
+
+  const deleteBrochure = (file) =>{
+    let data = {...formData};
+    data.documents = data.documents.filter(function(item){ return file !== item});
+    setFormData(data);
+  }
+
+
+
 
   const listNewImages = () => {
     if (imageUrls.length > 0) {
@@ -110,6 +138,12 @@ const EditMarketingActivity = () => {
 
 
   const handleChange = (prop) => (event) => {
+    const onlyNumbersRegex = new RegExp("^[0-9]*$");
+    if((prop === "costIncurred") && !onlyNumbersRegex.exec(event.target.value)){
+      return;
+    }
+
+
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value
@@ -148,12 +182,22 @@ const EditMarketingActivity = () => {
       const filesArray = Array.from(files);
       setIsSendingImage(true)
       allImages = await Promise.all(
-        filesArray.map( async file => await postImage(file.name, file))
+        filesArray.map( async file => await postImage(file.name.replaceAll(" ", "-"), file))
+      )
+    }
+    let allFiles = []
+    if (documentFileRef.current?.files.length) {
+      console.log(documentFileRef.current.files)
+      const files = documentFileRef.current.files;
+      const filesArray = Array.from(files);
+      allFiles = await Promise.all(
+        filesArray.map( async file => await postImage(file.name.replaceAll(" ", "-"), file))
       )
     }
     setIsSendingImage(false)
     let data = {...formData};
     data.images = [...data.images, ...allImages]
+    data.documents = [...data.documents, ...allFiles]
     mutate(data);
   }
 
@@ -226,23 +270,33 @@ const EditMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="costIncurred" className="form-label">Cost Incurred</label>
+                  <label htmlFor="costIncurred" className="form-label">Cost Incurred <span className='ms-3 fw-bold'>{formatAsCurrency(formData.costIncurred)}</span></label>
                   <input type="text" className="form-control" id="costIncurred" value={formData.costIncurred} onChange={handleChange("costIncurred")} />
                 </div>
 
                 <div className="mb-3">
-                    <label htmlFor="images" className="form-label"> Images (<span className='fst-italic text-warning'>required</span>)</label>
-                    <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple />
-                    <span className='text-danger font-monospace small'>{errors.images}</span>
-                    {(imageUrls.length > 0 || formData.images.length > 0) &&
-                      <div>
-                        <h6 className='small fw-bold mt-3'>Images</h6>
-                        <div className="d-flex flex-wrap">
-                          {listExistingImages()}
-                          {listNewImages()}
-                        </div>
-                      </div>}
-                  </div>
+                  <label htmlFor="images" className="form-label"> Images (<span className='fst-italic text-warning'>required</span>)</label>
+                  <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple />
+                  <span className='text-danger font-monospace small'>{errors.images}</span>
+                  {(imageUrls.length > 0 || formData.images.length > 0) &&
+                    <div>
+                      <h6 className='small fw-bold mt-3'>Images</h6>
+                      <div className="d-flex flex-wrap">
+                        {listExistingImages()}
+                        {listNewImages()}
+                      </div>
+                    </div>}
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="documents" className="form-label">Documents</label>
+                  <input className="form-control" id="documents" accept=".pdf, .xlsx, .docx" ref={documentFileRef} type="file" multiple />
+
+                  {formData.documents.length > 0 &&
+                    <ul className="d-flex flex-wrap list-unstyled">
+                      {listExistingDocuments()}
+                    </ul>}
+                </div>
 
                 <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isSendingImage || isLoading} onClick={handleSubmit}>{(isSendingImage || isLoading) ? "Loading..." : "Submit"}</button>
               </form>

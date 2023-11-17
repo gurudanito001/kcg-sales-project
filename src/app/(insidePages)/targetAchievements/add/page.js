@@ -19,6 +19,12 @@ const AddMonthlyTarget = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = (prop) => (event) => {
+    const onlyNumbersRegex = new RegExp("^[0-9]*$");
+    if((prop === "target") && !onlyNumbersRegex.exec(event.target.value)){
+      return;
+    }
+
+
     setFormData(prevState => ({
       ...prevState,
       [prop]: event.target.value

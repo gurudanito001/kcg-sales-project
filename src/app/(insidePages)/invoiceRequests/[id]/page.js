@@ -13,6 +13,7 @@ import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
 import useGetUserData from "@/hooks/useGetUserData";
+import formatAsCurrency from '@/services/formatAsCurrency';
 
 
 const DataListItem = ({title, value}) => {
@@ -257,12 +258,14 @@ const InvoiceRequestDetails = () => {
                   <DataListItem title="Vehicle Model Details" value={data.vehicleModelDetails} />
                   <DataListItem title="Quantity" value={data.quantity} />
                   <DataListItem title="Color" value={data.color} />
-                  <DataListItem title="Total Invoice Value Per Vehicle" value={data.totalInvoiceValuePerVehicle} />
+                  <DataListItem title="Total Invoice Value Per Vehicle" value={formatAsCurrency(data.totalInvoiceValuePerVehicle)} />
                   <DataListItem title="Type of Body Building" value={data.typeOfBodyBuilding} />
                   <DataListItem title="VAT Deduction" value={data.vatDeduction ? "Yes" : "No"} />
                   <DataListItem title="WHT Deduction" value={data.whtDeduction? "Yes" : "No"} />
                   <DataListItem title="Registration" value={data.registration} />
                   <DataListItem title="Rebate Receiver" value={data.rebateReceiver} />
+                  <DataListItem title="Rebate Amount" value={formatAsCurrency(data.rebateAmount)} />
+                  <DataListItem title="Refund To Customer" value={formatAsCurrency(data.refundToCustomer)} />
                   <DataListItem title="Relationship With Transaction" value={data.relationshipWithTransaction} />
                   <DataListItem title="Expected Delivery Date" value={moment(data.expectedDeliveryDate).format('ll')} />
                   <DataListItem title="Delivery Location" value={data.deliveryLocation} />
@@ -274,7 +277,7 @@ const InvoiceRequestDetails = () => {
                   <DataListItem title="Bank Name" value={data.bankName} />
                   <DataListItem title="Bank Account Name" value={data.bankAccountName} />
                   <DataListItem title="Account Number" value={data.accountNumber} />
-                  <DataListItem title="Amount Paid" value={data.amountPaid} />
+                  <DataListItem title="Amount Paid" value={formatAsCurrency(data.amountPaid)} />
                   <DataListItem title="Date Of Payment" value={moment(data.dateOfPayment).format('ll') || "---"} />
                   <DataListItem title="LPO Number" value={data.lpoNumber} />
                   <DataListItem title="Payment Due Date" value={moment(data.paymentDueDate).format('ll')} />

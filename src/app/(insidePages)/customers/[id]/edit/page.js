@@ -8,12 +8,14 @@ import useDispatchMessage from "@/hooks/useDispatchMessage";
 import { useRouter } from "next/navigation";
 import NaijaStates from 'naija-state-local-government';
 import formValidator from "@/services/validation";
+import useGetUserData from "@/hooks/useGetUserData";
 
 const EditCustomer = () => {
   const params = useParams();
   const { id } = params;
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
+  const {userData} = useGetUserData();
 
   const { data, isFetching } = useQuery({
     queryKey: ["allCustomers", id],
@@ -38,6 +40,14 @@ const EditCustomer = () => {
       }))
     }
   }, [data])
+
+  useEffect(()=>{
+    if(userData?.id && data){
+      if((userData?.id !== data.employeeId) || data.approved){
+        router.push(`/customers/${id}`)
+      }
+    }
+  }, [userData, data])
 
 
   const [formData, setFormData] = useState({

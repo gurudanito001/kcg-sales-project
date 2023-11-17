@@ -13,6 +13,7 @@ import { apiGet, apiPost, apiPatch } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
 import useGetUserData from "@/hooks/useGetUserData";
+import formatAsCurrency from '@/services/formatAsCurrency';
 
 
 const DataListItem = ({title, value}) => {
@@ -255,7 +256,7 @@ const PfiRequestDetails = () => {
         {(data?.locked && userData?.staffCadre?.includes("admin")) && <button className="btn btn-outline-primary ms-2"  data-bs-toggle="modal" data-bs-target="#unlockItModal"> {isUnlockingPfi ? "Loading..." : "Unlock It"}<i className="fa-solid fa-lock-open ms-1"></i></button>}
         {(!data?.locked && userData?.id === data?.employeeId) && <a className={`btn btn-link text-primary`} href={`/pfiRequests/${id}/edit`}>Edit</a>}
         {(data?.locked  && userData?.id === data?.employeeId) && <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestEditModal">Request Edit</button>}
-        {(userData?.id === data?.employeeId) && (!data?.approved) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deletePfiRequest">Delete</a>}
+        {(userData?.staffCadre.includes("admin")) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deletePfiRequest">Delete</a>}
       </header>
 
 
@@ -292,13 +293,13 @@ const PfiRequestDetails = () => {
                   <DataListItem title="Body Type Description" value={data.bodyTypeDescription} />
                   <DataListItem title="Vehicle Service Details" value={data.vehicleServiceDetails} />
                   <DataListItem title="Special Fitment Details" value={data.specialFitmentDetails} />
-                  <DataListItem title="Cost For Special Fitment" value={data.costForSpecialFitment} />
-                  <DataListItem title="Price Per Vehicle (inclusive of VAT)" value={data.pricePerVehicle} />
+                  <DataListItem title="Cost For Special Fitment" value={formatAsCurrency(data.costForSpecialFitment)} />
+                  <DataListItem title="Price Per Vehicle (inclusive of VAT)" value={formatAsCurrency(data.pricePerVehicle)} />
                   <DataListItem title="Discount" value={data.discount} />
                   <DataListItem title="VAT Deduction" value={data.vatDeduction ? "Yes" : "No"} />
                   <DataListItem title="WHT Deduction" value={data.whtDeduction? "Yes" : "No"} />
                   <DataListItem title="Registration" value={data.registration? "Yes" : "No"} />
-                  <DataListItem title="Refund/Rebate Amount" value={data.refundRebateAmount} />
+                  <DataListItem title="Refund/Rebate Amount" value={formatAsCurrency(data.refundRebateAmount)} />
                   <DataListItem title="Refund/Rebate Recipient" value={data.refundRebateRecipient} />
                   <DataListItem title="Designation" value={data.designation} />
                   <DataListItem title="Relationship With Transaction" value={data.relationshipWithTransaction} />

@@ -6,14 +6,15 @@ import { getDecodedToken } from "@/services/localStorageService";
 import CommentItem from "@/components/commentItem";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost, apiPatch } from "@/services/apiService";
+import { apiGet, apiPost, apiDelete } from "@/services/apiService";
 import { useParams, useRouter } from 'next/navigation';
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
 import ConfirmationModal from "@/components/confirmationModal";
 import { Modal, ClickAwayListener } from "@mui/material";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 
 const DataListItem = ({title, value}) => {
@@ -61,9 +62,9 @@ const MarketingActivityDetails = () => {
   const params = useParams();
   const {id} = params;
   const router = useRouter();
+  const closeDeleteMarketingActivityModal = useRef();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
-  // const tokenData = getDecodedToken();
   const {userData} = useGetUserData();
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
@@ -86,22 +87,30 @@ const MarketingActivityDetails = () => {
     })
   }) 
 
-  const marketingActivityMutation = useMutation({
-    mutationFn: () => apiPatch({ url: `/marketingActivity/${id}`, data: {isActive: false}})
+  const deleteMarketingActivity = useMutation({
+    mutationFn: () => apiDelete({ url: `/marketingActivity/${id}`})
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: "Marketing Activity deleted successfully"})
+      closeDeleteMarketingActivityModal.current.click();
       router.push("/marketingActivities")
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteMarketingActivityModal.current.click();
     })
   }) 
 
   const listImages = () => {
     return data.images.map(image => {
       return <img key={image} src={image} onClick={handleOpen} style={{cursor: "pointer"}} height="150px" className="p-3 rounded-3" alt="Product Image" />
+    })
+  }
+
+  const listDocuments = () =>{
+    return data.documents.map(file => {
+      return <li className=" my-3" key={file}> <span>{file.slice(56, file.length).replaceAll("%20", "-")}</span> <br /> <a className="btn btn-link px-0" href={file} target="_blank">download</a></li>
     })
   }
 
@@ -128,7 +137,7 @@ const MarketingActivityDetails = () => {
             data-bs-target="#carouselExampleIndicators"
             data-bs-slide-to={index}
             className={`${index === 0 && "active"}`}
-            aria-current={`${index === 0 && "true"}`}
+            aria-current={`${index === 0 ? "true" : ""}`}
             aria-label={`Slide ${index}`}
           />
         )
@@ -219,13 +228,19 @@ const MarketingActivityDetails = () => {
                   <DataListItem title="Objective" value={data.objective} />
                   <DataListItem title="Target Result" value={data.targetResult} />
                   <DataListItem title="Brief Report" value={data.briefReport} />
-                  <DataListItem title="Cost Incurred" value={data.costIncurred} />
+                  <DataListItem title="Cost Incurred" value={formatAsCurrency(data.costIncurred)} />
                   <DataListItem title="Approved" value={data.approved ? "Yes" : "No"} />
                   <div className="mb-3 d-flex flex-column">
                     <h6 className="m-0 me-3">Pictures</h6>
                     <figure>
                       {listImages()}
                     </figure>
+                  </div>
+                  <div className="mb-3 d-flex flex-column">
+                    <h6 className="m-0 me-3 mb-2">Documents</h6>
+                    <ul>
+                      {listDocuments()}
+                    </ul>
                   </div>
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
@@ -293,7 +308,7 @@ const MarketingActivityDetails = () => {
         </div>
       </Modal>
 
-      <ConfirmationModal title="Delete Marketing Activity" message="Are you sure your want to delete this marketing activity? This action cannot be reversed." isLoading={marketingActivityMutation.isLoading} onSubmit={marketingActivityMutation.mutate} id="deleteMarketingActivity" btnColor="danger" />
+      <ConfirmationModal title="Delete Marketing Activity" message="Are you sure your want to delete this marketing activity?" isLoading={deleteMarketingActivity.isLoading} onSubmit={deleteMarketingActivity.mutate} id="deleteMarketingActivity" btnColor="danger" closeButtonRef={closeDeleteMarketingActivityModal} />
     </div>
   )
 }

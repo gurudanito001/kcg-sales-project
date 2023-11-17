@@ -8,7 +8,7 @@ let routeName = "Marketing Activity"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -20,7 +20,6 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-   
     const employeeId = searchParams.get('employeeId');
     let approved: any = searchParams.get('approved');
 
@@ -35,7 +34,6 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.markettingActivity.findMany({
       where: {
-        isActive: true,
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },
@@ -61,7 +59,6 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.markettingActivity.count({
       where: {
-        isActive: true,
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },
@@ -86,7 +83,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

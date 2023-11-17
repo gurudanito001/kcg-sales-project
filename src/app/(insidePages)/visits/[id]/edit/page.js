@@ -9,12 +9,12 @@ import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 import useGetUserData from "@/hooks/useGetUserData";
 import formValidator from "@/services/validation";
+import next from "next";
 
 const EditVisitReport = () => {
   const params = useParams();
   const { userData } = useGetUserData();
   const { id } = params;
-  console.log(id);
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
@@ -36,13 +36,23 @@ const EditVisitReport = () => {
 
   useEffect(() => {
     if (data) {
-      let {employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate } = data;
+      let {employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate, followUpVisits } = data;
+      visitDate = visitDate.split("T")
+      nextVisitDate = nextVisitDate.split("T")
       setFormData(prevState => ({
         ...prevState,
-        employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate
+        employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate: visitDate[0], visitTime: visitDate[1], pfiRequest, nextVisitDate: nextVisitDate[0], nextVisitTime: nextVisitDate[1], followUpVisits
       }))
     }
   }, [data])
+
+  useEffect(()=>{
+    if(userData?.id && data){
+      if((userData?.id !== data.employeeId)){
+        router.push(`/visits/${data.customerId}`)
+      }
+    }
+  }, [userData, data])
 
 
   const[formData, setFormData] = useState({
@@ -56,20 +66,22 @@ const EditVisitReport = () => {
     durationOfMeeting: "",
     meetingOutcome: "",
     visitDate: "",
+    visitTime: "",
     nextVisitDate: "",
+    nextVisitTime: "",
     followUpVisits: [],
     pfiRequest: false
   })
   const [errors, setErrors] = useState({});
 
-  const [followUpData, setFollowUpData] = useState({
+  /* const [followUpData, setFollowUpData] = useState({
     visitDate: "",
     meetingOutcome: ""
-  })
+  }) */
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&approved=approved&isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -84,7 +96,7 @@ const EditVisitReport = () => {
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}&isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -106,7 +118,7 @@ const EditVisitReport = () => {
 
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
-    queryFn: () => apiGet({ url: "/product" })
+    queryFn: () => apiGet({ url: "/product?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -153,12 +165,12 @@ const EditVisitReport = () => {
     }))
   }
 
-  const handleChangeFollowUp = (prop) => (event) => {
+  /* const handleChangeFollowUp = (prop) => (event) => {
     setFollowUpData(prevState => ({
       ...prevState,
       [prop]: event.target.value
     }))
-  }
+  } */
 
   const handleCheckProducts = (product) => (event) => {
     if (event.target.checked) {
@@ -207,7 +219,7 @@ const EditVisitReport = () => {
 
   const queryClient = useQueryClient();
   const { isLoading, mutate } = useMutation({
-    mutationFn: () => apiPatch({ url: `/visitReport/${id}`, data: formData })
+    mutationFn: (data) => apiPatch({ url: `/visitReport/${id}`, data })
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
@@ -222,12 +234,17 @@ const EditVisitReport = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    console.log(formData);
     let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
     if(Object.keys(errors).length){
       return setErrors(errors);
     }
-    mutate()
+    let data = {...formData};
+    data.visitDate = `${data.visitDate}T${data.visitTime}`
+    data.nextVisitDate = `${data.nextVisitDate}T${data.nextVisitTime}`
+    delete data.visitTime;
+    delete data.nextVisitTime;
+    mutate(data)
   }
 
 
@@ -306,6 +323,7 @@ const EditVisitReport = () => {
                     <option value="4hrs">4hrs</option>
                     <option value="4hrs 30 mins">4hrs 30 mins</option>
                     <option value="5 hrs">5 hrs</option>
+                    <option value="Above 5 hrs">5 hrs</option>
                   </select>
                   <span className='text-danger font-monospace small'>{errors.durationOfMeeting}</span>
                 </div>
@@ -317,8 +335,19 @@ const EditVisitReport = () => {
 
                 <div className="mb-3">
                   <label htmlFor="visitDate" className="form-label">Visit Date (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                  <div className="d-flex">
+                    <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                    <input type="time" className="form-control ms-1" id="visitTime" value={formData.visitTime} onChange={handleChange("visitTime")} />
+                  </div>
                   <span className='text-danger font-monospace small'>{errors.visitDate}</span>
+                </div>
+
+                <div className="mb-3">
+                  <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
+                  <div className="d-flex">
+                    <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
+                    <input type="time" className="form-control ms-1" id="nextVisitTime" value={formData.nextVisitTime} onChange={handleChange("nextVisitTime")} />
+                  </div>
                 </div>
 
                 <div className="form-check mb-3">
@@ -326,11 +355,6 @@ const EditVisitReport = () => {
                   <label className="form-check-label fw-bold" htmlFor="pfiRequest">
                     Pfi Request
                   </label>
-                </div>
-
-                <div className="mb-3">
-                  <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
-                  <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
                 </div>
 
                 <div className="mb-3">

@@ -7,7 +7,7 @@ let routeName = "Customer"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -19,11 +19,11 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
-
     const employeeId = searchParams.get('employeeId');
     let approved: any = searchParams.get('approved');
     const state = searchParams.get('state');
     const companyName = searchParams.get('companyName');
+    const isActive = searchParams.get("isActive");
 
     if(approved === "approved"){
       approved = true
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     let myCursor = "";
     const data = await prisma.customer.findMany({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
         ...(state && { state }),
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.customer.count({
       where: {
-        isActive: true,
+        ...(isActive && {isActive: true}),
         ...(employeeId && { employeeId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
         ...(state && { state }),
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

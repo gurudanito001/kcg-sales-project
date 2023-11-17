@@ -28,7 +28,8 @@ const EditEmployee = () => {
     lastName: "",
     email: "",
     employmentDate: "",
-    brandsAssigned: []
+    brandsAssigned: [],
+    isActive: true
   })
   const [errors, setErrors] = useState({});
 
@@ -48,10 +49,10 @@ const EditEmployee = () => {
   })
   useEffect(()=>{
     if(employeeDetailsQuery.data){
-      const {companyId, branchId, supervisorId, staffCadre, firstName, middleName, lastName, email, password, employmentDate, brandsAssigned} = employeeDetailsQuery.data;
+      const {companyId, branchId, supervisorId, staffCadre, firstName, middleName, lastName, email, password, employmentDate, brandsAssigned, isActive} = employeeDetailsQuery.data;
       setFormData( prevState =>({
         ...prevState,
-        companyId, branchId, supervisorId, staffCadre, firstName, middleName, lastName, email, password, employmentDate, brandsAssigned
+        companyId, branchId, supervisorId, staffCadre, firstName, middleName, lastName, email, password, employmentDate, brandsAssigned, isActive
       }))
     }
     
@@ -78,7 +79,7 @@ const EditEmployee = () => {
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
-    queryFn: () => apiGet({ url: "/company" })
+    queryFn: () => apiGet({ url: "/company?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -92,7 +93,7 @@ const EditEmployee = () => {
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
-    queryFn: () => apiGet({ url: "/employee" })
+    queryFn: () => apiGet({ url: "/employee?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -106,7 +107,7 @@ const EditEmployee = () => {
 
   const branchQuery = useQuery({
     queryKey: ["allBranches"],
-    queryFn: () => apiGet({ url: "/branch" })
+    queryFn: () => apiGet({ url: "/branch?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -158,7 +159,7 @@ const EditEmployee = () => {
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands" ],
-    queryFn:  ()=> apiGet({ url: "/brand"})
+    queryFn:  ()=> apiGet({ url: "/brand?isActive=true"})
     .then(res => {
       console.log(res)
       return res.data
@@ -317,6 +318,16 @@ const EditEmployee = () => {
                   {!brandsQuery.isLoading && !brandsQuery.isError &&
                     <div className='d-flex'> {listBrands()} </div>}
                 </div>
+
+                { formData.staffCadre && !formData.staffCadre.includes("admin") && 
+                  <div className="form-check form-switch mb-3">
+                  <input className="form-check-input" type="checkbox" role="switch" checked={formData.isActive} onChange={(e) => setFormData(prevState => ({
+                    ...prevState,
+                    isActive: !prevState.isActive
+                  }))} id="isActive" />
+                  <label className="form-check-label h6" htmlFor="isActive">isActive</label>
+                  <div className="text-danger small ">Toggling off this switch will de-activate this employee account</div>
+                </div>}
 
                 <div className="mt-5">
                   <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading || employeeDetailsQuery.isFetching} onClick={handleSubmit}>{isLoading ? "Loading..." : "Submit"}</button>

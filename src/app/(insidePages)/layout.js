@@ -21,7 +21,7 @@ const styles = {
 
 const Layout = ({ children }) => {
   const [key, setKey] = useState("")
-  const {isLoggedIn, isAllowed, userData, logout, switchAccountType} = useGetUserData();
+  const {isAllowed, userData, logout, switchAccountType} = useGetUserData();
   const {count} = useGetNotifications();
 
   return (
@@ -107,7 +107,7 @@ const Layout = ({ children }) => {
           </nav>
         </header>
 
-        {isLoggedIn && isAllowed && children}
+        {isAllowed && children}
       </main>
       <AppNotifications />
     </div>

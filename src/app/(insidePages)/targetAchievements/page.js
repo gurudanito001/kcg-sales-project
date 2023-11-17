@@ -1,16 +1,15 @@
 "use client"
 
-import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/services/apiService";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiGet, apiDelete } from "@/services/apiService";
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import clipLongText from "@/services/clipLongText";
 import formatMonth from '@/services/formatMonth';
-import { useSelector } from "react-redux";
-import { getDecodedToken } from "@/services/localStorageService";
+import ConfirmationModal from "@/components/confirmationModal";
 import useGetUserData from "@/hooks/useGetUserData";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import ListOfSubordinates from "@/components/listOfSubordinates";
 
 
@@ -44,12 +43,13 @@ const LoadingFallBack = () =>{
 const MonthlyTargets = () =>{  
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
+  const closeDeleteMonthlyTargetModal = useRef();
   const pathname = usePathname();
   const { userData } = useGetUserData();
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("employeeId");
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refetchMonthlyTargets} = useQuery({
     queryKey: ["allMonthlyTargets" ],
     queryFn: ()=>apiGet({ url: `/monthlyTarget`})
     .then(res => {
@@ -63,6 +63,7 @@ const MonthlyTargets = () =>{
     })
   })
   const [salesInvoices, setSalesInvoices] = useState([])
+  const [monthlyTargetToDeleteId, setMonthlyTargetToDeleteId] = useState("")
 
   const fetchInvoiceRequests = () =>{
     apiGet({ url: `/invoiceRequestForm?employeeId=${employeeId || userData.id}&approved=approved&take=5000`})
@@ -127,11 +128,27 @@ const MonthlyTargets = () =>{
           {userData?.staffCadre?.includes("admin") && 
           <td className="border-bottom-0">
             <a className="btn btn-link text-primary ms-auto" href={`/targetAchievements/${id}/edit`}>Edit</a>
+            <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteMonthlyTarget" onClick={()=>setMonthlyTargetToDeleteId(id)}>Delete</a>
           </td>}
         </tr>
     )
     })
   }
+
+  const deleteMonthlyTarget = useMutation({
+    mutationFn: () => apiDelete({ url: `/monthlyTarget/${monthlyTargetToDeleteId}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Monthly Target deleted successfully"})
+      refetchMonthlyTargets()
+      closeDeleteMonthlyTargetModal.current.click();
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteMonthlyTargetModal.current.click();
+    })
+  }) 
 
   const canShowTable = () => {
     let result = false;
@@ -197,6 +214,8 @@ const MonthlyTargets = () =>{
               </div>
             </div>
           </div>
+
+          {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Monthly Target" message="Are you sure your want to delete this monthly target?" isLoading={deleteMonthlyTarget?.isLoading} onSubmit={()=>deleteMonthlyTarget.mutate()} id="deleteMonthlyTarget" btnColor="danger" closeButtonRef={closeDeleteMonthlyTargetModal} />}
         </div>
       }
     </>

@@ -9,14 +9,13 @@ export async function GET(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
         headers: { "Content-Type": "application/json" },
       }); 
     }
-
 
     const { searchParams } = new URL(request.url);
     const singleReport = searchParams.get('singleReport');
@@ -42,6 +41,9 @@ export async function GET(
         include: {
           customer: true,
           contactPerson: true
+        },
+        orderBy: {
+          createdAt: "desc"
         }
       });
     }
@@ -65,7 +67,7 @@ export async function PATCH(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -77,14 +79,24 @@ export async function PATCH(
     const id = params.id;
     let json = await request.json();
   
-    const updatedData = await prisma.visitReport.update({
+    const updatedData: any = await prisma.visitReport.update({
       where: { id },
       data: json,
     });
 
-    if(json?.followUpVisits){
+    // when a visit report is updated, check if the visit date is more current than the lastVisited date on customer
+    // if so update the last visited to the visit date
+    // also check if the last follow-up visit date is more current than the lastVisited date on customer
+    // if so update the last visited date to the last follow-up visit date.
+    // Hope that is clear 
+    const customer: any = await prisma.customer.findUnique({
+      where: {id: updatedData.customerId}
+    })
+    if(json?.followUpVisits.length){
       let lastVisit = json?.followUpVisits[json?.followUpVisits?.length - 1];
-      if(lastVisit){
+      // check if lastVisit meeting Date is greater than customer last visited date
+      let isLatestVisit = new Date(lastVisit.meetingDate).getTime() > new Date(customer?.lastVisited).getTime()
+      if(lastVisit && isLatestVisit){
         await prisma.customer.update({
           where: {
             id: updatedData.customerId
@@ -92,8 +104,8 @@ export async function PATCH(
           data: {lastVisited: lastVisit?.meetingDate}
         })
       }
-
-      if(lastVisit?.nextVisitDate){
+      // this is correct
+      if(lastVisit?.nextVisitDate && new Date(lastVisit.nextVisitDate).getTime() > new Date(updatedData?.nextVisitDate).getTime()){
         await prisma.visitReport.update({
           where: {
             id: updatedData.id
@@ -102,7 +114,7 @@ export async function PATCH(
         })
       }
     }
-    if(json?.visitDate){
+    if(json?.visitDate && new Date(json?.visitDate).getTime() > new Date(customer?.lastVisited).getTime()){
       await prisma.customer.update({
         where: {
           id: json?.customerId
@@ -137,7 +149,7 @@ export async function DELETE(
 ) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

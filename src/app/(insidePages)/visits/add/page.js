@@ -34,7 +34,9 @@ const AddCustomerVisit = () => {
     durationOfMeeting: "",
     meetingOutcome: "",
     visitDate: "",
+    visitTime: "",
     nextVisitDate: "",
+    nextVisitTime: "",
     followUpVisits: [],
     pfiRequest: false
   })
@@ -43,7 +45,7 @@ const AddCustomerVisit = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&approved=approved` })
       .then(res => {
         console.log(res)
         return res.data
@@ -80,7 +82,7 @@ const AddCustomerVisit = () => {
 
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
-    queryFn: () => apiGet({ url: "/product" })
+    queryFn: () => apiGet({ url: "/product?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -175,7 +177,7 @@ const AddCustomerVisit = () => {
 
   const queryClient = useQueryClient();
   const { isLoading, mutate } = useMutation({
-    mutationFn: () => apiPost({ url: "/visitReport", data: formData })
+    mutationFn: (data) => apiPost({ url: "/visitReport", data })
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: res.message })
@@ -195,7 +197,12 @@ const AddCustomerVisit = () => {
     if(Object.keys(errors).length){
       return setErrors(errors);
     }
-    mutate()
+    let data = {...formData};
+    data.visitDate = `${data.visitDate}T${data.visitTime}`
+    data.nextVisitDate = `${data.nextVisitDate}T${data.nextVisitTime}`
+    delete data.visitTime;
+    delete data.nextVisitTime;
+    mutate(data)
   }
 
   return (
@@ -286,13 +293,19 @@ const AddCustomerVisit = () => {
 
                 <div className="mb-3">
                   <label htmlFor="visitDate" className="form-label">Visit Date (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                  <div className="d-flex">
+                    <input type="date" className="form-control" id="visitDate" value={formData.visitDate} onChange={handleChange("visitDate")} />
+                    <input type="time" className="form-control ms-1" id="visitTime" value={formData.visitTime} onChange={handleChange("visitTime")} />
+                  </div>
                   <span className='text-danger font-monospace small'>{errors.visitDate}</span>
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
-                  <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
+                  <div className="d-flex">
+                    <input type="date" className="form-control" id="nextVisitDate" value={formData.nextVisitDate} onChange={handleChange("nextVisitDate")} />
+                    <input type="time" className="form-control ms-1" id="nextVisitTime" value={formData.nextVisitTime} onChange={handleChange("nextVisitTime")} />
+                  </div>
                 </div>
 
                 <div className="form-check mb-3">

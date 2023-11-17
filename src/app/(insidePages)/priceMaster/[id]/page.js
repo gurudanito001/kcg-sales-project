@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/services/apiService";
+import { apiGet, apiPatch, apiDelete } from "@/services/apiService";
 import { useParams, useRouter } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
@@ -9,6 +9,7 @@ import formatAsCurrency from "@/services/formatAsCurrency";
 import moment from "moment";
 import ConfirmationModal from "@/components/confirmationModal";
 import useGetUserData from "@/hooks/useGetUserData";
+import { useRef } from "react";
 
 const DataListItem = ({title, value}) => {
   return (
@@ -55,16 +56,16 @@ const PriceMasterDetails = () => {
   const params = useParams();
   const {id} = params;
   const router = useRouter();
+  const closeDeletePriceMasterModal = useRef();
   const {userData} = useGetUserData();
   console.log(id);
   const dispatchMessage = useDispatchMessage();
 
-  const {data, isFetching} = useQuery({
+  const {data, isFetching, refetch: refetchPriceMasterData} = useQuery({
     queryKey: ["allProductPrices", id],
     queryFn: () => apiGet({ url: `/priceMaster/${id}`})
     .then(res =>{
       console.log(res.data)
-      // dispatchMessage({ message: res.message})
       return res.data
     })
     .catch(error =>{
@@ -74,16 +75,18 @@ const PriceMasterDetails = () => {
     })
   }) 
 
-  const priceMasterMutation = useMutation({
-    mutationFn: () => apiPatch({ url: `/priceMaster/${id}`, data: {isActive: false}})
+  const deletePriceMaster = useMutation({
+    mutationFn: () => apiDelete({ url: `/priceMaster/${id}`})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: "Price Master deleted successfully"})
+      dispatchMessage({ message: "PriceMaster deleted successfully"})
+      closeDeletePriceMasterModal.current.click();
       router.push("/priceMaster")
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+      closeDeletePriceMasterModal.current.click();
     })
   }) 
 
@@ -125,8 +128,10 @@ const PriceMasterDetails = () => {
                   <DataListItem title="Product" value={data.product.name} />
                   <DataListItem title="Brand" value={data.brand.name} />
                   <DataListItem title="Unit Price" value={formatAsCurrency(data.unitPrice)} />
-                  <DataListItem title="Promo Price" value={data.promoPrice ? formatAsCurrency(data.promoPrice) : "---"} />
+                  <DataListItem title="Vat Inclusive?" value={data.vatInclusive ? "Yes" : "No"} />
+                  <DataListItem title="Vat Rate" value={data.vatRate} />
                   <DataListItem title="Any Promo" value={deriveProductStatus(data.unitPrice, data.promoPrice, data.validTill, data.anyPromo).promoActive ? "Yes" : "No"} />
+                  <DataListItem title="Promo Price" value={data.promoPrice ? formatAsCurrency(data.promoPrice) : "---"} />
                   <DataListItem title="Promo Text" value={data.promoText || "---"} />
                   <DataListItem title="Valid From" value={data.validFrom ? `${moment(new Date(data.validFrom)).format('MMMM Do YYYY, h:mm:ss a')}` : "---"} />
                   <DataListItem title="Valid Till" value={data.validTill ? `${moment(new Date(data.validTill)).format('MMMM Do YYYY, h:mm:ss a')}`: "---"} />
@@ -140,7 +145,7 @@ const PriceMasterDetails = () => {
           </div>
         </div>
       </div>
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Price Master" message="Are you sure your want to delete product price? This action cannot be reversed." isLoading={priceMasterMutation.isLoading} onSubmit={priceMasterMutation.mutate} id="deletePriceMaster" btnColor="danger" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Price Master" message="Are you sure your want to delete product price?" isLoading={deletePriceMaster.isLoading} onSubmit={deletePriceMaster.mutate} id="deletePriceMaster" btnColor="danger" closeButtonRef={closeDeletePriceMasterModal} />}
     </div>
   )
 }

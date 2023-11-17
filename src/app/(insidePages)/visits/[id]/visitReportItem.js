@@ -2,7 +2,7 @@ import useGetUserData from "@/hooks/useGetUserData";
 import Skeleton from '@mui/material/Skeleton';
 import useGetComments from '@/hooks/useGetComments';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { apiGet, apiPatch, apiPost } from "@/services/apiService";
 import { useParams } from 'next/navigation';
@@ -11,6 +11,8 @@ import { useSelector } from 'react-redux';
 import ConfirmationModal from '@/components/confirmationModal';
 import DeleteFollowUpButton from '@/components/deleteFollowUpButton';
 import moment from 'moment';
+import formValidator from "@/services/validation";
+
 
 const DataListItem = ({ title, value }) => {
   return (
@@ -56,7 +58,9 @@ const FollowUpLoadingFallBack = () =>{
 const VisitReportItem = ({item, refetchVisitReport}) => {
   const {userData} = useGetUserData();
   const pathName = usePathname();
-  const dispatchMessage = useDispatchMessage()
+  const dispatchMessage = useDispatchMessage();
+  const nextVisitDateRef = useRef();
+  const nextVisitTimeRef = useRef();
   
 
   const followUpVisitMutation = useMutation({
@@ -95,42 +99,48 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
   const handleSubmitFollowUp = (e) => {
     e.preventDefault();
     let id = new Date().getTime();
+    let newFollowUpVisit = { ...followUpVisit }
+    newFollowUpVisit.nextVisitDate = `${newFollowUpVisit.nextVisitDate}T${newFollowUpVisit.nextVisitTime}`;
+    delete newFollowUpVisit.nextVisitTime;
     let followUpData = [
       ...item.followUpVisits,
-      {...followUpVisit, id }
+      {...newFollowUpVisit, id }
     ]
     // return console.log(followUpData)
     followUpVisitMutation.mutate(followUpData);
     setFollowUpVisit(prevState => ({
+      ...prevState,
       id: "",
       meetingDate: "",
       meetingDuration: "",
       meetingOutcome: "",
-      nextVisitDate: ""
+      nextVisitDate: "",
+      nextVisitTime: ""
     }))
   }
-
   
-  const [followUpVisits, setFollowUpVisits] = useState([]);
+  //const [followUpVisits, setFollowUpVisits] = useState([]);
   const [followUpVisit, setFollowUpVisit] = useState({
     id: "",
     meetingDate: "",
     meetingDuration: "",
     meetingOutcome: "",
-    nextVisitDate: ""
+    nextVisitDate: "",
+    nextVisitTime: "",
   })
+  const [editFollowUpVisitData, setEditFollowUpVisitData] = useState({})
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (item) {
       setFollowUpVisits(item.followUpVisits)
     }
-  }, [item])
+  }, [item]) */
   const [showFollowUpVisitForm, setShowFollowUpVisitForm] = useState(false)
   const [errors, setErrors] = useState({})
 
   const listFollowUpVisits = (followUpVisits) => {
     return followUpVisits.map((item, index) => {
-      const { id, meetingDate, meetingDuration, meetingOutcome } = item;
+      const { id, meetingDate, meetingDuration, meetingOutcome, nextVisitDate } = item;
       return (
         <tr key={id} className="hover">
           <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -144,6 +154,9 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
             <div className="d-flex align-items-center gap-2">
               <p className="fw-semibold m-0">{meetingOutcome}</p>
             </div>
+          </td>
+          <td className="border-bottom-0">
+            <p className="mb-0 fw-normal">{moment(nextVisitDate).format('MMMM Do YYYY, h:mm:ss a')}</p>
           </td>
           {(userData?.staffCadre?.includes("salesPerson") && !userData?.staffCadre?.includes("supervisor")) &&
           <td className="border-bottom-0">
@@ -205,8 +218,9 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    //return console.log(commentData)
-    commentMutation.mutate()
+    if(commentData.message){
+      commentMutation.mutate()
+    }
   }
 
   useEffect(() => {
@@ -246,8 +260,16 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
       }),
   })
 
-  const handleChangeNextVisitDate = (event) => {
-    let data = {nextVisitDate: event.target.value}
+  const handleSubmitNextVisitDate = (event) => {
+    event.preventDefault();
+    let date = nextVisitDateRef.current.value;
+    let time = nextVisitTimeRef.current.value;
+    let data = {
+      ...item,
+      nextVisitDate: `${date}T${time}`
+    }
+    delete data.customer;
+    delete data.contactPerson;
     nextVisitDateMutation.mutate(data)
   }
 
@@ -304,7 +326,10 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
 
                 <div className="mb-3">
                   <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
-                  <input type="date" className="form-control shadow-none" value={followUpVisit.nextVisitDate} onChange={handleChangeFollowUp("nextVisitDate")} id="nextVisitDate" />
+                  <div className="d-flex">
+                    <input type="date" className="form-control shadow-none" value={followUpVisit.nextVisitDate} onChange={handleChangeFollowUp("nextVisitDate")} id="nextVisitDate" />
+                    <input type="time" className="form-control shadow-none ms-1" value={followUpVisit.nextVisitTime} onChange={handleChangeFollowUp("nextVisitTime")} id="nextVisitTime" />
+                  </div>
                   <span className='text-danger font-monospace small'>{errors.nextVisitDate}</span>
                 </div>
 
@@ -328,15 +353,19 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
             <DataListItem title="Quantity" value={item?.quantity} />
             <DataListItem title="Duration Of Meeting" value={item?.durationOfMeeting} />
             <DataListItem title="Meeting Outcome" value={item?.meetingOutcome} />
-            <DataListItem title="Visit Date" value={new Date(item?.visitDate).toDateString()} />
+            <DataListItem title="Initial Visit Date" value={moment(item?.visitDate).format('MMMM Do YYYY, h:mm:ss a')} />
             <DataListItem title="Pfi Request" value={item?.pfiRequest ? "Yes" : "No"} />
-            <DataListItem title="Next Visit Date" value={new Date(item?.nextVisitDate).toDateString()} />
+            <DataListItem title="Next Visit Date" value={moment(item?.nextVisitDate).format('MMMM Do YYYY, h:mm:ss a')} />
             <DataListItem title="Created On" value={moment(item?.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
             <DataListItem title="Last Updated" value={moment(item?.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
 
-            <div className="mb-3">
+            <div className="mb-3" style={{maxWidth: "600px"}}>
               <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
-              <input type="date" className="form-control" id="nextVisitDate" defaultValue={item?.nextVisitDate} onChange={handleChangeNextVisitDate} />
+              <div className="d-flex">
+                <input type="date" className="form-control" id="nextVisitDate" ref={nextVisitDateRef} defaultValue={item?.nextVisitDate.split("T")[0]} /* onChange={handleChangeNextVisitDate} */ />
+                <input type="time" className="form-control ms-1" id="nextVisitTime" ref={nextVisitTimeRef} defaultValue={item?.nextVisitDate.split("T")[1]} /* onChange={handleChangeNextVisitDate} */ />
+                <button className="btn btn-sm btn-primary ms-3" disabled={nextVisitDateMutation.isLoading} onClick={handleSubmitNextVisitDate} > {nextVisitDateMutation.isLoading ? "Saving..." : "Save"}</button>
+              </div>
             </div>
           </>
 
@@ -361,6 +390,9 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
                       <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Meeting Outcome</h6>
                       </th>
+                      <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">Next Visit Date</h6>
+                      </th>
                       {(userData?.staffCadre?.includes("salesPerson") && !userData?.staffCadre?.includes("supervisor")) &&
                         <th className="border-bottom-0">
                           <h6 className="fw-semibold mb-0">Actions</h6>
@@ -372,7 +404,6 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
                   </tbody>
                 </table>
               </div>
-
             </div>
           </div>
 

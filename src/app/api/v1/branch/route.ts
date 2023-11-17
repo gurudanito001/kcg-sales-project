@@ -7,7 +7,7 @@ let routeName = "Branch"
 export async function GET(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -19,13 +19,14 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || "1");
     const take = parseInt(searchParams.get('take') || "10");
     const companyId = searchParams.get("companyId");
+    const isActive = searchParams.get("isActive");
     //const offers = await prisma.offer.findMany()
 
     let myCursor = "";
     const data = await prisma.branch.findMany({
       where: {
-        isActive: true,
-        ...(companyId && {companyId})
+        ...(companyId && {companyId}),
+        ...(isActive && {isActive: true})
       },
       take: take,
       skip: (page - 1) * take,
@@ -53,8 +54,8 @@ export async function GET(request: Request) {
     }
     const totalCount = await prisma.branch.count({
       where: {
-        isActive: true,
-        ...(companyId && {companyId})
+        ...(companyId && {companyId}),
+        ...(isActive && {isActive: true})
       }
     })
     const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
@@ -70,14 +71,12 @@ export async function GET(request: Request) {
       headers: { "Content-Type": "application/json" },
     }); 
   }
-  
-    
 }
 
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = authService(token, ["admin"])
+    let {isAuthorized} = await authService(token, ["admin"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,

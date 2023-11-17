@@ -108,7 +108,7 @@ const EditBrand = () =>{
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    let errors = formValidator(["name", "logo"], formData);
+    let errors = formValidator(["name"], formData);
     if(Object.keys(errors).length){
       return setErrors(errors);
     }

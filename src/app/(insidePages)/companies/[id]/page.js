@@ -1,16 +1,15 @@
 "use client"
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/services/apiService";
+import { apiGet, apiPatch, apiDelete } from "@/services/apiService";
 import { useParams } from 'next/navigation';
 import useDispatchMessage from "@/hooks/useDispatchMessage";
 import Skeleton from '@mui/material/Skeleton';
-import Branches from "../../branches/page";
 import { useRouter } from "next/navigation";
 import moment from "moment";
 import ConfirmationModal from "@/components/confirmationModal";
 import useGetUserData from "@/hooks/useGetUserData";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import clipLongText from "@/services/clipLongText";
 
 
@@ -95,11 +94,11 @@ const BranchesLoadingFallBack = () =>{
 const CompanyDetails = () => {
   const params = useParams();
   const router = useRouter();
+  const closeDeleteCompanyModal = useRef();
   const {id} = params;
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const {userData} = useGetUserData();
-  const [deleteBranch, setDeleteBranch] = useState(null);
 
   const {data, isFetching, refetch: refetchCompanyData} = useQuery({
     queryKey: ["allCompanies", id],
@@ -115,12 +114,12 @@ const CompanyDetails = () => {
     })
   }) 
 
-  const companyMutation = useMutation({
+  const disableCompany = useMutation({
     mutationFn: () => apiPatch({ url: `/company/${id}`, data: {isActive: false}})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: "Company deleted successfully"})
-      router.push("/companies")
+      dispatchMessage({ message: "Company disabled successfully"})
+      refetchCompanyData()
     })
     .catch(error =>{
       console.log(error.message)
@@ -128,16 +127,31 @@ const CompanyDetails = () => {
     })
   }) 
 
-  const branchMutation = useMutation({
-    mutationFn: (branchId) => apiPatch({ url: `/branch/${branchId}`, data: {isActive: false}})
+  const reActivateCompany = useMutation({
+    mutationFn: () => apiPatch({ url: `/company/${id}`, data: {isActive: true}})
     .then(res =>{
       console.log(res.data)
-      dispatchMessage({ message: "Branch deleted successfully"})
-      refetchCompanyData();
+      dispatchMessage({ message: "Company activated successfully"})
+      refetchCompanyData()
     })
     .catch(error =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
+    })
+  }) 
+
+  const deleteCompany = useMutation({
+    mutationFn: () => apiDelete({ url: `/company/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Company deleted successfully"})
+      closeDeleteCompanyModal.current.click();
+      router.push("/companies")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      closeDeleteCompanyModal.current.click();
     })
   }) 
 
@@ -157,7 +171,6 @@ const CompanyDetails = () => {
   const listBranches = () => {
     return data.branches.map((item, index) => {
       const { id, name, code, email, phoneNumber, state, lga, address, isHeadOffice, isActive } = item;
-      if (isActive) {
         return (
           <tr key={id} className="hover">
             <td className="border-bottom-0"><h6 className="fw-semibold mb-0">{index + 1}</h6></td>
@@ -181,12 +194,13 @@ const CompanyDetails = () => {
               <p className="mb-0 fw-normal text-capitalize">{isHeadOffice ? "Yes" : "No"}</p>
             </td>
             <td className="border-bottom-0">
+              <p className="mb-0 fw-normal text-capitalize">{isActive ? "Yes" : "No"}</p>
+            </td>
+            <td className="border-bottom-0">
               <a className="btn btn-link text-primary" onClick={() => router.push(`/branches/${id}/edit`)}>Edit</a>
-              <a className="btn btn-link text-danger" onClick={() => setDeleteBranch(id)} data-bs-toggle="modal" data-bs-target="#deleteBranch">Delete</a>
             </td>
           </tr>
         )
-      }
     })
   }
 
@@ -203,9 +217,20 @@ const CompanyDetails = () => {
 
       <div className="row">
         <div className="col-12 d-flex align-items-stretch">
-          <div className="card w-100">
+          <div className="card w-100"> 
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
-              <h5 className="card-title fw-semibold mb-4 opacity-75">Company Details</h5>
+              <header className="d-flex align-items-center mb-4">
+                <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Company Details</h5>
+                {data?.isActive ?
+                  <button className="btn btn-muted ms-auto" disabled={disableCompany.isLoading} onClick={disableCompany.mutate}>
+                    {disableCompany?.isLoading ? "Loading..." : "Disable"}
+                  </button> :
+                  <button className="btn btn-success ms-auto" disabled={reActivateCompany.isLoading} onClick={reActivateCompany.mutate}>
+                    {reActivateCompany?.isLoading ? "Loading..." : "Activate"}
+                  </button>
+                }
+              </header>
+              
 
               {data ?
                 <>
@@ -222,6 +247,7 @@ const CompanyDetails = () => {
                   <DataListItem title="Email" value={data.email} />
                   <DataListItem title="Address" value={data.address} />
                   <DataListItem title="Brands" value={listCompanyBrands()} />
+                  <DataListItem title="Is Active?" value={data.isActive ? "Yes" : "No"} />
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
                 </> :
@@ -258,6 +284,9 @@ const CompanyDetails = () => {
                         <h6 className="fw-semibold mb-0">Head Office?</h6>
                       </th>
                       <th className="border-bottom-0">
+                        <h6 className="fw-semibold mb-0">isActive?</h6>
+                      </th>
+                      <th className="border-bottom-0">
                         <h6 className="fw-semibold mb-0">Actions</h6>
                       </th>
                     </tr>
@@ -272,10 +301,8 @@ const CompanyDetails = () => {
         </div>
       </div>
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Company" message="Are you sure your want to delete this company? This action cannot be reversed." isLoading={companyMutation.isLoading} onSubmit={companyMutation.mutate} id="deleteCompany" btnColor="danger" />}
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Branch" message="Are you sure your want to delete this branch? This action cannot be reversed." isLoading={branchMutation.isLoading} onSubmit={()=>{
-        branchMutation.mutate(deleteBranch)
-      }} id="deleteBranch" btnColor="danger" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Delete Company" message="Are you sure your want to delete this company?" isLoading={deleteCompany?.isLoading} onSubmit={deleteCompany.mutate} id="deleteCompany" btnColor="danger" closeButtonRef={closeDeleteCompanyModal} />}
+
     </div>
   )
 }

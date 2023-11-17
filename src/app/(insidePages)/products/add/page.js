@@ -21,8 +21,8 @@ const AddProduct = () => {
     specifications: "",
     images: [],
     brochures: [],
-    vatInclusive: false,
-    vatRate: ""
+    /* vatInclusive: false,
+    vatRate: "" */
   })
   const [errors, setErrors] = useState({});
 
@@ -33,7 +33,7 @@ const AddProduct = () => {
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
-    queryFn: () => apiGet({ url: "/brand" })
+    queryFn: () => apiGet({ url: "/brand?isActive=true" })
       .then(res => {
         console.log(res)
         return res.data
@@ -131,7 +131,6 @@ const AddProduct = () => {
   }
 
   const postImage = async (filename, file) =>{
-    
     const response = await fetch(
       `/api/v1/uploadImages?filename=${filename}`,
       {
@@ -186,21 +185,6 @@ const AddProduct = () => {
                   <label htmlFor="specifications" className="form-label">Specifications</label>
                   <textarea className="form-control" id="specifications" rows={4} value={formData.specifications} onChange={handleChange("specifications")}></textarea>
                 </div>
-
-                <div className="form-check form-switch mb-3">
-                  <input className="form-check-input" type="checkbox" role="switch" checked={formData.vatInclusive} onChange={(e) => setFormData(prevState => ({
-                    ...prevState,
-                    vatInclusive: !prevState.vatInclusive
-                  }))} id="vatInclusive" />
-                  <label className="form-check-label" htmlFor="vatInclusive">VAT Inclusive</label>
-                </div>
-
-                {formData.vatInclusive &&
-                  <div className="mb-3">
-                    <label htmlFor="vatRate" className="form-label">VAT Rate</label>
-                    <input type="text" className="form-control shadow-none" value={formData.vatRate} onChange={handleChange("vatRate")} id="vatRate" placeholder="VAT Rate" />
-                  </div>}
-
                 <div className="mb-3">
                   <label htmlFor="images" className="form-label">Product Images (<span className='fst-italic text-warning'>required</span>)</label>
                   <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple/>
@@ -215,7 +199,7 @@ const AddProduct = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="images" className="form-label">Brochures</label>
+                  <label htmlFor="brochures" className="form-label">Brochures</label>
                   <input className="form-control" id="brochures" accept="application/pdf,application/vnd.ms-excel"  ref={brochureFileRef} type="file" multiple/>
                 </div>
 
