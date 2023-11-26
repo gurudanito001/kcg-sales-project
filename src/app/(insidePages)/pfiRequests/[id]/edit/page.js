@@ -39,6 +39,7 @@ const EditPfiRequest = () =>{
   useEffect(()=>{
     if(data){
       let {employeeId, customerId, contactPersonId, customerType, companyName, companyAddress, contactPersonName, phoneNumber, emailAddress, brandId, productId, vehicleDetails, quantity,pricePerVehicle, bodyTypeDescription, vehicleServiceDetails, specialFitmentDetails, costForSpecialFitment, discount, vatDeduction, whtDeduction, registration, refundRebateAmount,refundRebateRecipient, designation, relationshipWithTransaction, estimatedOrderClosingTime, paymentType, deliveryLocation, additionalInformation} = data;
+
       setFormData( prevState =>({
         ...prevState,
         employeeId, customerId, contactPersonId, customerType, companyName, companyAddress, contactPersonName, phoneNumber, emailAddress, brandId, productId, vehicleDetails, quantity,pricePerVehicle, bodyTypeDescription, vehicleServiceDetails, specialFitmentDetails, costForSpecialFitment, discount, vatDeduction, whtDeduction, registration, refundRebateAmount,refundRebateRecipient, designation, relationshipWithTransaction, estimatedOrderClosingTime, paymentType, deliveryLocation, additionalInformation
@@ -258,19 +259,19 @@ const EditPfiRequest = () =>{
   }
 
   useEffect(() => {
-    if (formData.customerId) {
-      let data = getCustomerData();
+    let data = getCustomerData();
+    if (formData.customerId && data.companyName) {
       setFormData(prevState => ({
         ...prevState,
         companyName: data.companyName,
         companyAddress: data.address
       }))
     }
-  }, [formData.customerId])
+  }, [formData.customerId, customerQuery.data])
 
   useEffect(() => {
-    if (formData.contactPersonId) {
-      let data = getContactPersonData();
+    let data = getContactPersonData();
+    if (formData.contactPersonId && data.email) {
       setFormData(prevState => ({
         ...prevState,
         contactPersonName: data.name,
@@ -278,14 +279,14 @@ const EditPfiRequest = () =>{
         emailAddress: data.email
       }))
     }
-  }, [formData.contactPersonId])
+  }, [formData.contactPersonId, contactPersonQuery.data])
 
 
 
 
   const handleChange = (prop) => (event) => {
     const onlyNumbersRegex = new RegExp("^[0-9]*$");
-    if((prop === "quantity" || prop === "pricePerVehicle" || "refundRebateAmount" || "estimatedOrderClosingTime" || "costForSpecialFitment") && !onlyNumbersRegex.exec(event.target.value)){
+    if((prop === "quantity" || prop === "pricePerVehicle" || prop === "refundRebateAmount" || prop === "estimatedOrderClosingTime" || prop === "costForSpecialFitment") && !onlyNumbersRegex.exec(event.target.value)){
       return;
     }
 

@@ -11,6 +11,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import useGetUserData from "@/hooks/useGetUserData";
 import formValidator from "@/services/validation";
+import AppAutoComplete from "@/components/autoComplete";
 
 const EditInvoiceRequest = () => {
   const params = useParams();
@@ -74,7 +75,7 @@ const EditInvoiceRequest = () => {
     totalInvoiceValuePerVehicle: "",
     typeOfBodyBuilding: "",
     bodyFabricatorName: "",
-    registration: false,
+    registration: "",
     whtDeduction: false,
     vatDeduction: false,
     rebateAmount: "",
@@ -98,12 +99,11 @@ const EditInvoiceRequest = () => {
   })
 
   const [options, setOptions] = useState([]);
-  const [value, setValue] = useState(options[0]);
+  const [initialValue, setInitialValue] = useState("");
   const [inputValue, setInputValue] = useState('');
   const [errors, setErrors] = useState({})
   const [refund, setRefund] = useState(false);
   
-
 
   useEffect(()=>{
     if(formData.paymentStatus === "Cash"){
@@ -182,17 +182,15 @@ const EditInvoiceRequest = () => {
     if(data.length > 0){
       console.log(data)
       data.forEach( pfi =>{
-        options.push(`${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`)
-        console.log(pfi?.id, formData?.pfiRequestFormId)
+        options.push({id: pfi.id, label: `${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`})
         if(pfi?.id === formData?.pfiRequestFormId){
-          console.log(pfi?.id, formData?.pfiRequestFormId)
-          setValue(`${pfi?.pfiReferenceNumber}--${pfi?.customer?.companyName}--${pfi?.contactPersonName}`);
+          setInitialValue(`${pfi?.pfiReferenceNumber}--${pfi?.customer?.companyName}--${pfi?.contactPersonName}`);
         }
       })
     } 
-    console.log(options)
     setOptions(options)
   }
+
 
   const listBrandOptions = () => {
     if (brandsQuery?.data?.length) {
@@ -215,7 +213,7 @@ const EditInvoiceRequest = () => {
   }
 
   useEffect(() => {
-    if (formData.pfiRequestFormId) {
+    if (formData.pfiRequestFormId && pfiRequestQuery?.data?.length) {
       let { employeeId, customerId, contactPersonId, companyName, companyAddress, phoneNumber, emailAddress, brandId, productId, vehicleDetails, quantity, pricePerVehicle, vatDeduction, whtDeduction, refundRebateAmount, refundRebateRecipient, relationshipWithTransaction, deliveryLocation } = getPfiRequestData();
 
       setFormData(prevState => ({
@@ -226,26 +224,7 @@ const EditInvoiceRequest = () => {
 
   }, [formData.pfiRequestFormId])
 
-  useEffect(()=>{
-    if(formData.paymentStatus === "Cash"){
-      setFormData( prevState => ({
-        ...prevState,
-        lpoNumber: "",
-        paymentDueDate: "",
-        otherPaymentDetails: ""
-      }))
-    }
-    if(formData.paymentStatus === "Credit"){
-      setFormData( prevState => ({
-        ...prevState,
-        bankName: "",
-        bankAccountName: "",
-        amountPaid: "",
-        accountNumber: "",
-        dateOfPayment: ""
-      }))
-    }
-  }, [formData.paymentStatus])
+  
 
 
   const handleChange = (prop) => (event) => {
@@ -323,32 +302,14 @@ const EditInvoiceRequest = () => {
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <h5 className="card-title fw-semibold mb-4 opacity-75">Edit Invoice Request Details</h5>
               <form>
-              <div className="pb-3">
-                  <label htmlFor="discount" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
-                  <Autocomplete
-                    value={value}
-                    size="small"
-                    onChange={(event, newValue) => {
-                      if(newValue === null){newValue = ""}
-                      let pfiReferenceNumber = newValue.split("--")[0];
-                      let pfi = pfiRequestQuery.data.filter(item => item.pfiReferenceNumber === pfiReferenceNumber)
-                      setFormData(prevState => ({
-                        ...prevState,
-                        pfiRequestFormId: pfi[0]?.id || ""
-                      }))
-                      setValue(newValue);
-                    }}
-                    inputValue={inputValue}
-                    onInputChange={(event, newInputValue) => {
-                      console.log(newInputValue)
-                      setInputValue(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={options}
-                    sx={{ width: "100%" }}
-                    style={{fontSize: "14px"}}
-                    renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
-                  />
+                <div className="pb-3">
+                  <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <AppAutoComplete options={options} initialValue={initialValue} handleClickOption={(id)=>{
+                    setFormData( prevState =>({
+                      ...prevState,
+                      pfiRequestFormId: id
+                    }))
+                  }} placeholder="Select pfi reference number" />
                   <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
                 </div>
 

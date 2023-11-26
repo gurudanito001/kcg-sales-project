@@ -15,8 +15,8 @@ export async function POST(
 ) {
   try {
     const token = params.token;
-    const data: {password: string, confirmPassword: string} = await request.json();
-    if(data.password !== data.confirmPassword){
+    const data: {newPassword: string, confirmPassword: string} = await request.json();
+    if(data.newPassword !== data.confirmPassword){
       return new NextResponse(JSON.stringify({message: "Passwords do not match"}), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -28,7 +28,7 @@ export async function POST(
         where: {
           id: user_id,
         },
-      }) ;
+      });
       if(!user){
         return new NextResponse(JSON.stringify({message: "User Not Found!"}), {
           status: 404,
@@ -37,7 +37,7 @@ export async function POST(
       }
       // hash password
       let encryptedPassword
-      if(typeof data.password === "string") encryptedPassword = await bcrypt.hash(data.password, 10);
+      if(typeof data.newPassword === "string") encryptedPassword = await bcrypt.hash(data.newPassword, 10);
       let updateData: any = {...user, password: encryptedPassword}
       await prisma.employee.update({
         where: { id: user_id },

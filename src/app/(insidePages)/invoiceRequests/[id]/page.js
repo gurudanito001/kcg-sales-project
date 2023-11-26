@@ -7,9 +7,9 @@ import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPatch, apiPost } from "@/services/apiService";
+import { apiGet, apiPatch, apiPost, apiDelete } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
 import useGetUserData from "@/hooks/useGetUserData";
@@ -66,6 +66,9 @@ const InvoiceRequestDetails = () => {
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
+  const updateInvoiceRef = useRef();
+  const deleteInvoiceRef = useRef();
+
   const {data, isFetching, refetch: refetchInvoiceRequestData} = useQuery({
     queryKey: ["allInvoiceRequests", id],
     queryFn: () => apiGet({ url: `/invoiceRequestForm/${id}`})
@@ -82,14 +85,16 @@ const InvoiceRequestDetails = () => {
   }) 
 
   const invoiceRequestMutation = useMutation({
-    mutationFn: () => apiPatch({ url: `/invoiceRequestForm/${id}`, data: {isActive: false}})
+    mutationFn: () => apiDelete({ url: `/invoiceRequestForm/${id}`})
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: "Invoice Request deleted successfully"})
+      deleteInvoiceRef.current.click();
       router.push("/invoiceRequests")
     })
     .catch(error =>{
-      console.log(error.message)
+      console.log(error.message);
+      deleteInvoiceRef.current.click();
       dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
@@ -143,11 +148,13 @@ const InvoiceRequestDetails = () => {
     .then(res =>{
       console.log(res.data)
       dispatchMessage({ message: res.message})
-      refetchInvoiceRequestData()
+      refetchInvoiceRequestData();
+      updateInvoiceRef.current.click();
       return res.data
     })
     .catch(error =>{
-      console.log(error)
+      console.log(error);
+      updateInvoiceRef.current.click();
       dispatchMessage({ severity: "error", message: error.message})
     })
   }) 
@@ -223,9 +230,8 @@ const InvoiceRequestDetails = () => {
         <h4 className="m-0">Invoice Requests</h4>
         <span className="breadcrumb-item ms-3"><a href="/invoiceRequests"><i className="fa-solid fa-arrow-left me-1"></i> Back</a></span>
         {userData?.id === data?.employeeId && (!data?.approved) && <a className="btn btn-link text-primary ms-auto" href={`/invoiceRequests/${id}/edit`}>Edit</a>}
-        {userData?.id === data?.employeeId && (!data?.approved) && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteInvoiceRequest">Delete</a>}
+        {userData?.staffCadre.includes("admin") && <a className="btn btn-link text-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteInvoiceRequest">Delete</a>}
       </header>
-
 
       <div className="row">
         <div className="col-12 d-flex flex-column align-items-stretch">
@@ -398,8 +404,9 @@ const InvoiceRequestDetails = () => {
         </div>
       </div>
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`Update Invoice Request`} message={`Are you sure your want to update this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" />}
-      <ConfirmationModal title="Delete Invoice Request" message="Are you sure your want to delete this invoice request? This action cannot be reversed." isLoading={invoiceRequestMutation.isLoading} onSubmit={invoiceRequestMutation.mutate} id="deleteInvoiceRequest" btnColor="danger" />
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title={`Update Invoice Request`} message={`Are you sure your want to update this Invoice Request`} isLoading={isLoadingInvoiceUpdate} onSubmit={handleUpdateInvoice} id="approveModal" closeButtonRef={updateInvoiceRef} />}
+
+      <ConfirmationModal title="Delete Invoice Request" message="Are you sure your want to delete this invoice request? This action cannot be reversed." isLoading={invoiceRequestMutation.isLoading} onSubmit={invoiceRequestMutation.mutate} id="deleteInvoiceRequest" btnColor="danger" closeButtonRef={deleteInvoiceRef} />
     </div>
   )
 }

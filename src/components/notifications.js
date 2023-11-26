@@ -40,7 +40,7 @@ export default function AlertNotification() {
     return success.map((message, index) => {
       setTimeout(() => {
         dispatch(clearMessage({severity: "success", key: message.key}))
-      }, 5000);
+      }, 10000);
       return (
         <Toast key={message.key} id={message.key} message={message.message} severity="success" />
       )

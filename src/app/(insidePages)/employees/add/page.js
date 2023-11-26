@@ -37,12 +37,14 @@ const AddEmployee = () => {
     }else if(formData.staffCadre === "supervisor"){
       setFormData( prevState =>({
         ...prevState,
-        staffCadre: ["supervisor", "salesPerson"]
+        staffCadre: ["supervisor", "salesPerson"],
+        supervisorId: ""
       }))
     }else if(formData.staffCadre === "admin"){
       setFormData( prevState =>({
         ...prevState,
-        staffCadre: ["admin"]
+        staffCadre: ["admin"],
+        supervisorId: ""
       }))
     }
   }, [formData.staffCadre])
@@ -270,14 +272,19 @@ const AddEmployee = () => {
                   <input type="email" className="form-control shadow-none" id="email" onChange={handleChange("email")} value={formData.email} placeholder="Enter your email address" />
                   <span className='text-danger font-monospace small'>{errors.email}</span>
                 </div>
+
                 <PasswordInput defaultValue={formData.password} disabled={true} />
-                <div className="mb-3">
-                  <label htmlFor="supervisorId" className="form-label">Supervisor</label>
-                  <select className="form-select shadow-none" id="supervisorId" value={formData.supervisorId} onChange={handleChange("supervisorId")} aria-label="Default select example">
-                    <option value="">Select Supervisor</option>
-                    {!employeeQuery.isLoading && listSupervisors()}
-                  </select>
-                </div>
+
+                {formData.staffCadre[0] === "salesPerson" &&
+                  <div className="mb-3">
+                    <label htmlFor="supervisorId" className="form-label">Supervisor</label>
+                    <select className="form-select shadow-none" id="supervisorId" value={formData.supervisorId} onChange={handleChange("supervisorId")} aria-label="Default select example">
+                      <option value="">Select Supervisor</option>
+                      {!employeeQuery.isLoading && listSupervisors()}
+                    </select>
+                  </div>
+                }
+                
                 <div className="mb-3">
                   <label htmlFor="employmentDate" className="form-label">Employment Date</label>
                   <input type="date" className="form-control shadow-none" id="employmentDate" onChange={handleChange("employmentDate")} value={formData.employmentDate} placeholder="Enter Employee Employment Date" />

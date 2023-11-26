@@ -9,6 +9,7 @@ import clipLongText from "@/services/clipLongText";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 import useGetUserData from "@/hooks/useGetUserData";
+import * as XLSX from 'xlsx';
 
 const LoadingFallBack = () =>{
   return (
@@ -52,7 +53,7 @@ const Brands = () =>{
   const [formData, setFormData] = useState({
     code: "",
     name: "",
-    isActive: ""
+    isActive: true
   })
 
   const [listMetaData, setListMetaData] = useState({
@@ -183,6 +184,32 @@ const Brands = () =>{
     setQueryUrlString(queryString)
   }
 
+  const allBrandsQuery = useQuery({
+    queryKey: ["allBrands-excel" ],
+    queryFn:  ()=>apiGet({ url: `/brand`})
+    .then(res => {
+      console.log(res)
+      downloadExcel(res.data)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
+    }),
+    enabled: false
+  })
+
+
+  const downloadExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //let buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    //XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+    XLSX.writeFile(workbook, "Brand-DataSheet.xlsx");
+  };
+
   useEffect(()=>{
     console.log(queryUrlString, page)
     refetch()
@@ -220,9 +247,13 @@ const Brands = () =>{
               </div>
             }
 
-            <div className="d-flex col-12 align-items-center mt-5">
+            <div className="gap-2 d-md-flex col-12 align-items-center mt-5">
               <button type="submit" className="btn btn-primary px-5 py-2" disabled={isFetching} onClick={handleSubmit}>{isFetching ? "Filtering..." : "Filter"}</button>
               <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
+              {userData?.staffCadre?.includes("admin") && 
+              <button type="button" className="btn btn-secondary px-5 py-2 ms-auto mt-3 mt-md-0" disabled={allBrandsQuery?.isFetching} onClick={()=>allBrandsQuery.refetch()}>
+                {allBrandsQuery?.isFetching ? "Fetching..." : "Download As Excel"}
+              </button>}
             </div>
           </form>
         </div>

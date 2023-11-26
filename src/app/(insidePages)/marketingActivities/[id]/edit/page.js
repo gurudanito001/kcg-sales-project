@@ -9,11 +9,14 @@ import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 import generateRandomId from "@/services/generateRandomId";
 import formValidator from "@/services/validation";
+import useGetUserData from "@/hooks/useGetUserData";
+import formatAsCurrency from "@/services/formatAsCurrency";
 
 const EditMarketingActivity = () => {
   const params = useParams();
   const { id } = params;
   console.log(id);
+  const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 

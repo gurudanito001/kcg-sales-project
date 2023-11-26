@@ -12,6 +12,7 @@ import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
 import ListOfSubordinates from "@/components/listOfSubordinates";
 import formatAsCurrency from "@/services/formatAsCurrency";
+import * as XLSX from 'xlsx';
 
 
 const LoadingFallBack = () => {
@@ -121,7 +122,7 @@ const MarketingActivity = () => {
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
-    queryFn: () => apiGet({ url: `/employee` })
+    queryFn: () => apiGet({ url: `/employee?isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -224,6 +225,33 @@ const MarketingActivity = () => {
     })
   }
 
+  const allMarketingActivitiesQuery = useQuery({
+    queryKey: ["allMarketingActivities-excel" ],
+    queryFn:  ()=>apiGet({ url: `/marketingActivity`})
+    .then(res => {
+      console.log(res)
+      downloadExcel(res.data)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
+    }),
+    enabled: false
+  })
+
+
+  const downloadExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //let buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    //XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+    XLSX.writeFile(workbook, "MarketingActivities-DataSheet.xlsx");
+  };
+
+
   const canShowTable = () => {
     let result = false;
     if(userData?.staffCadre?.includes("admin")){
@@ -273,9 +301,13 @@ const MarketingActivity = () => {
                 </div>
 
 
-                <div className="d-flex col-12 align-items-center mt-5">
+                <div className="gap-2 d-md-flex col-12 align-items-center mt-5">
                   <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Filtering..." : "Filter"}</button>
                   <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
+                  {userData?.staffCadre?.includes("admin") &&
+                    <button type="button" className="btn btn-secondary px-5 py-2 ms-auto mt-3 mt-md-0" disabled={allMarketingActivitiesQuery?.isFetching} onClick={() => allMarketingActivitiesQuery.refetch()}>
+                      {allMarketingActivitiesQuery?.isFetching ? "Fetching..." : "Download As Excel"}
+                    </button>}
                 </div>
               </form>
             </div>

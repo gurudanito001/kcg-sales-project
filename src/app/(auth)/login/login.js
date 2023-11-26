@@ -29,7 +29,7 @@ const LoginTemplate = ({handleChange, handleSubmit, formData, isLoading}) =>{
                         Remeber Me
                       </label>
                     </div>
-                    <a className="text-primary fw-bold" href="./index.html">Forgot Password ?</a>
+                    <a className="text-primary fw-bold" href="/forgotPassword">Forgot Password ?</a>
                   </div>
                   <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Log In"}</button>
                 </form>

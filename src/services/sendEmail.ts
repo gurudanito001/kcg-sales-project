@@ -1,56 +1,89 @@
 import * as Nodemailer from 'nodemailer';
 import { env } from 'process';
+import {accountCreationTemp, resetPasswordTemp, customerMeetingReminderTemp} from "@/utils/emailTemlates";
 
-interface SendEmailParams {
+type AccountCreationEmailParams = {
+  firstName: string,
+  middleName: string,
+  lastName: string,
   email: string,
-  url: string,
-  message?: string,
-  buttonText?: string
-  subject?: string
-  companyName?: string
 }
-// async..await is not allowed in global scope, must use a wrapper
-export default async function sendEmail({ email, url, message = "verify your email address", buttonText = "Confirm Email", subject = "Account Verification", companyName = process.env.COMPANY_NAME }: SendEmailParams): Promise<any> {
 
-  let transporter = Nodemailer.createTransport({
-    name: "www.marlayer.cloud",  //www.agronigeria.ng
-    host: "smtppro.zoho.com",  //mail.agronigeria.ng
-    port: 465,
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: "account_verification@marlayer.cloud", //no-reply@agronigeria.ng
-      pass: "6eq%tUzv", //AgroNigA!!en90
-    },
-  });
+type ResetPasswordEmailParams = {
+  firstName: string,
+  middleName: string | null,
+  lastName: string,
+  email: string,
+  token: string
+}
 
+type VisitReminderEmailParams = {
+  customerName: string,
+  contactPersonName: string 
+  employeeName: string,
+  visitDate: string,
+  message?: string,
+  email: string
+}
+
+let transporter = Nodemailer.createTransport({
+  name: "www.banjnetdigital.com",  //www.agronigeria.ng
+  host: "mail.banjnetdigital.com",  //mail.agronigeria.ng
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: "noreply@banjnetdigital.com", //no-reply@agronigeria.ng
+    pass: "Noreply.202317", //AgroNigA!!en90
+  },
+});
+
+export async function sendAccountCreationEmail({ firstName, middleName = "", lastName, email }: AccountCreationEmailParams): Promise<any> {
   let mailDetails = {
-    from: 'account_verification@marlayer.cloud',
+    from: 'noreply@banjnetdigital.com',
     to: `${email}`,
-    subject: `${subject} Link`,
+    subject: `Account Creation Email`,
     text: 'Follow the instructions below',
-    html: `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center;">
-            <h1>${companyName}</h1>
-            <p>Click on the button below to ${message}</p>
-            <a
-            href="${url}"
-            target="_blank"
-            style="display: block; width: 250px; border-radius: 25px; border: 1px solid #1942D8; background: #1942D8; color: white; margin: 30px auto; text-align: center; padding: 15px 0px">
-            ${buttonText}
-            </a>
-            <p style="line-height: 1.3rem;">
-            Thanks <br />
-            <em>The Marlayer Cloud Services Team</em>
-            </p>
-        </div>
-        `
+    html: accountCreationTemp({firstName, middleName, lastName, email})
   };
   let info = await transporter.sendMail(mailDetails);
   if (info) {
     return {
       success: true,
-      message: `Check your email: ${email}, click on the button to ${message}`
+      message: `An email has been sent to employee`
     }
   }
+}
 
+export async function sendResetPasswordEmail({ firstName, middleName, lastName, email, token }: ResetPasswordEmailParams): Promise<any> {
+  let mailDetails = {
+    from: 'noreply@banjnetdigital.com',
+    to: `${email}`,
+    subject: `Reset Password Email`,
+    text: 'Follow the instructions below',
+    html: resetPasswordTemp({firstName, middleName, lastName, token})
+  };
+  let info = await transporter.sendMail(mailDetails);
+  if (info) {
+    return {
+      success: true,
+      message: `An email has been sent to employee`
+    }
+  }
+}
+
+export async function sendVisitReminderEmail({ customerName, contactPersonName, email, employeeName, visitDate, message }: VisitReminderEmailParams): Promise<any> {
+  let mailDetails = {
+    from: 'noreply@banjnetdigital.com',
+    to: `${email}`,
+    subject: `Visit Reminder Email`,
+    text: '',
+    html: customerMeetingReminderTemp({customerName, contactPersonName, employeeName, visitDate, message})
+  };
+  let info = await transporter.sendMail(mailDetails);
+  if (info) {
+    return {
+      success: true,
+      message: `An email has been sent to customer`
+    }
+  }
 }

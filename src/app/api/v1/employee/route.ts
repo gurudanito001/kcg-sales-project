@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import authService from "@/services/authService";
+import { sendAccountCreationEmail } from "@/services/sendEmail";
 
 
 let routeName = "Employee"
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
   
     const companyId = searchParams.get('companyId');
     const branchId = searchParams.get('branchId');
@@ -47,8 +48,8 @@ export async function GET(request: Request) {
         ...(lastName && { lastName: { contains: lastName, mode: 'insensitive' } }),
         ...(staffCadre && {staffCadre})
       },
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,
@@ -132,10 +133,11 @@ export async function POST(request: Request) {
       }
     );
     let payload = {...user, token}
+
     //send email
-    /* await sendEmail({email: user.email, url}) */
+    let info = await sendAccountCreationEmail({firstName: data.firstName, lastName: data.lastName, middleName: data?.middleName, email: data.email})
     // return new user
-    return new NextResponse(JSON.stringify({message: `Account Created Successfully`, data: payload}), {
+    return new NextResponse(JSON.stringify({message: `Account Created Successfully. Email sent to employee`, data: payload}), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     }); 

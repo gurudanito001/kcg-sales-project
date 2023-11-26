@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import useGetUserData from "@/hooks/useGetUserData";
 import ListOfSubordinates from "@/components/listOfSubordinates";
+import * as XLSX from 'xlsx';
 
 
 const LoadingFallBack = () =>{
@@ -130,7 +131,7 @@ const PfiRequests = () =>{
 
   const employeeQuery = useQuery({
     queryKey: ["allEmployees"],
-    queryFn: () => apiGet({ url: `/employee` })
+    queryFn: () => apiGet({ url: `/employee?isActive=true`})
       .then(res => {
         console.log(res)
         return res.data
@@ -144,7 +145,7 @@ const PfiRequests = () =>{
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer` })
+    queryFn: () => apiGet({ url: `/customer?approved=approved`})
       .then(res => {
         console.log(res)
         return res.data
@@ -158,7 +159,7 @@ const PfiRequests = () =>{
 
   const contactPersonQuery = useQuery({
     queryKey: ["allContactPersons"],
-    queryFn: () => apiGet({ url: `/contactPerson` })
+    queryFn: () => apiGet({ url: `/contactPerson?employeeId=${userData?.id}` })
       .then(res => {
         console.log(res)
         return res.data
@@ -172,7 +173,7 @@ const PfiRequests = () =>{
 
   const brandQuery = useQuery({
     queryKey: ["allBrands"],
-    queryFn: () => apiGet({ url: `/brand` })
+    queryFn: () => apiGet({ url: `/brand?isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -186,7 +187,7 @@ const PfiRequests = () =>{
 
   const productQuery = useQuery({
     queryKey: ["allProducts"],
-    queryFn: () => apiGet({ url: `/product` })
+    queryFn: () => apiGet({ url: `/product?isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -211,7 +212,7 @@ const PfiRequests = () =>{
     if (formData.employeeId) {
       customers = customers.filter(item => item.employeeId === formData.employeeId)
     }
-    if (customers.length) {
+    if (customers?.length) {
       return customers.map(customer =>
         <option key={customer.id} value={customer.id}>{customer.companyName}</option>
       )
@@ -223,7 +224,7 @@ const PfiRequests = () =>{
     if (formData.customerId) {
       contactPersons = contactPersons.filter(item => item.customerId === formData.customerId)
     }
-    if (contactPersons.length) {
+    if (contactPersons?.length) {
       return contactPersons.map(contactPerson =>
         <option key={contactPerson.id} value={contactPerson.id}>{contactPerson.name}</option>
       )
@@ -243,7 +244,7 @@ const PfiRequests = () =>{
     if (formData.brandId) {
       products = products.filter(item => item.brandId === formData.brandId)
     }
-    if (products.length) {
+    if (products?.length) {
       return products.map(product =>
         <option key={product.id} value={product.id}>{product.name}</option>
       )
@@ -341,6 +342,34 @@ const PfiRequests = () =>{
     })
   }
 
+  const allPfiRequestsQuery = useQuery({
+    queryKey: ["allPfiRequests-excel" ],
+    queryFn:  ()=>apiGet({ url: `/pfiRequestForm`})
+    .then(res => {
+      console.log(res)
+      downloadExcel(res.data)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
+    }),
+    enabled: false
+  })
+
+
+  const downloadExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //let buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    //XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+    XLSX.writeFile(workbook, "PfiRequestForm-DataSheet.xlsx");
+  };
+
+
+
   const canShowTable = () => {
     let result = false;
     if(userData?.staffCadre?.includes("admin")){
@@ -424,9 +453,13 @@ const PfiRequests = () =>{
                 </select>
               </div>
 
-              <div className="d-flex col-12 align-items-center mt-5">
+              <div className="gap-2 d-md-flex col-12 align-items-center mt-5">
                 <button type="submit" className="btn btn-primary px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Filtering..." : "Filter"}</button>
                 <a className="btn btn-outline-primary px-5 py-2 ms-3" onClick={() => setShowFilters(false)}>Cancel</a>
+                  {userData?.staffCadre?.includes("admin") &&
+                    <button type="button" className="btn btn-secondary px-5 py-2 ms-auto mt-3 mt-md-0" disabled={allPfiRequestsQuery?.isFetching} onClick={() => allPfiRequestsQuery.refetch()}>
+                      {allPfiRequestsQuery?.isFetching ? "Fetching..." : "Download As Excel"}
+                    </button>}
               </div>
             </form>
           </div>

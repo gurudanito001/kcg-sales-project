@@ -18,9 +18,10 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
     const employeeId = searchParams.get("employeeId");
     const staffCadre = searchParams.get("staffCadre");
+    console.log("employeeId:", employeeId, " staffCadre:", staffCadre)
     //const offers = await prisma.offer.findMany()
     let whereObject = {}
     if(staffCadre === "admin"){
@@ -30,13 +31,16 @@ export async function GET(request: Request) {
       }
     }else{
       whereObject = {
-        staffCadre: "salesPerson",
-        NOT: {
-          viewedBy: {
-            has: employeeId
+        OR: [
+          {
+            receiverId: employeeId,
+            viewed: false
+          },
+          {
+            staffCadre: "salesPerson",
+            NOT: { viewedBy: {has: employeeId}}
           }
-        },
-        viewed: false,
+        ]
       }
     }
   
@@ -52,13 +56,10 @@ export async function GET(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    const totalCount = await prisma.notification.count({
-      where: whereObject
-    })
     //const lastItemInData = data[(page * take) - 1] // Remember: zero-based index! :)
     //myCursor = lastItemInData?.id // Example: 29
   
-    return new NextResponse(JSON.stringify({/* page, take, */ totalCount, message: `${routeName} list fetched successfully`, data }), {
+    return new NextResponse(JSON.stringify({/* page, take, */ totalCount: data.length, message: `${routeName} list fetched successfully`, data }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     }); 

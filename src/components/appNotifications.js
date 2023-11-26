@@ -1,13 +1,10 @@
 import { getDecodedToken } from "@/services/localStorageService";
-import { useQuery } from "@tanstack/react-query";
-import { apiGet, apiPatch } from "@/services/apiService";
+import { apiDelete, apiGet, apiPatch } from "@/services/apiService";
 import { useRouter } from "next/navigation";
 import useGetNotifications from "@/hooks/useGetNotifications";
-import { useMutation } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
 import { useRef } from "react";
-import getTimeElapsed from "@/services/formatTime";
 import moment from "moment";
+import useGetUserData from "@/hooks/useGetUserData";
 
 
 const styles = {
@@ -28,9 +25,7 @@ const styles = {
 }
 
 
-const NotificationItem = ({ title, message, onClose, onClick, createdAt }) => {
-  let timeElapsedInMillis = new Date(createdAt).getTime()
-  
+const NotificationItem = ({ title, message, onClose, onClick, createdAt }) => {  
   return (
     <div style={styles.notificationItem} className="my-2 text-white" onClick={onClick}>
       <div className="d-flex align-items-center">
@@ -47,7 +42,7 @@ const NotificationItem = ({ title, message, onClose, onClick, createdAt }) => {
 
 
 const AppNotifications = () => {
-  const tokenData = getDecodedToken();
+  const {userData} = useGetUserData()
   const {data, refetch} = useGetNotifications();
   const closeOffCanvas = useRef();
   const router = useRouter()
@@ -55,12 +50,21 @@ const AppNotifications = () => {
   const closeNotification = (notification) =>{
     let patchData = {viewed: true}
     
-    if(notification.staffCadre === "salesPerson" && notification.receiverId === null){
-      let viewedBy = [...notification.viewedBy, tokenData?.user_id]
+    if(notification?.staffCadre === "salesPerson" && notification.receiverId === null){
+      let viewedBy = [...notification.viewedBy, userData?.id]
       patchData = {viewedBy}
-      console.log(patchData)
     }
     //return console.log(patchData)
+    /* apiDelete({ url: `/notification/${notification.id}`})
+    .then( res => {
+      console.log(res)
+      refetch()
+    })
+    .catch( error =>{
+      console.log(error)
+    }) */
+
+
     apiPatch({ url: `/notification/${notification.id}`, data: patchData})
     .then( res => {
       console.log(res)

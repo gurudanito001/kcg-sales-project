@@ -8,6 +8,7 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import useGetUserData from "@/hooks/useGetUserData";
 import formValidator from "@/services/validation";
+import AppAutoComplete from "@/components/autoComplete";
 
 
 const AddCustomerVisit = () => {
@@ -80,6 +81,13 @@ const AddCustomerVisit = () => {
     }
   }, [userData?.id])
 
+  useEffect(()=>{
+    setFormData( prevState =>({
+      ...prevState,
+      contactPersonId: ""
+    }))
+  },[formData.customerId])
+
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
     queryFn: () => apiGet({ url: "/product?isActive=true" })
@@ -109,11 +117,16 @@ const AddCustomerVisit = () => {
     }
   }
 
+  const listCustomerOptions = () => {
+    if (customerQuery.data) {
+      return customerQuery.data.map(customer => {return ({id: customer.id, label: customer.companyName})}
+      )
+    }
+  }
+
   const listContactPersons = () => {
     let persons = contactPersonQuery.data;
-    if (formData.customerId) {
-      persons = persons.filter(person => person.customerId === formData.customerId)
-    }
+    persons = persons.filter(person => person.customerId === formData.customerId)
     if (persons.length > 0) {
       return persons.map(person =>
         <option key={person.id} value={person.id}>{person.name}</option>
@@ -192,7 +205,7 @@ const AddCustomerVisit = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData)
+    // return console.log(formData)
     let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
     if(Object.keys(errors).length){
       return setErrors(errors);
@@ -222,10 +235,12 @@ const AddCustomerVisit = () => {
 
                 <div className="mb-3">
                   <label htmlFor="customerId" className="form-label">Customer (<span className='fst-italic text-warning'>required</span>)</label>
-                  <select className="form-select shadow-none" id="customerId" onChange={handleChange("customerId")} value={formData.customerId} aria-label="Default select example">
-                    <option value="">Select Customer</option>
-                    {!customerQuery.isLoading && listCustomers()}
-                  </select>
+                  <AppAutoComplete options={listCustomerOptions()} handleClickOption={(id)=>{
+                    setFormData( prevState =>({
+                      ...prevState,
+                      customerId: id
+                    }))
+                  }} placeholder="Select Customer" />
                   <span className='text-danger font-monospace small'>{errors.customerId}</span>
                 </div>
                 <div className="mb-3">

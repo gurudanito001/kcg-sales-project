@@ -19,7 +19,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
     const isActive = searchParams.get("isActive");
     const code = searchParams.get('code');
     const name = searchParams.get('name');
@@ -31,8 +31,8 @@ export async function GET(request: Request) {
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(isActive && {isActive: true})
       },
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,

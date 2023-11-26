@@ -12,6 +12,7 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import formValidator from "@/services/validation";
 import { setRef } from "@mui/material";
+import AppAutoComplete from "@/components/autoComplete";
 
 
 
@@ -40,7 +41,7 @@ const AddInvoiceRequest = () => {
     totalInvoiceValuePerVehicle: "",
     typeOfBodyBuilding: "",
     bodyFabricatorName: "",
-    registration: false,
+    registration: "",
     whtDeduction: false,
     vatDeduction: false,
     rebateAmount: "",
@@ -120,7 +121,7 @@ const AddInvoiceRequest = () => {
     if(data.length > 0){
       console.log(data)
       data.forEach( pfi =>{
-        options.push(`${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`)
+        options.push({id: pfi.id, label: `${pfi.pfiReferenceNumber}--${pfi.customer.companyName}--${pfi.contactPersonName}`})
       })
     } 
     console.log(options)
@@ -235,6 +236,7 @@ const AddInvoiceRequest = () => {
     console.log(formData)
     let errors = formValidator(["customerType", "pfiRequestFormId", "invoiceName", "contactOfficeTelephone", "emailAddress", "salesThru", "industry", "industry", "brandId", "productId", "vehicleModelDetails", "quantity", "color", "totalInvoiceValuePerVehicle", "deliveredBy", "paymentStatus"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are missing" })
       return setErrors(errors);
     }
     mutate()
@@ -257,31 +259,13 @@ const AddInvoiceRequest = () => {
               <form>
 
                 <div className="pb-3">
-                  <label htmlFor="discount" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
-                  <Autocomplete
-                    value={value}
-                    size="small"
-                    onChange={(event, newValue) => {
-                      if(newValue === null){newValue = ""}
-                      let pfiReferenceNumber = newValue.split("--")[0];
-                      let pfi = pfiRequestQuery.data.filter(item => item.pfiReferenceNumber === pfiReferenceNumber)
-                      setFormData(prevState => ({
-                        ...prevState,
-                        pfiRequestFormId: pfi[0]?.id || ""
-                      }))
-                      setValue(newValue);
-                    }}
-                    inputValue={inputValue}
-                    onInputChange={(event, newInputValue) => {
-                      console.log(newInputValue)
-                      setInputValue(newInputValue);
-                    }}
-                    id="controllable-states-demo"
-                    options={options}
-                    sx={{ width: "100%" }}
-                    style={{fontSize: "14px"}}
-                    renderInput={(params) => <TextField {...params} label="Pfi Reference Number" style={{fontSize: "14px"}} />}
-                  />
+                  <label htmlFor="pfiRequestFormId" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
+                  <AppAutoComplete options={options} handleClickOption={(id)=>{
+                    setFormData( prevState =>({
+                      ...prevState,
+                      pfiRequestFormId: id
+                    }))
+                  }} placeholder="Select pfi reference number"/>
                   <span className='text-danger font-monospace small'>{errors.pfiRequestFormId}</span>
                 </div>
 

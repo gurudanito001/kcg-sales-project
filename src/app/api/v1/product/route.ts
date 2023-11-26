@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
     const isActive = searchParams.get("isActive");
     const code = searchParams.get('code');
     const name = searchParams.get('name');
@@ -37,8 +37,8 @@ export async function GET(request: Request) {
         ...(name && { name: { contains: name, mode: 'insensitive' } }),
         ...(brandId && { brandId }),
       },
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,
@@ -95,19 +95,6 @@ export async function POST(request: Request) {
         headers: { "Content-Type": "application/json" },
       }); 
     }
-    
-    // validate data here
-    /* if(json.images.length > 0){
-      let productImagesUrls = await Promise.all(
-        json.images.map(async (base64Img: any) => {
-          console.log(base64Img)
-          let image = await uploadToVercel(base64Img.fileName, base64Img.file);
-          return image;
-        })
-      )
-      json.images = productImagesUrls;
-      return console.log(productImagesUrls)
-    } */
 
     let {code} = json;
     let codeExists = await prisma.product.findFirst({ where: {code}})

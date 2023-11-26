@@ -114,6 +114,8 @@ const CompanyDetails = () => {
     })
   }) 
 
+  const [openModal, setOpenModal] = useState(false);
+
   const disableCompany = useMutation({
     mutationFn: () => apiPatch({ url: `/company/${id}`, data: {isActive: false}})
     .then(res =>{

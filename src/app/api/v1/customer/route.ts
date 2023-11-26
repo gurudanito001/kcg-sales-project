@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
     const employeeId = searchParams.get('employeeId');
     let approved: any = searchParams.get('approved');
     const state = searchParams.get('state');
@@ -42,8 +42,8 @@ export async function GET(request: Request) {
         ...(state && { state }),
         ...(companyName && { companyName: { contains: companyName, mode: 'insensitive' } }),
       },
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,

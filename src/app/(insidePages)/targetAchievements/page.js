@@ -11,6 +11,7 @@ import ConfirmationModal from "@/components/confirmationModal";
 import useGetUserData from "@/hooks/useGetUserData";
 import { useEffect, useState, useRef } from "react";
 import ListOfSubordinates from "@/components/listOfSubordinates";
+import * as XLSX from 'xlsx';
 
 
 const LoadingFallBack = () =>{
@@ -66,7 +67,7 @@ const MonthlyTargets = () =>{
   const [monthlyTargetToDeleteId, setMonthlyTargetToDeleteId] = useState("")
 
   const fetchInvoiceRequests = () =>{
-    apiGet({ url: `/invoiceRequestForm?employeeId=${employeeId || userData.id}&approved=approved&take=5000`})
+    apiGet({ url: `/invoiceRequestForm?employeeId=${userData.id}&approved=approved`})
     .then(res => {
       console.log(res)
       setSalesInvoices(res.data)
@@ -149,6 +150,33 @@ const MonthlyTargets = () =>{
       closeDeleteMonthlyTargetModal.current.click();
     })
   }) 
+
+
+  const allTargetAchievementsQuery = useQuery({
+    queryKey: ["allTargetAchievements-excel" ],
+    queryFn:  ()=>apiGet({ url: `/monthlyTarget`})
+    .then(res => {
+      console.log(res)
+      downloadExcel(res.data)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
+    }),
+    enabled: false
+  })
+
+
+  const downloadExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //let buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    //XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+    XLSX.writeFile(workbook, "TargetAchievement-DataSheet.xlsx");
+  };
 
   const canShowTable = () => {
     let result = false;

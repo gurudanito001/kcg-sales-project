@@ -273,6 +273,31 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
     nextVisitDateMutation.mutate(data)
   }
 
+  const sendEmailReminderMutation = useMutation({
+    mutationFn: (data) => apiPost({ url: `/sendEmail/visitReminder`, data })
+      .then(res => {
+        console.log(res.data)
+        dispatchMessage({ message: res.message })
+      })
+      .catch(error => {
+        console.log(error)
+        dispatchMessage({ severity: "error", message: error.message })
+      }),
+  })
+
+  const sendEmailReminder = () =>{
+    let data = {
+      customerName: item.customer.companyName,
+      contactPersonName: item.contactPerson.name,
+      email: item.contactPerson.email,
+      employeeName: `${userData.firstName} ${userData.lastName}`,
+      visitDate: moment(item?.nextVisitDate).format('MMMM Do YYYY, h:mm:ss a'),
+      message: ""
+    }
+    //return console.log(data)
+    sendEmailReminderMutation.mutate(data);
+  }
+
 
   return (
     <div className="accordion-item my-3">
@@ -366,6 +391,7 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
                 <input type="time" className="form-control ms-1" id="nextVisitTime" ref={nextVisitTimeRef} defaultValue={item?.nextVisitDate.split("T")[1]} /* onChange={handleChangeNextVisitDate} */ />
                 <button className="btn btn-sm btn-primary ms-3" disabled={nextVisitDateMutation.isLoading} onClick={handleSubmitNextVisitDate} > {nextVisitDateMutation.isLoading ? "Saving..." : "Save"}</button>
               </div>
+              <button className="btn btn-primary mt-3" disabled={sendEmailReminderMutation.isLoading} onClick={sendEmailReminder} > {sendEmailReminderMutation.isLoading ? "Sending..." : "Send Email Reminder"}</button>
             </div>
           </>
 

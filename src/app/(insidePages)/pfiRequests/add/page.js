@@ -214,7 +214,7 @@ const AddPfiRequest = () => {
 
   const handleChange = (prop) => (event) => {
     const onlyNumbersRegex = new RegExp("^[0-9]*$");
-    if((prop === "quantity" || prop === "pricePerVehicle" || "refundRebateAmount" || "estimatedOrderClosingTime" || "costForSpecialFitment") && !onlyNumbersRegex.exec(event.target.value)){
+    if((prop === "quantity" || prop === "pricePerVehicle" || prop === "refundRebateAmount" || prop === "estimatedOrderClosingTime" || prop === "costForSpecialFitment") && !onlyNumbersRegex.exec(event.target.value)){
       return;
     }
 

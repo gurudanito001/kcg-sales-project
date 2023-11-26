@@ -33,7 +33,7 @@ const EditBranch = () => {
 
   const companyQuery = useQuery({
     queryKey: ["allCompanies"],
-    queryFn: () => apiGet({url: "/company"})
+    queryFn: () => apiGet({url: "/company?isActive=true"})
     .then( (res) => res.data)
     .catch(error =>{
       dispatchMessage({ severity: "error", message: error.message})

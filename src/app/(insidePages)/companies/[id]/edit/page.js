@@ -68,7 +68,7 @@ const EditCompany = () =>{
 
   const brandsQuery = useQuery({
     queryKey: ["allBrands"],
-    queryFn:  ()=> apiGet({ url: "/brand"})
+    queryFn:  ()=> apiGet({ url: "/brand?isActive=true"})
     .then(res => {
       console.log(res)
       return res.data

@@ -51,7 +51,6 @@ const useGetUserData = () => {
         if (data?.staffCadre?.length) {
             let restrictedRoutes = prohibitedRoutes()[data?.staffCadre[0]]
             let viewOnly = viewOnlyRoutes()[data?.staffCadre[0]]
-            console.log(viewOnly)
             if (restrictedRoutes) {
                 for (let i = 0; i < restrictedRoutes.length; i++) {
                     if (pathName.includes(restrictedRoutes[i])) {

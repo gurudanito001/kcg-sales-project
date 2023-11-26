@@ -7,9 +7,9 @@ import { useSelector } from "react-redux";
 import { getDecodedToken } from "@/services/localStorageService";
 import { usePathname } from "next/navigation";
 import useGetComments from "@/hooks/useGetComments";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { apiGet, apiPost, apiPatch } from "@/services/apiService";
+import { apiGet, apiPost, apiPatch, apiDelete } from "@/services/apiService";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from 'moment';
 import useGetUserData from "@/hooks/useGetUserData";
@@ -68,7 +68,13 @@ const PfiRequestDetails = () => {
   const pathName = usePathname();
   const {refetch, comments, listComments} = useGetComments(id);
 
-  const {data, isFetching, refetch: refreshPfiDetails} = useQuery({
+  const approvePfiModalRef = useRef();
+  const lockPfiModalRef = useRef();
+  const unlockPfiModalRef = useRef();
+  const requestEditPfiModalRef = useRef();
+  const deletePfiModalRef = useRef();
+
+  const {data, refetch: refreshPfiDetails} = useQuery({
     queryKey: ["allPfiRequests", id],
     queryFn: () => apiGet({ url: `/pfiRequestForm/${id}`})
     .then(res =>{
@@ -82,20 +88,6 @@ const PfiRequestDetails = () => {
       return {}
     })
   }) 
-
-  const pfiRequestMutation = useMutation({
-    mutationFn: () => apiPatch({ url: `/pfiRequestForm/${id}`, data: {isActive: false}})
-    .then(res =>{
-      console.log(res.data)
-      dispatchMessage({ message: "Pfi Request deleted successfully"})
-      router.push("/pfiRequests")
-    })
-    .catch(error =>{
-      console.log(error.message)
-      dispatchMessage({ severity: "error", message: error.message})
-    })
-  }) 
-
 
   const [commentData, setCommentData] = useState({
     senderId: "",
@@ -125,8 +117,6 @@ const PfiRequestDetails = () => {
 
   const [errors, setErrors] = useState({})
 
-
-
   const clearComment = () => {
     setCommentData( prevState => ({
       ...prevState, 
@@ -139,7 +129,6 @@ const PfiRequestDetails = () => {
       .then(res => {
         clearComment();
         console.log(res.data)
-        //dispatchMessage({ message: res.message })
         refetch()
         
       })
@@ -181,10 +170,12 @@ const PfiRequestDetails = () => {
       .then(res => {
         console.log(res.data)
         refreshPfiDetails()
+        approvePfiModalRef.current.click();
       })
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        approvePfiModalRef.current.click();
       }),
   })
 
@@ -200,11 +191,13 @@ const PfiRequestDetails = () => {
     mutationFn: () => apiPatch({ url: `/pfiRequestForm/${data.id}`, data: {locked: true} })
       .then(res => {
         console.log(res.data)
-        refreshPfiDetails()
+        refreshPfiDetails();
+        lockPfiModalRef.current.click();
       })
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        lockPfiModalRef.current.click();
       }),
   })
 
@@ -214,10 +207,12 @@ const PfiRequestDetails = () => {
       .then(res => {
         console.log(res.data)
         dispatchMessage({ message: "Request has been sent to admin" })
+        requestEditPfiModalRef.current.click()
       })
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        requestEditPfiModalRef.current.click()
       }),
   })
 
@@ -227,12 +222,31 @@ const PfiRequestDetails = () => {
         console.log(res.data)
         dispatchMessage({ message: "Pfi has been unlocked" });
         refreshPfiDetails();
+        unlockPfiModalRef.current.click()
       })
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
+        unlockPfiModalRef.current.click()
       }),
   })
+
+
+  const {mutate: deletePfi, isLoading: isDeletingPfi} = useMutation({
+    mutationFn: () => apiDelete({ url: `/pfiRequestForm/${id}`})
+    .then(res =>{
+      console.log(res.data)
+      dispatchMessage({ message: "Pfi Request deleted successfully"})
+      deletePfiModalRef.current.click();
+      router.push("/pfiRequests")
+    })
+    .catch(error =>{
+      console.log(error.message)
+      dispatchMessage({ severity: "error", message: error.message})
+      deletePfiModalRef.current.click();
+    })
+  }) 
+
  
 
   useEffect(()=>{
@@ -364,16 +378,16 @@ const PfiRequestDetails = () => {
         </div>
       </div>
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Approve Pfi Request" message="Are you sure your want to approve this Pfi Request" isLoading={isLoadingApprovePfi} onSubmit={handleApprovePfiRequest} id="approveModal" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Approve Pfi Request" message="Are you sure your want to approve this Pfi Request" isLoading={isLoadingApprovePfi} onSubmit={handleApprovePfiRequest} id="approveModal" closeButtonRef={approvePfiModalRef} />}
 
-      {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Lock Pfi Request" message="After Locking Pfi Request, Pfi will be sent to admin and you won't be able to make any changes. Do you still want to proceed?" isLoading={isLoadingLockPfi} onSubmit={lockPfiRequest} id="lockItModal" />}
+      {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Lock Pfi Request" message="After Locking Pfi Request, Pfi will be sent to admin and you won't be able to make any changes. Do you still want to proceed?" isLoading={isLoadingLockPfi} onSubmit={lockPfiRequest} id="lockItModal" closeButtonRef={lockPfiModalRef}  />}
 
-      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Unlock Pfi Request" message="After Unlocking Pfi Request, Employee will be able to make changes. Do you still want to proceed?" isLoading={isUnlockingPfi} onSubmit={unLockPfiRequest} id="unlockItModal" />}
+      {userData?.staffCadre?.includes("admin") && <ConfirmationModal title="Unlock Pfi Request" message="After Unlocking Pfi Request, Employee will be able to make changes. Do you still want to proceed?" isLoading={isUnlockingPfi} onSubmit={unLockPfiRequest} id="unlockItModal"  closeButtonRef={unlockPfiModalRef}  />}
 
       {userData?.staffCadre?.includes("salesPerson") && <ConfirmationModal title="Request to Edit Pfi Request" message="A notification will be sent to the admin to unlock the Pfi 
-      Request to enable editing. Do you still want to proceed?" isLoading={isRequestingEdit} onSubmit={requestForEdit} id="requestEditModal" />}
+      Request to enable editing. Do you still want to proceed?" isLoading={isRequestingEdit} onSubmit={requestForEdit} id="requestEditModal" closeButtonRef={requestEditPfiModalRef}  />}
 
-      <ConfirmationModal title="Delete Pfi Request" message="Are you sure your want to delete this Pfi Request? This action cannot be reversed." isLoading={pfiRequestMutation.isLoading} onSubmit={pfiRequestMutation.mutate} id="deletePfiRequest" btnColor="danger" />
+      <ConfirmationModal title="Delete Pfi Request" message="Are you sure your want to delete this Pfi Request? This action cannot be reversed." isLoading={isDeletingPfi} onSubmit={deletePfi} id="deletePfiRequest" btnColor="danger" closeButtonRef={deletePfiModalRef}  />
     </div>
   )
 }

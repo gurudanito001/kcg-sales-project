@@ -11,6 +11,7 @@ import { getDecodedToken } from "@/services/localStorageService";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
+import * as XLSX from 'xlsx';
 
 
 
@@ -137,11 +138,42 @@ const PriceMaster = () =>{
     })
   }
 
+  const allPriceMasterQuery = useQuery({
+    queryKey: ["allPriceMaster-excel" ],
+    queryFn:  ()=>apiGet({ url: `/priceMaster`})
+    .then(res => {
+      console.log(res)
+      downloadExcel(res.data)
+      return res.data
+    })
+    .catch(error =>{
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
+    }),
+    enabled: false
+  })
+
+
+  const downloadExcel = (data) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    //let buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    //XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+    XLSX.writeFile(workbook, "PriceMaster-DataSheet.xlsx");
+  };
+
+
   return (
     <div className="container-fluid">
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Price Master</h4>
         <a className="btn btn-link text-primary ms-auto" href="/priceMaster/add">Add</a>
+        {userData?.staffCadre?.includes("admin") &&
+          <button type="button" className="btn btn-secondary px-5 py-2 ms-3" disabled={allPriceMasterQuery?.isFetching} onClick={() => allPriceMasterQuery.refetch()}>
+            {allPriceMasterQuery?.isFetching ? "Fetching..." : "Download As Excel"}
+          </button>}
       </header>
 
       <div className="row">

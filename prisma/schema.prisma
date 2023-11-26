@@ -363,13 +363,13 @@ model Comment {
 model Notification {
   id          String   @id @default(uuid())
   receiverId  String?
-  staffCadre  String   @default("salesPerson")
+  staffCadre  String?   
   resourceId  String?
   resourceUrl String?
-  title       String?  @default("New Notification")
+  title       String  @default("New Notification")
   message     String
   viewed      Boolean? @default(false)
-  viewedBy    String[] @default(["firstIdJustForTesting"])
+  viewedBy    String[] @default([])
   extraData   Json?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

@@ -18,12 +18,12 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
   
     let myCursor = "";
     const data = await prisma.priceMaster.findMany({
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,

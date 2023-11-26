@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     }
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || "1");
-    const take = parseInt(searchParams.get('take') || "10");
+    const take = parseInt(searchParams.get('take') || "");
     
     const employeeId = searchParams.get('employeeId');
     const customerId = searchParams.get('customerId');
@@ -43,8 +43,8 @@ export async function GET(request: Request) {
         ...(productId && { productId }),
         ...(approved === null ? { OR: [{ approved: true }, { approved: false },] } : { approved }),
       },
-      take: take,
-      skip: (page - 1) * take,
+      ...(Boolean(take) && {take}),
+      ...((Boolean(page) && Boolean(take)) && {skip: (page - 1) * take}),
       ...(myCursor !== "" && {
         cursor: {
           id: myCursor,

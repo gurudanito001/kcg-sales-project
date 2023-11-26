@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation";
 import Compress from "react-image-file-resizer";
 import useGetUserData from "@/hooks/useGetUserData";
 import formValidator from "@/services/validation";
-import next from "next";
+import AppAutoComplete from "@/components/autoComplete";
+
 
 const EditVisitReport = () => {
   const params = useParams();
@@ -37,8 +38,8 @@ const EditVisitReport = () => {
   useEffect(() => {
     if (data) {
       let {employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate, pfiRequest, nextVisitDate, followUpVisits } = data;
-      visitDate = visitDate.split("T")
-      nextVisitDate = nextVisitDate.split("T")
+      visitDate = visitDate?.split("T")
+      nextVisitDate = nextVisitDate?.split("T")
       setFormData(prevState => ({
         ...prevState,
         employeeId, customerId, contactPersonId, callType, status, productsDiscussed, quantity, durationOfMeeting, meetingOutcome, visitDate: visitDate[0], visitTime: visitDate[1], pfiRequest, nextVisitDate: nextVisitDate[0], nextVisitTime: nextVisitDate[1], followUpVisits
@@ -74,10 +75,7 @@ const EditVisitReport = () => {
   })
   const [errors, setErrors] = useState({});
 
-  /* const [followUpData, setFollowUpData] = useState({
-    visitDate: "",
-    meetingOutcome: ""
-  }) */
+  const [initialValue, setInitialValue] = useState("");
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
@@ -116,6 +114,13 @@ const EditVisitReport = () => {
     }
   }, [userData?.id])
 
+  useEffect(()=>{
+    setFormData( prevState =>({
+      ...prevState,
+      contactPersonId: ""
+    }))
+  },[formData.customerId])
+
   const productsQuery = useQuery({
     queryKey: ["allProducts"],
     queryFn: () => apiGet({ url: "/product?isActive=true" })
@@ -141,6 +146,13 @@ const EditVisitReport = () => {
     if (customerQuery.data) {
       return customerQuery.data.map(customer =>
         <option key={customer.id} value={customer.id}> {customer.companyName} </option>
+      )
+    }
+  }
+
+  const listCustomerOptions = () => {
+    if (customerQuery.data) {
+      return customerQuery.data.map(customer => {return ({id: customer.id, label: customer.companyName})}
       )
     }
   }
@@ -234,7 +246,7 @@ const EditVisitReport = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(formData);
+    return console.log(formData);
     let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
     if(Object.keys(errors).length){
       return setErrors(errors);
@@ -246,6 +258,20 @@ const EditVisitReport = () => {
     delete data.nextVisitTime;
     mutate(data)
   }
+
+  const setInitialValueInAutoComplete = () =>{
+    if(customerQuery.data?.length > 0){
+      customerQuery?.data.forEach( customer =>{
+        if(formData?.customerId === customer?.id){
+          setInitialValue(customer.companyName);
+        }
+      })
+    } 
+  }
+
+  useEffect(()=>{
+    setInitialValueInAutoComplete();
+  }, [customerQuery.data, formData.customerId])
 
 
 
@@ -265,10 +291,12 @@ const EditVisitReport = () => {
               <form>
                 <div className="mb-3">
                   <label htmlFor="customerId" className="form-label">Customer (<span className='fst-italic text-warning'>required</span>)</label>
-                  <select className="form-select shadow-none" id="customerId" onChange={handleChange("customerId")} value={formData.customerId} aria-label="Default select example">
-                    <option value="">Select Customer</option>
-                    {!customerQuery.isLoading && listCustomers()}
-                  </select>
+                  <AppAutoComplete options={listCustomerOptions()} handleClickOption={(id)=>{
+                    setFormData( prevState =>({
+                      ...prevState,
+                      customerId: id
+                    }))
+                  }} placeholder="Select Customer" initialValue={initialValue} />
                   <span className='text-danger font-monospace small'>{errors.customerId}</span>
                 </div>
                 <div className="mb-3">
@@ -360,7 +388,7 @@ const EditVisitReport = () => {
                 <div className="mb-3">
                   <label htmlFor="productsDiscussed" className="form-label">Products Discussed (<span className='fst-italic text-warning'>required</span>)</label>
                   {!productsQuery.isLoading && !productsQuery.isError &&
-                    <div className='d-flex'> {listProductOptions()} </div>}
+                    <div className=''> {listProductOptions()} </div>}
                   <span className='text-danger font-monospace small'>{errors.productsDiscussed}</span>
                 </div>
 

@@ -13,6 +13,7 @@ import useGetComments from "@/hooks/useGetComments";
 import ConfirmationModal from '@/components/confirmationModal';
 import moment from "moment";
 import useGetUserData from "@/hooks/useGetUserData";
+import AppAutoComplete from "@/components/autoComplete";
 
 
 const DataListItem = ({title, value}) => {
@@ -90,13 +91,15 @@ const ContactPersonLoadingFallBack = () =>{
 const CustomerDetails = () => {
   const params = useParams();
   const { id } = params;
-  const pathName = usePathname()
+  const pathName = usePathname();
   const router = useRouter();
   const closeDeleteCustomerModal = useRef();
   const closeDeleteContactPersonModal = useRef();
   const {userData} = useGetUserData();
   const dispatchMessage = useDispatchMessage();
   const {refetch, comments, listComments} = useGetComments(id);
+
+  const [options, setOptions] = useState([])
   
   const [currentForm, setCurrentForm] = useState("")
   const [currentlyEditedContactPerson, setCurrentlyEditedContactPerson] = useState({})
@@ -116,18 +119,32 @@ const CustomerDetails = () => {
       })
   })
 
-  /* const customerMutation = useMutation({
-    mutationFn: () => apiPatch({ url: `/customer/${id}`, data: {isActive: false}})
-    .then(res =>{
-      console.log(res.data)
-      dispatchMessage({ message: "Customer deleted successfully"})
-      router.push("/customers")
+  const customerQuery = useQuery({
+    queryKey: ["allCustomers" ],
+    queryFn:  ()=>apiGet({ url: `/customer?approved=approved`})
+    .then(res => {
+      console.log(res);
+      generateOptions(res.data);
+      return res.data;
     })
     .catch(error =>{
-      console.log(error.message)
-      dispatchMessage({ severity: "error", message: error.message})
+      console.log(error)
+      dispatchMessage({severity: "error", message: error.message})
+      return []
     })
-  })  */
+  })
+
+  const generateOptions = (data = []) =>{
+    let options = []
+    if(data.length > 0){
+      console.log(data)
+      data.forEach( item =>{
+        options.push({id: item.id, label: item.companyName})
+      })
+    } 
+    setOptions(options)
+  }
+
   const deleteCustomer = useMutation({
     mutationFn: () => apiDelete({ url: `/customer/${id}`})
     .then(res =>{
@@ -158,18 +175,6 @@ const CustomerDetails = () => {
     })
   }) 
 
-  /* const contactPersonMutation = useMutation({
-    mutationFn: (contactPersonId) => apiPatch({ url: `/contactPerson/${contactPersonId}`, data: {isActive: false}})
-    .then(res =>{
-      console.log(res.data)
-      dispatchMessage({ message: "Contact Person deleted successfully"})
-      refetchCustomerDetails();
-    })
-    .catch(error =>{
-      console.log(error.message)
-      dispatchMessage({ severity: "error", message: error.message})
-    })
-  })  */
 
   const reActivateCompany = useMutation({
     mutationFn: () => apiPatch({ url: `/company/${id}`, data: {isActive: true}})
@@ -291,23 +296,10 @@ const CustomerDetails = () => {
     commentMutation.mutate()
   }
 
-
-
-/*   const { isLoading, mutate: approveCustomer } = useMutation({
-    mutationFn: () => apiPatch({ url: `/customer/${data.id}`, data: formData })
-      .then(res => {
-        console.log(res.data)
-        refetchCustomerDetails()
-      })
-      .catch(error => {
-        console.log(error)
-        dispatchMessage({ severity: "error", message: error.message })
-      }),
-  }) */
  
 
   const listContactPersons = () =>{
-    return data.contactPersons.map( (item, index) => {
+    return data?.contactPersons?.map( (item, index) => {
       const {id, name, email, designation, phoneNumber } = item;
       return( 
         <tr key={id} className="hover">
@@ -369,26 +361,27 @@ const CustomerDetails = () => {
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
                 <header className="d-flex align-items-center mb-4">
                   <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Customer Details</h5>
-                  {data?.approved ?
-                    <button className="btn btn-muted ms-auto" disabled={disApproveCustomer.isLoading} onClick={disApproveCustomer.mutate}>
-                      {disApproveCustomer?.isLoading ? "Loading..." : "Disapprove"}
-                    </button> :
-                    <button className="btn btn-success ms-auto" disabled={approveCustomer.isLoading} onClick={approveCustomer.mutate}>
-                      {approveCustomer?.isLoading ? "Loading..." : "Approve"}
-                    </button>
+                  {userData?.staffCadre?.includes("admin") && 
+                  <>
+                    {data?.approved ?
+                      <button className="btn btn-muted ms-auto" disabled={disApproveCustomer.isLoading} onClick={disApproveCustomer.mutate}>
+                        {disApproveCustomer?.isLoading ? "Loading..." : "Disapprove"}
+                      </button> :
+                      <button className="btn btn-success ms-auto" disabled={approveCustomer.isLoading} onClick={approveCustomer.mutate}>
+                        {approveCustomer?.isLoading ? "Loading..." : "Approve"}
+                      </button>
+                    }
+                  </>
                   }
                 </header>
 
-
-                {/* {
-                  data?.approved ?
-                    <span className="ms-auto border border-success text-success-emphasis px-3 py-2 rounded-3">Approved <i className="fa-regular fa-circle-check ms-1"></i></span> :
-                    <span className="ms-auto border border-muted text-muted px-3 py-2 rounded-2">Pending Approval </span>
-                } */}
-              
-
               {data ?
                 <>
+                  <div className="mb-4">
+                    <label htmlFor="customerSearch" className="form-label">Verify Customer (<span className='fst-italic text-warning'>required</span>)</label>
+                    <AppAutoComplete options={options} handleClickOption={()=>{}}  placeholder="Lookup Customer" />
+                  </div>
+
                   <DataListItem title="Company Name" value={data.companyName} />
                   <DataListItem title="Company Website" value={data.companyWebsite} />
                   <DataListItem title="Industry" value={data.industry} />
@@ -407,19 +400,6 @@ const CustomerDetails = () => {
                   </div>
                   <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
                   <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
-
-                  {/* {userData?.staffCadre?.includes("admin") &&
-                    <>
-                      <div className="form-check my-3">
-                        <input className="form-check-input shadow-none" type="checkbox" value={formData.approved} checked={formData.approved} onChange={handleChange("approved")} id="approved" />
-                        <label className="form-check-label" htmlFor="approved">
-                          Approved
-                        </label>
-                        <div className='form-text text-warning-emphasis'> Check this box to approve customer</div>
-                      </div>
-                      <button className="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#approveCustomer">Update</button>
-                    </>
-                  } */}
                 </> :
                 <LoadingFallBack />
               }
@@ -453,7 +433,7 @@ const CustomerDetails = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {data ? listContactPersons() : <ContactPersonLoadingFallBack />}
+                    {data?.contactPersons ? listContactPersons() : <ContactPersonLoadingFallBack />}
                   </tbody>
                 </table>
               </div>
@@ -474,8 +454,6 @@ const CustomerDetails = () => {
           </div>
         </div>
       </div>
-
-      {/* <ConfirmationModal title="Update Approval Status" message="Are you sure you want to approve this customer?" id="approveCustomer" isLoading={isLoading} onSubmit={approveCustomer} /> */}
 
       <ConfirmationModal title="Delete Customer" message="Are you sure your want to delete this customer?" isLoading={deleteCustomer.isLoading} onSubmit={deleteCustomer.mutate} id="deleteCustomer" btnColor="danger" closeButtonRef={closeDeleteCustomerModal} />
 
