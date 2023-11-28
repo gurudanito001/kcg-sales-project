@@ -114,6 +114,7 @@ const AddCompany = () =>{
     event.preventDefault();
     let errors = formValidator(["name"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     if (!inputFileRef.current?.files.length) {
@@ -182,7 +183,7 @@ const AddCompany = () =>{
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="companyLogo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="companyLogo" className="form-label">Company Logo <span className='fst-italic text-warning ms-4'>required (less than 4mb)</span></label>
                     <input className="form-control" id="companyLogo" accept="image/*" onChange={createImageUrl} ref={inputFileRef} type="file"/>
                     <span className="text-danger font-monospace small">{errors?.logo}</span>
                     {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}
@@ -192,11 +193,6 @@ const AddCompany = () =>{
                         <img src={imageUrl} alt="Logo Preview" className='border rounded' width="100px" />
                       </div>}
                   </div>
-
-                  {/* <div className="mb-3">
-                    <label htmlFor="brands" className="form-label">Brands</label>
-                    <input type="file" className="form-control" id="brands" value={formData.brands} onChange={handleChange("brands")} />
-                  </div> */}
                   <div className="mb-3">
                     <label htmlFor="brands" className="form-label">Brands</label>
                     {!brandsQuery.isLoading && !brandsQuery.isError &&

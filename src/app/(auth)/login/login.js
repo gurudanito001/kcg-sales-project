@@ -1,6 +1,10 @@
-
+"use client"
+import { useState } from "react"
+import { IconButton } from "@mui/material"
 
 const LoginTemplate = ({handleChange, handleSubmit, formData, isLoading}) =>{
+  const [passwordVisible, setPasswordVisible] = useState(false)
+
 
   return(
     <div className="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
@@ -19,8 +23,12 @@ const LoginTemplate = ({handleChange, handleSubmit, formData, isLoading}) =>{
                     <input type="email" className="form-control" id="exampleInputEmail1" value={formData.email} onChange={handleChange("email")} aria-describedby="emailHelp" />
                   </div>
                   <div className="mb-4">
-                    <label htmlFor="exampleInputPassword1" className="form-label">Password</label>
-                    <input type="password" className="form-control"  value={formData.password} onChange={handleChange("password")} id="exampleInputPassword1" />
+                    <label htmlFor="exampleInputPassword1" className="form-label d-flex align-items-center mb-0">
+                      <span>Password</span>
+                      <IconButton className="ms-auto" onClick={()=>setPasswordVisible( prevState => !prevState)}>{passwordVisible ? <i className="fa-regular fa-eye" style={{fontSize: "16px"}}></i> : <i className="fa-regular fa-eye-slash small" style={{fontSize: "16px"}}></i> }</IconButton>
+                    </label>
+
+                    <input type={passwordVisible ? "text" : "password"} className="form-control"  value={formData.password} onChange={handleChange("password")} id="exampleInputPassword1" />
                   </div>
                   <div className="d-flex align-items-center justify-content-between mb-4">
                     <div className="form-check">
@@ -31,7 +39,7 @@ const LoginTemplate = ({handleChange, handleSubmit, formData, isLoading}) =>{
                     </div>
                     <a className="text-primary fw-bold" href="/forgotPassword">Forgot Password ?</a>
                   </div>
-                  <button type="submit" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Log In"}</button>
+                  <button type="button" className="btn btn-primary mt-3 px-5 py-2" disabled={isLoading} onClick={handleSubmit}>{isLoading ? "Loading..." : "Log In"}</button>
                 </form>
               </div>
             </div>

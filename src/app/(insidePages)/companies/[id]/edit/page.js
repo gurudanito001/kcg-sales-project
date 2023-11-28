@@ -145,6 +145,7 @@ const EditCompany = () =>{
     event.preventDefault();
     let errors = formValidator(["name"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     if (!inputFileRef.current?.files.length) {
@@ -215,7 +216,7 @@ const EditCompany = () =>{
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="logo" className="form-label">Company Logo (<span className='fst-italic text-warning'>required</span>)</label>
+                    <label htmlFor="logo" className="form-label">Company Logo <span className='fst-italic text-warning ms-4'>required (less than 4mb)</span></label>
                     <input className="form-control" id="companyLogo" accept="image/*" onChange={createImageUrl} ref={inputFileRef} type="file"/>
                     <span className="text-danger font-monospace small">{errors?.logo}</span>
                     {/* <span className='text-danger font-monospace small'>{errors.logo}</span> */}

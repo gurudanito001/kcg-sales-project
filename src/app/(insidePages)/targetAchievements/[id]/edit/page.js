@@ -82,6 +82,7 @@ const EditMonthlyTarget = () =>{
     console.log(formData);
     let errors = formValidator(["month", "target"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()

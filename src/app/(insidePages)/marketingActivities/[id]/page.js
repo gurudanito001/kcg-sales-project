@@ -188,6 +188,9 @@ const MarketingActivityDetails = () => {
   const handleSubmit = (e)=>{
     e.preventDefault();
     // return console.log(commentData)
+    if(!commentData?.message){
+      return
+    }
     commentMutation.mutate()
   }
 

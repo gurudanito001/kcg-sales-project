@@ -100,6 +100,7 @@ const AddMarketingActivity = () => {
     event.preventDefault();
     let errors = formValidator(["activityName", "activityDate", "participants"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     if (!inputFileRef.current?.files.length) {
@@ -202,7 +203,7 @@ const AddMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="images" className="form-label"> Images (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="images" className="form-label"> Images <span className='fst-italic text-warning ms-4'>required (less than 4mb each)</span></label>
                   <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple/>
                   <span className='text-danger font-monospace small'>{errors.images}</span>
                   {imageUrls.length > 0 &&
@@ -215,7 +216,7 @@ const AddMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="documents" className="form-label">Brochures</label>
+                  <label htmlFor="documents" className="form-label">Documents <span className='fst-italic text-warning ms-4'>(less than 4mb each)</span></label>
                   <input className="form-control" id="brochures" accept=".pdf, .xlsx, .docx"  ref={documentFileRef} type="file" multiple/>
                 </div>
 

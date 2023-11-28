@@ -292,7 +292,9 @@ const CustomerDetails = () => {
 
   const postComment = (e)=>{
     e.preventDefault();
-    // return console.log(commentData, userData)
+    if(!commentData?.message){
+      return
+    }
     commentMutation.mutate()
   }
 
@@ -377,10 +379,10 @@ const CustomerDetails = () => {
 
               {data ?
                 <>
-                  <div className="mb-4">
+                  { (userData?.staffCadre?.includes("admin") && data.approved === false) && <div className="mb-4">
                     <label htmlFor="customerSearch" className="form-label">Verify Customer (<span className='fst-italic text-warning'>required</span>)</label>
-                    <AppAutoComplete options={options} handleClickOption={()=>{}}  placeholder="Lookup Customer" />
-                  </div>
+                    <AppAutoComplete options={options} handleClickOption={()=>{}}  placeholder="Search Company Name" />
+                  </div>}
 
                   <DataListItem title="Company Name" value={data.companyName} />
                   <DataListItem title="Company Website" value={data.companyWebsite} />

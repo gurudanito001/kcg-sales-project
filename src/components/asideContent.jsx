@@ -33,7 +33,7 @@ const AsideContent = () => {
           <h6 className="text-capitalize"><span className="text-muted">{userData?.firstName} {userData?.lastName}</span> - {`${userData?.accountType || (userData?.staffCadre[0] || "") }`}</h6>
         </a>
         <div className="close-btn d-xl-none d-block sidebartoggler cursor-pointer ms-auto" id="sidebarCollapse" data-bs-dismiss="offcanvas" aria-label="Close">
-          <i className="ti ti-x fs-8"></i>
+          <i className="ti ti-x fs-6"></i>
         </div>
       </div>
       <ul id="sidebarnav">

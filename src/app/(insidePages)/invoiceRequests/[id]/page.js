@@ -210,6 +210,9 @@ const InvoiceRequestDetails = () => {
   const handleSubmit = (e)=>{
     e.preventDefault();
     console.log(commentData)
+    if(!commentData?.message){
+      return
+    }
     commentMutation.mutate()
   }
 

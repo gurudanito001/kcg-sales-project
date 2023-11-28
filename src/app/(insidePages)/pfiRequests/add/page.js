@@ -253,6 +253,7 @@ const AddPfiRequest = () => {
     console.log(formData)
     let errors = formValidator(["customerType", "companyName", "contactPersonName", "phoneNumber", "emailAddress", "brandId", "productId", "vehicleDetails", "quantity", "pricePerVehicle", "estimatedOrderClosingTime"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()

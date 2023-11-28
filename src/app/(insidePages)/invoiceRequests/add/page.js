@@ -113,8 +113,21 @@ const AddInvoiceRequest = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return []
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
+      enabled: false
   })
+
+  useEffect(()=>{
+    if(userData?.id){
+      pfiRequestQuery.refetch();
+    }
+  }, [userData?.id])
+
+
+
+
+
+
 
   const generatePfiOptions = (data = []) =>{
     let options = []

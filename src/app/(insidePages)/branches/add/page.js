@@ -108,6 +108,7 @@ const AddBranch = () =>{
     console.log(formData)
     let errors = formValidator(["companyId", "name"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()

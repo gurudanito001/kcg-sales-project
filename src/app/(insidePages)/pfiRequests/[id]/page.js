@@ -148,6 +148,9 @@ const PfiRequestDetails = () => {
   const handleSubmitComment = (e)=>{
     e.preventDefault();
     // return console.log(commentData)
+    if(!commentData?.message){
+      return
+    }
     commentMutation.mutate()
   }
 

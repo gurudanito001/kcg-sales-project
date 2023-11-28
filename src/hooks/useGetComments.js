@@ -10,6 +10,7 @@ const useGetComments = (id) =>{
     queryKey: ["allComments", id],
     queryFn: () => apiGet({ url: `/comment?resourceId=${id}` })
       .then(res => {
+        console.log(res.data)
         return res.data
       })
       .catch(error => {

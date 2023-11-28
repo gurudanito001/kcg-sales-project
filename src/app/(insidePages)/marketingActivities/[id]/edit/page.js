@@ -175,6 +175,7 @@ const EditMarketingActivity = () => {
       if(Object.keys(errors).length == 1 && errors.images && inputFileRef.current?.files.length){
         // do nothing
       }else{
+        dispatchMessage({ severity: "error", message: "Some required fields are empty" })
         return setErrors(errors);
       }
     }
@@ -278,7 +279,7 @@ const EditMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="images" className="form-label"> Images (<span className='fst-italic text-warning'>required</span>)</label>
+                  <label htmlFor="images" className="form-label"> Images <span className='fst-italic text-warning ms-4'>required (less than 4mb)</span></label>
                   <input className="form-control" id="images" accept="image/*" onChange={createImageUrls} ref={inputFileRef} type="file" multiple />
                   <span className='text-danger font-monospace small'>{errors.images}</span>
                   {(imageUrls.length > 0 || formData.images.length > 0) &&
@@ -292,7 +293,7 @@ const EditMarketingActivity = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="documents" className="form-label">Documents</label>
+                  <label htmlFor="documents" className="form-label">Documents <span className='fst-italic text-warning ms-4'>(less than 4mb)</span></label>
                   <input className="form-control" id="documents" accept=".pdf, .xlsx, .docx" ref={documentFileRef} type="file" multiple />
 
                   {formData.documents.length > 0 &&

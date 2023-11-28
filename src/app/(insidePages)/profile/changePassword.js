@@ -43,6 +43,9 @@ const ChangePassword = () =>{
     <div>
       <header className="d-flex align-items-center mb-4">
         <h4 className="m-0">Change Password</h4>
+        <div className="close-btn d-block sidebartoggler cursor-pointer ms-auto" id="sidebarCollapse" data-bs-dismiss="offcanvas" aria-label="Close">
+          <i className="ti ti-x fs-6"></i>
+        </div>
       </header>
 
       <form>

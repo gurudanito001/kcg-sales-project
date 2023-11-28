@@ -150,6 +150,7 @@ const EditPriceMaster = () => {
     console.log(formData)
     let errors = formValidator(["brandId", "productId", "unitPrice"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()

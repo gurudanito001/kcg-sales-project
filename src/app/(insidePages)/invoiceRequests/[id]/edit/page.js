@@ -281,6 +281,7 @@ const EditInvoiceRequest = () => {
     console.log(formData);
     let errors = formValidator(["customerType", "pfiRequestFormId", "invoiceName", "contactOfficeTelephone", "emailAddress", "salesThru", "industry", "industry", "brandId", "productId", "vehicleModelDetails", "quantity", "color", "totalInvoiceValuePerVehicle", "deliveredBy", "paymentStatus"], formData);    
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()       

@@ -32,8 +32,7 @@ export default function Login() {
   }
 
   const {mutate, isLoading} = useMutation({
-    mutationFn: ()=>{
-      apiPost({ url: `/auth/login`, data: formData })
+    mutationFn: ()=>apiPost({ url: `/auth/login`, data: formData })
       .then(res => {
         console.log(res)
         dispatchMessage({message: res.message})
@@ -46,8 +45,12 @@ export default function Login() {
         console.log(error)
         dispatchMessage({severity: "error", message: error.message})
       })
-    }
   })
+
+
+  useEffect(()=>{
+    console.log(isLoading)
+  },[isLoading])
 
   const handleSubmit = (e) => {
     e.preventDefault();

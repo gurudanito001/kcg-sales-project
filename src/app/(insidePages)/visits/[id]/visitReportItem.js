@@ -218,9 +218,10 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if(commentData.message){
-      commentMutation.mutate()
+    if(!commentData?.message){
+      return
     }
+    commentMutation.mutate()
   }
 
   useEffect(() => {

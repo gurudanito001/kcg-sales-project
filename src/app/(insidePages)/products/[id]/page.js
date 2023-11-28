@@ -203,14 +203,17 @@ const ProductDetails = () => {
             <div className="card-body p-4" style={{ maxWidth: "700px" }}>
               <header className="d-flex align-items-center mb-4">
                 <h5 className="card-title fw-semibold m-0 p-0 opacity-75">Product Details</h5>
+                
+                {userData?.staffCadre.includes("admin") && <>
                 {data?.isActive ?
                   <button className="btn btn-muted ms-auto" disabled={disableProduct.isLoading} onClick={disableProduct.mutate}>
                     {disableProduct?.isLoading ? "Loading..." : "Disable"}
                   </button> :
                   <button className="btn btn-success ms-auto" disabled={reActivateProduct.isLoading} onClick={reActivateProduct.mutate}>
                     {reActivateProduct?.isLoading ? "Loading..." : "Activate"}
-                  </button>
-                }
+                  </button>}
+                </>}
+                
               </header>
 
               {data ?

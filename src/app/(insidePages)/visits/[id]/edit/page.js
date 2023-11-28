@@ -249,6 +249,7 @@ const EditVisitReport = () => {
     return console.log(formData);
     let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     let data = {...formData};

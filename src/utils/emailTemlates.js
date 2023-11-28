@@ -56,7 +56,7 @@ export function customerMeetingReminderTemp ({customerName, contactPersonName, e
   <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center;">
       <h1>${process.env.COMPANY_NAME} Visit Appointment Reminder Email</h1>
       <p>
-        Hello Mr/Mrs <b>${contactPersonName} of ${customerName} </b> <br /> <br />
+        Hello <b>${contactPersonName} of ${customerName} </b> <br /> <br />
         This is to remind you of your visit with ${employeeName} on ${visitDate} <br />
       </p>
       <p>

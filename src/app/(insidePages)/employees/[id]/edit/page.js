@@ -237,6 +237,7 @@ const EditEmployee = () => {
     console.log(formData)
     let errors = formValidator(["companyId", "branchId", "staffCadre", "firstName", "lastName", "email"], formData);
     if(Object.keys(errors).length){
+      dispatchMessage({ severity: "error", message: "Some required fields are empty" })
       return setErrors(errors);
     }
     mutate()
