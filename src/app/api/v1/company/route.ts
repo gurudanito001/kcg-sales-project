@@ -41,11 +41,8 @@ export async function GET(request: Request) {
       include: {
         _count: {
           select: {
-            branches: {
-              where: {
-                isActive: true
-              }
-          }}
+            branches: true
+          }
         }
       },
       orderBy: {

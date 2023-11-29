@@ -64,9 +64,8 @@ const PfiRequestDetails = () => {
   console.log(id);
   const dispatchMessage = useDispatchMessage();
   const {userData} = useGetUserData();
-  // const tokenData = getDecodedToken();
   const pathName = usePathname();
-  const {refetch, comments, listComments} = useGetComments(id);
+  const {refetch, listComments} = useGetComments(id);
 
   const approvePfiModalRef = useRef();
   const lockPfiModalRef = useRef();
@@ -86,7 +85,8 @@ const PfiRequestDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
-    })
+    }),
+    staleTime: Infinity
   }) 
 
   const [commentData, setCommentData] = useState({
@@ -183,7 +183,7 @@ const PfiRequestDetails = () => {
   })
 
   const handleApprovePfiRequest = () =>{
-    if(!formData.pfiDate && !formData.pfiReferenceNumber){
+    if((!formData.pfiDate || !formData.pfiReferenceNumber) && formData.approved){
       return dispatchMessage({ severity: "error", message: `Fill in Pfi Reference Number and Pfi Date`})
     }
     console.log(formData)
@@ -342,13 +342,13 @@ const PfiRequestDetails = () => {
               <form>
                 <div className="mb-3">
                   <label htmlFor="pfiReferenceNumber" className="form-label">Pfi Reference Number (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="text" className="form-control shadow-none" value={formData.pfiReferenceNumber || data?.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} id="pfiReferenceNumber" />
+                  <input type="text" className="form-control shadow-none" value={formData.pfiReferenceNumber} onChange={handleChange("pfiReferenceNumber")} id="pfiReferenceNumber" />
                   <span className='text-danger font-monospace small'>{errors.pfiReferenceNumber}</span>
                 </div>
 
                 <div className="mb-3">
                   <label htmlFor="pfiDate" className="form-label">Pfi Date (<span className='fst-italic text-warning'>required</span>)</label>
-                  <input type="date" className="form-control shadow-none" value={formData.pfiDate || data?.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
+                  <input type="date" className="form-control shadow-none" value={formData.pfiDate} onChange={handleChange("pfiDate")} id="pfiDate" />
                   <span className='text-danger font-monospace small'>{errors.pfiDate}</span>
                 </div>
 

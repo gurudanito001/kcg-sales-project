@@ -116,12 +116,10 @@ const PriceMaster = () =>{
             <h6 className="fw-semibold mb-1">{deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive ? "Yes" : "No"}</h6>
           </td>
           <td className="border-bottom-0">
-            <p className="small mb-0">{validFrom ? `${moment(new Date(validFrom)).format('lll')}` : "---"}</p>
+            <p className="small mb-0">{(validFrom && deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive) ? `${moment(new Date(validFrom)).format('lll')}` : "---"}</p>
           </td>
-          {/* <DataListItem title="Created On" value={moment(data.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
-                  <DataListItem title="Last Updated" value={moment(data.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} /> */}
           <td className="border-bottom-0">
-            <p className="small mb-0">{validTill ? `${moment(new Date(validTill)).format('lll')}` : "---"}</p>
+            <p className="small mb-0">{(validTill && deriveProductStatus(unitPrice, promoPrice, validTill, anyPromo).promoActive) ? `${moment(new Date(validTill)).format('lll')}` : "---"}</p>
           </td>
           <td className="border-bottom-0">
             <p className="small mb-0">{product?.isActive ? "Yes" : "No"}</p>
