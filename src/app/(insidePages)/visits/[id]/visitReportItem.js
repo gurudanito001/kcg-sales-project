@@ -385,15 +385,16 @@ const VisitReportItem = ({item, refetchVisitReport}) => {
             <DataListItem title="Created On" value={moment(item?.createdAt).format('MMMM Do YYYY, h:mm:ss a')} />
             <DataListItem title="Last Updated" value={moment(item?.updatedAt).format('MMMM Do YYYY, h:mm:ss a')} />
 
+            {userData?.id === item?.employeeId &&
             <div className="mb-3" style={{maxWidth: "600px"}}>
               <label htmlFor="nextVisitDate" className="form-label">Next Visit Date</label>
               <div className="d-flex">
-                <input type="date" className="form-control" id="nextVisitDate" ref={nextVisitDateRef} defaultValue={item?.nextVisitDate.split("T")[0]} /* onChange={handleChangeNextVisitDate} */ />
-                <input type="time" className="form-control ms-1" id="nextVisitTime" ref={nextVisitTimeRef} defaultValue={item?.nextVisitDate.split("T")[1]} /* onChange={handleChangeNextVisitDate} */ />
+                <input type="date" className="form-control" id="nextVisitDate" ref={nextVisitDateRef} defaultValue={item?.nextVisitDate.split("T")[0]} />
+                <input type="time" className="form-control ms-1" id="nextVisitTime" ref={nextVisitTimeRef} defaultValue={item?.nextVisitDate.split("T")[1]} />
                 <button className="btn btn-sm btn-primary ms-3" disabled={nextVisitDateMutation.isLoading} onClick={handleSubmitNextVisitDate} > {nextVisitDateMutation.isLoading ? "Saving..." : "Save"}</button>
               </div>
               <button className="btn btn-primary mt-3" disabled={sendEmailReminderMutation.isLoading} onClick={sendEmailReminder} > {sendEmailReminderMutation.isLoading ? "Sending..." : "Send Email Reminder"}</button>
-            </div>
+            </div>}
           </>
 
           <div className="card w-100">
