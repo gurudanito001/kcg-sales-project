@@ -135,7 +135,9 @@ const Products = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const listBrandOptions = () => {
@@ -164,7 +166,9 @@ const Products = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const deriveProductStatus = (priceData)=>{

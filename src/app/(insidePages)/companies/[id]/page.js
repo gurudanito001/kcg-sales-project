@@ -100,7 +100,7 @@ const CompanyDetails = () => {
   const dispatchMessage = useDispatchMessage();
   const {userData} = useGetUserData();
 
-  const {data, isFetching, refetch: refetchCompanyData} = useQuery({
+  const {data, refetch: refetchCompanyData} = useQuery({
     queryKey: ["allCompanies", id],
     queryFn: () => apiGet({ url: `/company/${id}`})
     .then(res =>{
@@ -111,7 +111,9 @@ const CompanyDetails = () => {
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
       return {}
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   }) 
 
   const [openModal, setOpenModal] = useState(false);

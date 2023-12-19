@@ -130,7 +130,9 @@ const InvoiceRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const customerQuery = useQuery({
@@ -144,7 +146,9 @@ const InvoiceRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const contactPersonQuery = useQuery({
@@ -157,7 +161,9 @@ const InvoiceRequests = () =>{
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const brandQuery = useQuery({
@@ -171,7 +177,9 @@ const InvoiceRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const productQuery = useQuery({
@@ -185,7 +193,9 @@ const InvoiceRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const listEmployeeOptions = () => {

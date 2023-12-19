@@ -86,7 +86,8 @@ const PfiRequestDetails = () => {
       dispatchMessage({ severity: "error", message: error.message})
       return {}
     }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    retry: 3
   }) 
 
   const [commentData, setCommentData] = useState({

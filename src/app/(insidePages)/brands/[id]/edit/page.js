@@ -40,7 +40,8 @@ const EditBrand = () =>{
       dispatchMessage({ severity: "error", message: error.message})
       return {}
     }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    retry: 3
   })
 
   useEffect(()=>{

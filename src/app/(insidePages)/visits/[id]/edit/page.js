@@ -32,7 +32,8 @@ const EditVisitReport = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
+      retry: 3
   })
 
   useEffect(() => {
@@ -79,7 +80,7 @@ const EditVisitReport = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&approved=approved&isActive=true` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -115,10 +116,12 @@ const EditVisitReport = () => {
   }, [userData?.id])
 
   useEffect(()=>{
-    setFormData( prevState =>({
-      ...prevState,
-      contactPersonId: ""
-    }))
+    if(formData.customerId === ""){
+      setFormData( prevState =>({
+        ...prevState,
+        contactPersonId: ""
+      }))
+    }
   },[formData.customerId])
 
   const productsQuery = useQuery({
@@ -132,7 +135,9 @@ const EditVisitReport = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const handleCheckPfi = () => {
@@ -246,7 +251,6 @@ const EditVisitReport = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    return console.log(formData);
     let errors = formValidator(["customerId", "contactPersonId", "status", "durationOfMeeting", "productsDiscussed", "visitDate"], formData);
     if(Object.keys(errors).length){
       dispatchMessage({ severity: "error", message: "Some required fields are empty" })

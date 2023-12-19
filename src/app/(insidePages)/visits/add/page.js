@@ -46,7 +46,7 @@ const AddCustomerVisit = () => {
 
   const customerQuery = useQuery({
     queryKey: ["allCustomers"],
-    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&approved=approved` })
+    queryFn: () => apiGet({ url: `/customer?employeeId=${userData?.id}&isActive=true` })
       .then(res => {
         console.log(res)
         return res.data
@@ -99,7 +99,9 @@ const AddCustomerVisit = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const handleCheckPfi = () => {

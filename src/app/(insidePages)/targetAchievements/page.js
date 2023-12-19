@@ -61,7 +61,9 @@ const MonthlyTargets = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return {}
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
   const [salesInvoices, setSalesInvoices] = useState([])
   const [monthlyTargetToDeleteId, setMonthlyTargetToDeleteId] = useState("")

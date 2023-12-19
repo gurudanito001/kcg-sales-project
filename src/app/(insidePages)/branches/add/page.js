@@ -41,7 +41,9 @@ const AddBranch = () =>{
     .catch(error =>{
       dispatchMessage({ severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const listStateOptions = () => {

@@ -16,7 +16,7 @@ const EditCompany = () =>{
   const dispatchMessage = useDispatchMessage();
   const router = useRouter();
 
-  const {data, isFetching} = useQuery({
+  const {data} = useQuery({
     queryKey: ["allCompanies", id],
     queryFn: () => apiGet({ url: `/company/${id}`})
     .then(res =>{
@@ -28,7 +28,8 @@ const EditCompany = () =>{
       dispatchMessage({ severity: "error", message: error.message})
       return {}
     }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    retry: 3
   }) 
   
   useEffect(()=>{
@@ -77,7 +78,9 @@ const EditCompany = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const handleCheck = (brand) =>(event) =>{

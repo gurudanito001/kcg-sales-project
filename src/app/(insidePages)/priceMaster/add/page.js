@@ -50,7 +50,9 @@ const AddProductPrice = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const productsQuery = useQuery({
@@ -64,7 +66,9 @@ const AddProductPrice = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const listBrandOptions = () =>{

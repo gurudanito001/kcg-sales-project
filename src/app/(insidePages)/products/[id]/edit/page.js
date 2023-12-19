@@ -44,7 +44,8 @@ const EditProduct = () =>{
       dispatchMessage({ severity: "error", message: error.message})
       return {}
     }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    retry: 3
   }) 
   
   useEffect(()=>{
@@ -71,7 +72,9 @@ const EditProduct = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const listBrandOptions = () =>{

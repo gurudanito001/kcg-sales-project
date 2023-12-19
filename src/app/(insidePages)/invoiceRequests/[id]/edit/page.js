@@ -33,7 +33,8 @@ const EditInvoiceRequest = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
+      retry: 3
   })
 
   useEffect(() => {
@@ -137,7 +138,9 @@ const EditInvoiceRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const productQuery = useQuery({
@@ -151,7 +154,9 @@ const EditInvoiceRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const pfiRequestQuery = useQuery({

@@ -29,7 +29,8 @@ const EditPriceMaster = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
+      retry: 3
   })
 
   useEffect(() => {
@@ -82,7 +83,9 @@ const EditPriceMaster = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const productsQuery = useQuery({
@@ -96,7 +99,9 @@ const EditPriceMaster = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const listBrandOptions = () => {

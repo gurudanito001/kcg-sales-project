@@ -143,7 +143,9 @@ const Employees = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const branchQuery = useQuery({
@@ -199,7 +201,9 @@ const Employees = () =>{
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const handleSubmit = (e) => {

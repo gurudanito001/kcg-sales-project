@@ -130,7 +130,9 @@ const VisitReports = () => {
       .catch(error => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const listEmployeeOptions = () => {

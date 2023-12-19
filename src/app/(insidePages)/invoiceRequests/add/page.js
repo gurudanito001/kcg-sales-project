@@ -83,7 +83,9 @@ const AddInvoiceRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const productQuery = useQuery({
@@ -97,7 +99,9 @@ const AddInvoiceRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const pfiRequestQuery = useQuery({
@@ -122,11 +126,6 @@ const AddInvoiceRequest = () => {
       pfiRequestQuery.refetch();
     }
   }, [userData?.id])
-
-
-
-
-
 
 
   const generatePfiOptions = (data = []) =>{

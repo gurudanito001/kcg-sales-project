@@ -26,7 +26,7 @@ const AppAutoComplete = ({options=[], handleClickOption, initialValue="", placeh
   },[initialValue])
 
   const listOptions = () =>{
-    let eligibleOptions = options.filter( item => item?.label.includes(input));
+    let eligibleOptions = options.filter( item => item?.label.toLowerCase().includes(input.toLowerCase()));
     return eligibleOptions.map( item => <li className="dropdown-item" key={item.id} onClick={()=>{
       setInput(item.label);
       handleClickOption(item.id);

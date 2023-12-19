@@ -16,7 +16,7 @@ const EditBranch = () => {
   const dispatchMessage = useDispatchMessage();
   const router = useRouter()
 
-  const { data, isFetching } = useQuery({
+  const { data } = useQuery({
     queryKey: ["allBranches", id],
     queryFn: () => apiGet({ url: `/branch/${id}` })
       .then(res => {
@@ -28,7 +28,8 @@ const EditBranch = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
-      staleTime: Infinity
+      staleTime: Infinity,
+      retry: 3
   })
 
   const companyQuery = useQuery({
@@ -38,7 +39,9 @@ const EditBranch = () => {
     .catch(error =>{
       dispatchMessage({ severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const listStateOptions = () => {

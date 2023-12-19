@@ -33,7 +33,8 @@ const EditPfiRequest = () =>{
       console.log(error.message)
       dispatchMessage({ severity: "error", message: error.message})
     }),
-    staleTime: Infinity
+    staleTime: Infinity,
+    retry: 3
   }) 
   
   useEffect(()=>{
@@ -139,7 +140,9 @@ const EditPfiRequest = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
   const productQuery = useQuery({
     queryKey: ["allProducts"],
@@ -152,7 +155,9 @@ const EditPfiRequest = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const customerQuery = useQuery({

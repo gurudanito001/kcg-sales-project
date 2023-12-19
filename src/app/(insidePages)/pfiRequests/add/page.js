@@ -63,7 +63,9 @@ const AddPfiRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
   const productQuery = useQuery({
     queryKey: ["allProducts"],
@@ -76,7 +78,9 @@ const AddPfiRequest = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const customerQuery = useQuery({

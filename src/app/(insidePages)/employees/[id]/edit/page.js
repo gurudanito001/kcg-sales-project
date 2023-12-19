@@ -46,6 +46,7 @@ const EditEmployee = () => {
         return {}
       }),
       staleTime: Infinity,
+      retry: 3
   })
   useEffect(()=>{
     if(employeeDetailsQuery.data){
@@ -88,7 +89,9 @@ const EditEmployee = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const employeeQuery = useQuery({
@@ -116,7 +119,9 @@ const EditEmployee = () => {
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
 
@@ -168,7 +173,9 @@ const EditEmployee = () => {
       console.log(error)
       dispatchMessage({severity: "error", message: error.message})
       return []
-    })
+    }),
+    staleTime: Infinity,
+    retry: 3
   })
 
   const handleCheck = (brand) =>(event) =>{

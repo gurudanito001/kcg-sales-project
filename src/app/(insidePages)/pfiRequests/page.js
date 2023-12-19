@@ -140,7 +140,9 @@ const PfiRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const customerQuery = useQuery({
@@ -154,7 +156,9 @@ const PfiRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const contactPersonQuery = useQuery({
@@ -168,7 +172,9 @@ const PfiRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const brandQuery = useQuery({
@@ -182,7 +188,9 @@ const PfiRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const productQuery = useQuery({
@@ -196,7 +204,9 @@ const PfiRequests = () =>{
         console.log(error)
         dispatchMessage({ severity: "error", message: error.message })
         return []
-      })
+      }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   const listEmployeeOptions = () => {

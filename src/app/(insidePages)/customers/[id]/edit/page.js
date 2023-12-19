@@ -29,6 +29,8 @@ const EditCustomer = () => {
         dispatchMessage({ severity: "error", message: error.message })
         return {}
       }),
+      staleTime: Infinity,
+      retry: 3
   })
 
   useEffect(() => {
