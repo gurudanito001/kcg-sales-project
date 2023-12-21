@@ -70,12 +70,11 @@ const Layout = ({ children }) => {
                     </div>
                   </div>
                 </li>}
-                <li className="nav-item">
+                {/* <li className="nav-item">
                   <a className="nav-link p-2 nav-icon-hover" >
                     <i className="fa-regular fa-message fs-6"></i>
-                    {/* <span className="badge bg-primary rounded-circle p-1 small d-flex align-items-center justify-content-center" style={styles.notificationIcon}>4</span> */}
                   </a>
-                </li>
+                </li> */}
                 <li className="nav-item">
                   <a className="nav-link p-2 nav-icon-hover"  data-bs-toggle="offcanvas" href="#offcanvasExample22" role="button" aria-controls="offcanvasExample22">
                     <i className="ti ti-bell-ringing"></i>

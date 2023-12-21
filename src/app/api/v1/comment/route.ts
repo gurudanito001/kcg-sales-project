@@ -72,7 +72,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const token = (request.headers.get("Authorization") || "").split("Bearer ").at(1) as string;
-    let {isAuthorized} = await authService(token, ["admin", "supervisor", "salesPerson"])
+    let {isAuthorized, staffCadre} = await authService(token, ["admin", "supervisor", "salesPerson"])
     if(!isAuthorized){
       return new NextResponse(JSON.stringify({ message: `UnAuthorized`, data: null}), {
         status: 401,
@@ -86,6 +86,46 @@ export async function POST(request: Request) {
     const data = await prisma.comment.create({
       data: json,
     });
+
+    if(staffCadre === "admin"){
+      // notify salesPerson
+      await prisma.notification.create({
+        data: {receiverId: data?.receiverId, resourceUrl: data.resourceUrl, message: "Admin commented on your resource" }
+      })
+      // notify supervisor
+      const employeeData = await prisma.employee.findFirst({
+        where: {id: data.receiverId}
+      });
+      if(employeeData?.supervisorId){
+        await prisma.notification.create({
+          data: {receiverId: employeeData?.supervisorId, resourceUrl: data.resourceUrl, message: "Admin commented on your subordinate's resource" }
+        })
+      }
+
+    }else if( staffCadre === "salesPerson"){
+      // notify admin
+      await prisma.notification.create({
+        data: {staffCadre: "admin", resourceUrl: data.resourceUrl, message: "Sales Person made a comment on resource" }
+      })
+      // notify supervisor
+      const employeeData = await prisma.employee.findFirst({
+        where: {id: data.receiverId}
+      });
+      if(employeeData?.supervisorId){
+        await prisma.notification.create({
+          data: {receiverId: employeeData?.supervisorId, resourceUrl: data.resourceUrl, message: "Your subordinate commented on a resource" }
+        })
+      }
+    }else if( staffCadre === "supervisor"){
+      // notify admin 
+      await prisma.notification.create({
+        data: {staffCadre: "admin", resourceUrl: data.resourceUrl, message: "Supervisor made a comment on resource" }
+      })
+      // notify salesPerson
+      await prisma.notification.create({
+        data: {receiverId: data?.receiverId, resourceUrl: data.resourceUrl, message: "Your supervisor commented on your resource" }
+      })
+    }
     return new NextResponse(JSON.stringify({ message: `${routeName} Created successfully`, data }), { 
      status: 201, 
      headers: { "Content-Type": "application/json" },

@@ -172,7 +172,6 @@ const MarketingActivityDetails = () => {
         console.log(res.data)
         //dispatchMessage({ message: res.message })
         refetch()
-        
       })
       .catch(error => {
         console.log(error)

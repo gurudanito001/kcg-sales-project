@@ -12,7 +12,6 @@ const data2 = [
 ]; */
 
 export default function AppPieChart({arrayOfData = [], totalOverride}) {
-  console.log(arrayOfData);
 
   const getTotal = () =>{
     let total = 0;
